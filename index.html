@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RICO LOJISTAS - Sistema de Gestão</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- SEU CÓDIGO DO FIREBASE AQUI ---
+        // Configuração segura (Substituído com suas chaves)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-8HjnC7fOS98WmqkKCJv___1A7f20oJ0",
+            authDomain: "rico-lojistas.firebaseapp.com",
+            projectId: "rico-lojistas",
+            storageBucket: "rico-lojistas.firebasestorage.app",
+            messagingSenderId: "207345876980",
+            appId: "1:207345876980:web:fd6d3f7b1c632951c883a1"
+        };
+        
+        // Inicializa se a config existir
+        if (firebaseConfig) {
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            
+            // Expondo variáveis para o React usar
+            window.db = db;
+            window.auth = auth;
+            window.firebaseAuth = { signInAnonymously, onAuthStateChanged };
+            window.firebaseStore = { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, writeBatch };
+            window.appId = 'rico-lojistas-app-id'; // ID interno do app
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Red Hat Display', sans-serif; 
+            background-color: #0f172a; 
+            color: #e2e8f0; 
+            font-size: 14px; 
+        }
+        .glass-panel { 
+            background: rgba(30, 41, 59, 0.4); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+        .input-dark {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-dark:focus { border-color: #f59e0b; }
+        
+        .nav-item.active {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-right: 3px solid #f59e0b;
+            color: #fbbf24;
+        }
+        
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.2s;
+        }
+        th.sortable:hover {
+            color: #fbbf24; 
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-new { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .badge-contact { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-converted { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect, useRef } = React;
+
+        // --- ÍCONES SVG ---
+        const IconBase = ({ children, size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+        );
+        const Shield = (p) => <IconBase {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></IconBase>;
+        const DollarSign = (p) => <IconBase {...p}><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></IconBase>;
+        const TrendingUp = (p) => <IconBase {...p}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></IconBase>;
+        const Target = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconBase>;
+        const Users = (p) => <IconBase {...p}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconBase>;
+        const Activity = (p) => <IconBase {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></IconBase>;
+        const Layers = (p) => <IconBase {...p}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></IconBase>;
+        const Globe = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></IconBase>;
+        const BarChart3 = (p) => <IconBase {...p}><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></IconBase>;
+        const Plus = (p) => <IconBase {...p}><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></IconBase>;
+        const Edit2 = (p) => <IconBase {...p}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></IconBase>;
+        const Trash2 = (p) => <IconBase {...p}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></IconBase>;
+        const X = (p) => <IconBase {...p}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></IconBase>;
+        const ChevronDown = (p) => <IconBase {...p}><polyline points="6 9 12 15 18 9"/></IconBase>;
+        const ChevronUp = (p) => <IconBase {...p}><polyline points="18 15 12 9 6 15"/></IconBase>;
+        const Wallet = (p) => <IconBase {...p}><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" /><path d="M4 6v12c0 1.1.9 2 2 2h14v-4" /><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" /></IconBase>;
+        const Lock = (p) => <IconBase {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></IconBase>;
+        const Settings = (p) => <IconBase {...p}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></IconBase>;
+        const LogOut = (p) => <IconBase {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></IconBase>;
+        const User = (p) => <IconBase {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></IconBase>;
+        const Filter = (p) => <IconBase {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></IconBase>;
+        const RefreshCw = (p) => <IconBase {...p}><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></IconBase>;
+        const ArrowRight = (p) => <IconBase {...p}><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></IconBase>;
+        const LinkIcon = (p) => <IconBase {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></IconBase>;
+        const Phone = (p) => <IconBase {...p}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></IconBase>;
+        const PieChart = (p) => <IconBase {...p}><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></IconBase>;
+        const DatabaseIcon = (p) => <IconBase {...p}><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></IconBase>;
+
+        // --- CONSTANTES ---
+        const BRAZIL_STATES = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+
+        const INITIAL_SALES = [
+            { date: '2025-04-15', company: 'Lojista CE', city: 'Consolidado', state: 'CE', pairs: 22, value: 3403.80, leadDate: '2025-04-01' },
+            { date: '2025-05-10', company: 'Lojista RJ 1', city: 'Consolidado', state: 'RJ', pairs: 24, value: 3060.00, leadDate: '2025-05-01' },
+            { date: '2025-05-15', company: 'Lojista MS 1', city: 'Consolidado', state: 'MS', pairs: 22, value: 4840.00, leadDate: '2025-05-05' },
+            { date: '2025-05-20', company: 'Lojista MS 2', city: 'Consolidado', state: 'MS', pairs: 36, value: 6111.00, leadDate: '2025-05-10' },
+            { date: '2025-05-22', company: 'Lojista SP', city: 'Consolidado', state: 'SP', pairs: 72, value: 12130.00, leadDate: '2025-05-15' },
+            { date: '2025-05-27', company: 'Lojista RJ 2', city: 'Consolidado', state: 'RJ', pairs: 24, value: 4074.00, leadDate: '2025-05-20' },
+            { date: '2025-06-10', company: 'Lojista TO', city: 'Consolidado', state: 'TO', pairs: 30, value: 4842.00, leadDate: '2025-06-01' },
+            { date: '2025-06-16', company: 'Lojista Curitiba', city: 'Curitiba', state: 'PR', pairs: 36, value: 7920.00, leadDate: '2025-06-10' },
+            { date: '2025-06-18', company: 'Lojista Campo Grande', city: 'Campo Grande', state: 'MS', pairs: 24, value: 4026.00, leadDate: '2025-06-12' },
+            { date: '2025-06-24', company: 'Lojista Santa Inês', city: 'Santa Inês', state: 'MA', pairs: 24, value: 3876.00, leadDate: '2025-06-18' },
+            { date: '2025-07-01', company: 'Lojista Tupancireta', city: 'Tupancireta', state: 'RS', pairs: 24, value: 5280.00, leadDate: '2025-06-25' },
+            { date: '2025-07-22', company: 'Alfa Stillus', city: 'Boa Vista', state: 'RR', pairs: 48, value: 8592.00, leadDate: '2025-07-17' },
+            { date: '2025-07-25', company: 'Velho Curteiro', city: 'Governador Valadares', state: 'MG', pairs: 24, value: 4116.00, leadDate: '2025-07-20' },
+            { date: '2025-08-05', company: 'Lojista Várzea', city: 'Várzea Grande', state: 'MT', pairs: 12, value: 1982.00, leadDate: '2025-08-01' },
+            { date: '2025-08-05', company: 'Lojista Navegantes', city: 'Navegantes', state: 'SC', pairs: 26, value: 4524.00, leadDate: '2025-08-01' },
+            { date: '2025-08-18', company: 'Lojista Palmas', city: 'Palmas', state: 'PR', pairs: 12, value: 2592.00, leadDate: '2025-08-10' },
+            { date: '2025-08-18', company: 'Lojista Guará', city: 'Guaratinguetá', state: 'SP', pairs: 24, value: 3936.00, leadDate: '2025-08-12' },
+            { date: '2025-08-22', company: 'Lojista Bom Despacho', city: 'Bom Despacho', state: 'MG', pairs: 24, value: 3887.00, leadDate: '2025-08-15' },
+            { date: '2025-09-03', company: 'Lojista Erechim', city: 'Erechim', state: 'RS', pairs: 12, value: 2028.00, leadDate: '2025-08-28' }
+        ];
+
+        const INITIAL_ADS = [
+            { month: '2025-04', value: 745.76 },
+            { month: '2025-05', value: 1250.85 },
+            { month: '2025-06', value: 1206.16 },
+            { month: '2025-07', value: 1372.19 },
+            { month: '2025-08', value: 950.01 },
+            { month: '2025-09', value: 904.63 },
+            { month: '2025-10', value: 464.47 },
+        ];
+
+        const INITIAL_LEADS = [];
+
+        const REGIONS = {
+            'Sul': ['RS', 'SC', 'PR'],
+            'Sudeste': ['SP', 'RJ', 'MG', 'ES'],
+            'Centro-Oeste': ['MS', 'MT', 'GO', 'DF'],
+            'Nordeste': ['BA', 'PE', 'CE', 'MA', 'RN', 'PB', 'AL', 'SE', 'PI'],
+            'Norte': ['AM', 'PA', 'AC', 'RR', 'RO', 'AP', 'TO']
+        };
+
+        // --- HELPERS ---
+        const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+        const fmtDate = (d) => new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+        const fullMonthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+        // --- HOOK DE DADOS FIREBASE (ADAPTADOR ONLINE) ---
+        const useFirebaseData = (collectionName, initialData = [], user) => {
+            const [data, setData] = useState(initialData);
+            
+            useEffect(() => {
+                if (!window.db || !window.firebaseStore || !window.appId || !user) return;
+                
+                const { collection, onSnapshot } = window.firebaseStore;
+                const colRef = collection(window.db, 'artifacts', window.appId, 'users', user.uid, collectionName);
+                
+                const unsubscribe = onSnapshot(colRef, (snapshot) => {
+                    const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setData(items);
+                });
+                
+                return () => unsubscribe();
+            }, [collectionName, user]);
+
+            const addItem = async (item) => {
+                if (!window.db || !user) { setData(prev => [...prev, { ...item, id: Date.now() }]); return; }
+                const { collection, addDoc } = window.firebaseStore;
+                const { id, ...dataToSave } = item; // Remove ID to let Firebase gen it or handle differently
+                await addDoc(collection(window.db, 'artifacts', window.appId, 'users', user.uid, collectionName), dataToSave);
+            };
+
+            const updateItem = async (item) => {
+                if (!window.db || !user) { setData(prev => prev.map(i => i.id === item.id ? item : i)); return; }
+                const { doc, updateDoc } = window.firebaseStore;
+                const { id, ...dataToSave } = item;
+                const docRef = doc(window.db, 'artifacts', window.appId, 'users', user.uid, collectionName, String(id));
+                await updateDoc(docRef, dataToSave);
+            };
+
+            const deleteItem = async (id) => {
+                if (!window.db || !user) { setData(prev => prev.filter(i => i.id !== id)); return; }
+                const { doc, deleteDoc } = window.firebaseStore;
+                const docRef = doc(window.db, 'artifacts', window.appId, 'users', user.uid, collectionName, String(id));
+                await deleteDoc(docRef);
+            };
+
+            return { data, addItem, updateItem, deleteItem };
+        };
+
+        // --- CHART COMPONENT ---
+        const ChartComponent = ({ type, data, options, height = 300, labelType = 'value' }) => {
+            const canvasRef = useRef(null);
+            const chartRef = useRef(null);
+
+            useEffect(() => {
+                if (!canvasRef.current) return;
+                if (chartRef.current) chartRef.current.destroy();
+
+                Chart.defaults.color = '#94a3b8';
+                Chart.defaults.borderColor = '#334155';
+                Chart.defaults.font.family = "'Red Hat Display', sans-serif";
+                Chart.defaults.datasets.bar.barPercentage = 0.6; 
+                Chart.register(ChartDataLabels);
+
+                chartRef.current = new Chart(canvasRef.current.getContext('2d'), {
+                    type, data,
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        layout: { padding: { top: 25, right: 20 } },
+                        plugins: {
+                            legend: { labels: { color: '#e2e8f0', usePointStyle: true, boxWidth: 8 } },
+                            datalabels: {
+                                color: '#fff', anchor: type==='pie'||type==='doughnut'?'center':'end', align: type==='pie'||type==='doughnut'?'center':'top', offset: 4,
+                                font: { weight: 'bold', size: 11 },
+                                formatter: (val, ctx) => {
+                                    let label = val;
+                                    if(labelType==='money') label = val >= 1000 ? 'R$ '+(val/1000).toFixed(1)+'k' : 'R$ '+val;
+                                    if(labelType==='roi') label = val+'x';
+                                    if(labelType==='percent') label = val+'%';
+                                    if (type === 'pie' || type === 'doughnut') {
+                                        const dataset = ctx.chart.data.datasets[0];
+                                        const total = dataset.data.reduce((acc, curr) => acc + curr, 0);
+                                        const percent = ((val / total) * 100).toFixed(1) + '%';
+                                        return [label, `(${percent})`];
+                                    }
+                                    return label;
+                                },
+                                display: 'auto'
+                            }
+                        },
+                        scales: (type!=='pie' && type!=='doughnut') ? { x: {grid:{display:false}}, y:{display:false, beginAtZero:true} } : {x:{display:false},y:{display:false}},
+                        ...options
+                    }
+                });
+                return () => { if(chartRef.current) chartRef.current.destroy(); };
+            }, [type, data, options]);
+
+            return <div style={{ height, width: '100%' }}><canvas ref={canvasRef}></canvas></div>;
+        };
+
+        // --- UI COMPONENTS ---
+        const KpiCard = ({ title, value, subtext, icon: Icon, colorClass }) => (
+            <div className={`glass-panel p-5 rounded-lg border-l-4 ${colorClass} flex justify-between items-start`}>
+                <div>
+                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">{title}</p>
+                    <h3 className="text-2xl font-bold text-white">{value}</h3>
+                    <p className="text-slate-500 text-xs mt-1">{subtext}</p>
+                </div>
+                <div className={`p-2 rounded bg-slate-800/50 ${colorClass.replace('border-', 'text-')}`}><Icon size={20} /></div>
+            </div>
+        );
+
+        const ChartContainer = ({ title, children, subtitle }) => (
+            <div className="glass-panel p-6 rounded-lg w-full mb-6 animate-fadeIn">
+                <div className="mb-4 border-b border-slate-700/50 pb-2 flex justify-between items-center">
+                    <div>
+                        <h3 className="font-bold text-white text-lg flex items-center gap-2"><Activity size={16} className="text-amber-500"/> {title}</h3>
+                        {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+                    </div>
+                </div>
+                <div className="w-full">{children}</div>
+            </div>
+        );
+
+        const SectionHeader = ({ title, icon: Icon, color = "bg-slate-500", isOpen, onToggle }) => (
+            <div className="col-span-full mt-8 mb-4 flex items-center justify-between border-b border-slate-700 pb-3 cursor-pointer group hover:bg-slate-800/30 transition-colors rounded px-2 select-none" onClick={onToggle}>
+                <div className="flex items-center gap-3">
+                    <div className={`w-1.5 h-8 ${color} rounded-sm`}></div>
+                    <h2 className="text-xl font-bold text-white uppercase tracking-tight flex items-center gap-2 group-hover:text-slate-200 transition-colors">
+                        {Icon && <Icon className="text-slate-400 group-hover:text-slate-300" size={24}/>} {title}
+                    </h2>
+                </div>
+                <div className="text-slate-400">{isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}</div>
+            </div>
+        );
+
+        const Sidebar = ({ view, setView, onLogout, notificationCount }) => {
+            const items = [
+                { id: 'analytics', label: 'Análises', icon: BarChart3 },
+                { id: 'lead-analytics', label: 'Análise de Leads', icon: PieChart },
+                { id: 'leads', label: `Leads (Funil) ${notificationCount > 0 ? '🔴 ' + notificationCount : ''}`, icon: Filter },
+                { id: 'retailers', label: 'Lojistas (CRM)', icon: Users },
+                { id: 'ads', label: 'Anúncios (Ads)', icon: DollarSign },
+                { id: 'settings', label: 'Configurações', icon: Settings },
+            ];
+            return (
+                <div className="w-64 bg-slate-900 border-r border-slate-700 h-screen fixed left-0 top-0 flex flex-col z-50">
+                    <div className="h-20 flex items-center gap-3 px-6 border-b border-slate-700">
+                        <Shield className="text-amber-500" size={28} />
+                        <div>
+                            <h1 className="text-xl font-bold text-white tracking-wide">RICO</h1>
+                            <p className="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Lojistas</p>
+                        </div>
+                    </div>
+                    <nav className="flex-1 p-4 space-y-2">
+                        {items.map(item => (
+                            <button key={item.id} onClick={() => setView(item.id)} className={`nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${view === item.id ? 'active' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                                <item.icon size={20} /> {item.label}
+                            </button>
+                        ))}
+                    </nav>
+                    <div className="p-4 border-t border-slate-700 space-y-2">
+                        <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-2 text-slate-400 hover:text-red-400 text-sm font-medium hover:bg-slate-800/50 rounded-lg transition-colors">
+                            <LogOut size={18} /> Sair do Sistema
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const Modal = ({ isOpen, onClose, title, children }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+                    <div className="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-fadeIn h-5/6 overflow-y-auto custom-scrollbar">
+                        <div className="flex justify-between items-center p-4 border-b border-slate-700 bg-slate-800/50 sticky top-0 z-10 backdrop-blur-md">
+                            <h3 className="text-lg font-bold text-white">{title}</h3>
+                            <button onClick={onClose} className="text-slate-400 hover:text-white"><X size={20} /></button>
+                        </div>
+                        <div className="p-6">{children}</div>
+                    </div>
+                </div>
+            );
+        };
+
+        const LeadAnalyticsView = ({ sales, leads, ads }) => {
+            const [filterDate, setFilterDate] = useState('all');
+
+             const availableMonths = useMemo(() => {
+                const months = new Set([
+                    ...sales.map(s => s.date.slice(0, 7)),
+                    ...ads.map(a => a.month),
+                     ...leads.map(l => l.date.slice(0, 7))
+                ]);
+                return Array.from(months).sort();
+            }, [sales, ads, leads]);
+
+            const data = useMemo(() => {
+                let filteredSales = sales;
+                let filteredAds = ads;
+                let filteredLeads = leads;
+                
+                if (filterDate !== 'all') {
+                    filteredSales = sales.filter(s => s.date.startsWith(filterDate));
+                    filteredAds = ads.filter(a => a.month === filterDate);
+                    filteredLeads = leads.filter(l => l.date.startsWith(filterDate));
+                }
+
+                const totalLeads = filteredLeads.length;
+                const totalSales = filteredSales.length;
+                const totalAds = filteredAds.reduce((acc, a) => acc + a.value, 0);
+                
+                const cpl = totalLeads > 0 ? totalAds / totalLeads : 0;
+                const conversionRate = totalLeads > 0 ? (totalSales / totalLeads) * 100 : 0;
+                const conversionRatio = totalSales > 0 ? Math.round(totalLeads / totalSales) : 0;
+                
+                const monthsCount = filterDate === 'all' ? availableMonths.length : 1;
+                const avgLeadsPerMonth = monthsCount > 0 ? totalLeads / monthsCount : 0;
+
+                const monthsList = filterDate === 'all' ? availableMonths : [filterDate];
+                const monthlyData = monthsList.map(m => {
+                    const mLeads = leads.filter(l => l.date.startsWith(m)).length;
+                    const mSales = sales.filter(s => s.date.startsWith(m)).length;
+                    const mAds = ads.find(a => a.month === m)?.value || 0;
+                    const mCpl = mLeads > 0 ? mAds / mLeads : 0;
+                    const mRate = mLeads > 0 ? (mSales / mLeads) * 100 : 0;
+
+                    const [y, mn] = m.split('-');
+                    const label = `${fullMonthNames[parseInt(mn)-1].substring(0,3)}/${y.substring(2)}`;
+                    
+                    return { label, leads: mLeads, sales: mSales, cpl: mCpl, rate: mRate };
+                });
+
+                const leadsByState = {};
+                const leadsByRegion = {};
+                
+                filteredLeads.forEach(l => {
+                    const st = l.state && l.state.trim() !== '' ? l.state : null;
+                    if (st) {
+                        leadsByState[st] = (leadsByState[st] || 0) + 1;
+                        const reg = Object.keys(REGIONS).find(r => REGIONS[r].includes(st));
+                        if (reg) {
+                            leadsByRegion[reg] = (leadsByRegion[reg] || 0) + 1;
+                        }
+                    }
+                });
+
+                return {
+                    kpis: { totalLeads, cpl, conversionRate, conversionRatio, totalAds, totalSales, avgLeadsPerMonth },
+                    monthly: monthlyData,
+                    geo: { state: leadsByState, region: leadsByRegion }
+                };
+            }, [sales, leads, ads, filterDate, availableMonths]);
+
+            const cLeadsMonth = {
+                labels: data.monthly.map(d => d.label),
+                datasets: [
+                    { type: 'line', label: 'Taxa Conv. (%)', data: data.monthly.map(d => d.rate.toFixed(1)), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', yAxisID: 'y1', order: 0 },
+                    { type: 'bar', label: 'Leads', data: data.monthly.map(d => d.leads), backgroundColor: '#3b82f6', borderRadius: 4, order: 1 },
+                    { type: 'bar', label: 'Vendas', data: data.monthly.map(d => d.sales), backgroundColor: '#10b981', borderRadius: 4, order: 1 }
+                ]
+            };
+
+            const cCplMonth = {
+                labels: data.monthly.map(d => d.label),
+                datasets: [
+                    { label: 'Custo por Lead (CPL)', data: data.monthly.map(d => d.cpl.toFixed(2)), backgroundColor: '#f59e0b', borderRadius: 4, type: 'bar' }
+                ]
+            };
+
+            const cLeadsRegion = {
+                labels: Object.keys(data.geo.region),
+                datasets: [{
+                    data: Object.values(data.geo.region),
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'],
+                    borderWidth: 0
+                }]
+            };
+
+            const cLeadsState = {
+                labels: Object.keys(data.geo.state),
+                datasets: [{
+                    label: 'Leads por Estado',
+                    data: Object.values(data.geo.state),
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 4
+                }]
+            };
+
+            return (
+                <div className="animate-fadeIn">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                        <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2">
+                            <PieChart className="text-blue-500" /> Análise de Leads
+                        </h2>
+                        <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-700">
+                            <span className="text-slate-400 text-xs font-bold uppercase px-3">Período:</span>
+                            <select 
+                                className="bg-slate-800 text-white text-sm border-none rounded py-1 px-3 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
+                                value={filterDate}
+                                onChange={(e) => setFilterDate(e.target.value)}
+                            >
+                                <option value="all">Visão Consolidada (Todos)</option>
+                                {availableMonths.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                        <KpiCard title="Total de Leads" value={data.kpis.totalLeads} subtext="No período selecionado" icon={Filter} colorClass="border-blue-500" />
+                        <KpiCard title="Custo por Lead (CPL)" value={fmtMoney(data.kpis.cpl)} subtext="Investimento / Leads" icon={DollarSign} colorClass="border-amber-500" />
+                        <KpiCard title="Taxa de Conversão" value={data.kpis.conversionRate.toFixed(1) + '%'} subtext={`1 venda a cada ${data.kpis.conversionRatio} leads`} icon={Target} colorClass="border-emerald-500" />
+                        <KpiCard title="Investimento Total" value={fmtMoney(data.kpis.totalAds)} subtext="Gasto em Anúncios" icon={Wallet} colorClass="border-slate-500" />
+                        <KpiCard title="Média Leads/Mês" value={data.kpis.avgLeadsPerMonth.toFixed(1)} subtext="Média do período" icon={Activity} colorClass="border-cyan-500" />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <ChartContainer title="Evolução Mensal (Leads vs Vendas)" subtitle="Volume de entrada e conversão">
+                             <ChartComponent type="bar" data={cLeadsMonth} options={{ scales: { y: {display: false}, y1: { type: 'linear', display: false, position: 'right', grid: {drawOnChartArea: false} } } }} />
+                        </ChartContainer>
+
+                        <ChartContainer title="Custo por Lead (Mensal)" subtitle="Eficiência do investimento (R$)">
+                             <ChartComponent type="bar" data={cCplMonth} labelType="money" />
+                        </ChartContainer>
+
+                         <ChartContainer title="Leads por Região" subtitle="Distribuição geográfica">
+                            <div className="flex justify-center"><div className="w-[300px]">
+                                <ChartComponent type="doughnut" data={cLeadsRegion} labelType="percent" />
+                            </div></div>
+                        </ChartContainer>
+                        
+                        <ChartContainer title="Leads por Estado" subtitle="Volume por UF">
+                             <ChartComponent type="bar" data={cLeadsState} />
+                        </ChartContainer>
+                    </div>
+                </div>
+            );
+        };
+
+        const LeadsView = ({ leads, addItem, updateItem, onConvertToSale, clearNotification, onSync, apiUrl }) => {
+            const [syncing, setSyncing] = useState(false);
+            const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+            
+            useEffect(() => {
+                clearNotification();
+            }, []);
+
+            const handleSyncClick = async () => {
+                setSyncing(true);
+                await onSync();
+                setSyncing(false);
+            };
+
+            const handleSort = (key) => {
+                let direction = 'asc';
+                if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+                setSortConfig({ key, direction });
+            };
+
+            const sortedLeads = useMemo(() => {
+                let items = [...leads];
+                items.sort((a, b) => {
+                    let aValue = a[sortConfig.key];
+                    let bValue = b[sortConfig.key];
+                    if (sortConfig.key === 'date') { aValue = new Date(aValue); bValue = new Date(bValue); }
+                    if (typeof aValue === 'string') { aValue = aValue.toLowerCase(); bValue = bValue.toLowerCase(); }
+                    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+                    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                return items;
+            }, [leads, sortConfig]);
+
+            const SortIcon = ({ column }) => { if (sortConfig.key !== column) return null; return sortConfig.direction === 'asc' ? <ChevronUp size={14} className="ml-1 inline" /> : <ChevronDown size={14} className="ml-1 inline" />; };
+
+            return (
+                <div className="animate-fadeIn">
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 className="text-2xl font-bold text-white">Funil de Leads (Google Forms)</h2>
+                            <div className="flex items-center gap-2 mt-1">
+                                <p className="text-slate-400 text-sm flex items-center gap-2">
+                                    <span className={`w-2 h-2 rounded-full ${apiUrl ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`}></span>
+                                    {apiUrl ? 'Conectado à API Google Sheets' : 'Modo Simulação (Demo)'}
+                                </p>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={handleSyncClick} 
+                            disabled={syncing} 
+                            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-blue-900/20 disabled:opacity-50 transition-all"
+                        >
+                            <RefreshCw size={18} className={syncing ? "animate-spin" : ""} /> 
+                            {syncing ? 'Sincronizando...' : 'Sincronizar Agora'}
+                        </button>
+                    </div>
+
+                    <div className="glass-panel rounded-lg overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left text-slate-400 whitespace-nowrap">
+                                <thead className="text-xs text-slate-200 uppercase bg-slate-800/50">
+                                    <tr>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('date')}>Data <SortIcon column="date"/></th>
+                                        <th className="px-6 py-4">E-mail</th>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact"/></th>
+                                        <th className="px-6 py-4">WhatsApp</th>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('state')}>Estado <SortIcon column="state"/></th>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('city')}>Cidade <SortIcon column="city"/></th>
+                                        <th className="px-6 py-4">CNPJ</th>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('company')}>Razão Social <SortIcon column="company"/></th>
+                                        <th className="px-6 py-4">IE</th>
+                                        <th className="px-6 py-4">Endereço</th>
+                                        <th className="px-6 py-4">Instagram</th>
+                                        <th className="px-6 py-4">Obs</th>
+                                        <th className="px-6 py-4 text-right">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-700/50">
+                                    {sortedLeads.map((lead) => (
+                                        <tr key={lead.id} className="hover:bg-slate-800/30 transition-colors animate-fadeIn">
+                                            <td className="px-6 py-4 font-mono text-xs text-slate-300">{fmtDate(lead.date)}</td>
+                                            <td className="px-6 py-4">{lead.email}</td>
+                                            <td className="px-6 py-4 font-bold text-white">{lead.contact} {lead.isNew && <span className="text-[10px] bg-red-500 text-white px-1 rounded ml-1">NOVO</span>}</td>
+                                            <td className="px-6 py-4">
+                                                {lead.phone ? (
+                                                    <a href={`https://wa.me/${String(lead.phone).replace(/\D/g,'')}`} target="_blank" className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300">
+                                                        <Phone size={14} /> {lead.phone}
+                                                    </a>
+                                                ) : <span className="text-slate-600">-</span>}
+                                            </td>
+                                            <td className="px-6 py-4">{lead.state}</td>
+                                            <td className="px-6 py-4">{lead.city}</td>
+                                            <td className="px-6 py-4 font-mono text-xs">{lead.cnpj}</td>
+                                            <td className="px-6 py-4">{lead.company}</td>
+                                            <td className="px-6 py-4 text-xs">{lead.ie}</td>
+                                            <td className="px-6 py-4 text-xs max-w-[200px] truncate" title={lead.address}>{lead.address}</td>
+                                            <td className="px-6 py-4">{lead.instagram}</td>
+                                            <td className="px-6 py-4 text-xs max-w-[200px] truncate" title={lead.obs}>{lead.obs}</td>
+                                            <td className="px-6 py-4 text-right sticky right-0 bg-slate-900/50 backdrop-blur-sm">
+                                                {lead.status !== 'converted' && (
+                                                    <button onClick={() => onConvertToSale(lead)} className="bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1 ml-auto">
+                                                        Converter <ArrowRight size={12} />
+                                                    </button>
+                                                )}
+                                                {lead.status === 'converted' && <span className="text-xs text-emerald-500">Convertido</span>}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {leads.length === 0 && (
+                                        <tr><td colSpan="13" className="text-center py-8 text-slate-500">Nenhum lead encontrado.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const RetailersView = ({ sales, addItem, updateItem, deleteItem, prefillData, setPrefillData }) => {
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [editingItem, setEditingItem] = useState(null);
+            const [formData, setFormData] = useState({});
+            const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+            const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+
+            useEffect(() => {
+                if (prefillData) {
+                    setFormData({
+                        date: new Date().toISOString().split('T')[0],
+                        leadDate: prefillData.date,
+                        company: prefillData.company, 
+                        contact: prefillData.contact, 
+                        phone: prefillData.phone,
+                        email: prefillData.email,
+                        city: prefillData.city,
+                        state: prefillData.state,
+                        cnpj: prefillData.cnpj,
+                        ie: prefillData.ie,
+                        address: prefillData.address,
+                        instagram: prefillData.instagram,
+                        obs: prefillData.obs,
+                        pairs: '',
+                        value: ''
+                    });
+                    setIsModalOpen(true);
+                    setPrefillData(null);
+                }
+            }, [prefillData, setPrefillData]);
+
+            const handleSort = (key) => {
+                let direction = 'asc';
+                if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+                setSortConfig({ key, direction });
+            };
+
+            const sortedSales = useMemo(() => {
+                let sortableItems = [...sales];
+                sortableItems.sort((a, b) => {
+                    let aValue = a[sortConfig.key];
+                    let bValue = b[sortConfig.key];
+                    if (sortConfig.key === 'date') { aValue = new Date(aValue); bValue = new Date(bValue); }
+                    if (typeof aValue === 'string') { aValue = aValue.toLowerCase(); bValue = bValue.toLowerCase(); }
+                    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+                    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                return sortableItems;
+            }, [sales, sortConfig]);
+
+            const openModal = (item = null) => {
+                setEditingItem(item);
+                setFormData(item || { date: new Date().toISOString().split('T')[0], leadDate: '', company: '', city: '', state: '', pairs: '', value: '' });
+                setIsModalOpen(true);
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const newItem = { ...formData, pairs: Number(formData.pairs), value: Number(formData.value) };
+                if (editingItem) updateItem({ ...newItem, id: editingItem.id });
+                else addItem(newItem);
+                setIsModalOpen(false);
+            };
+
+            const confirmDelete = () => {
+                if (deleteConfirmId) { deleteItem(deleteConfirmId); setDeleteConfirmId(null); }
+            };
+            
+            const SortIcon = ({ column }) => {
+                if (sortConfig.key !== column) return null;
+                return sortConfig.direction === 'asc' ? <ChevronUp size={14} className="ml-1 inline" /> : <ChevronDown size={14} className="ml-1 inline" />;
+            };
+
+            return (
+                <div className="animate-fadeIn">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold text-white">Gestão de Lojistas</h2>
+                        <button onClick={() => openModal()} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-amber-900/20"><Plus size={18} /> Novo Lojista</button>
+                    </div>
+                    <div className="glass-panel rounded-lg overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left text-slate-400">
+                                <thead className="text-xs text-slate-200 uppercase bg-slate-800/50">
+                                    <tr>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('date')}>Data Venda <SortIcon column="date"/></th>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('company')}>Lojista <SortIcon column="company"/></th>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('state')}>Local <SortIcon column="state"/></th>
+                                        <th className="px-6 py-4 text-center sortable" onClick={() => handleSort('pairs')}>Pares <SortIcon column="pairs"/></th>
+                                        <th className="px-6 py-4 text-right sortable" onClick={() => handleSort('value')}>Valor <SortIcon column="value"/></th>
+                                        <th className="px-6 py-4 text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-700/50">
+                                    {sortedSales.map((sale) => (
+                                        <tr key={sale.id} className="hover:bg-slate-800/30 transition-colors">
+                                            <td className="px-6 py-4 font-mono text-xs text-slate-300">{fmtDate(sale.date)}</td>
+                                            <td className="px-6 py-4 font-bold text-white">{sale.company}</td>
+                                            <td className="px-6 py-4">{sale.state} - {sale.city}</td>
+                                            <td className="px-6 py-4 text-center">{sale.pairs}</td>
+                                            <td className="px-6 py-4 text-right font-bold text-emerald-400">{fmtMoney(sale.value)}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button onClick={() => openModal(sale)} className="p-2 hover:bg-slate-700 rounded text-blue-400"><Edit2 size={16} /></button>
+                                                    <button onClick={() => setDeleteConfirmId(sale.id)} className="p-2 hover:bg-slate-700 rounded text-red-400"><Trash2 size={16} /></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? "Editar Lojista" : "Novo Lojista"}>
+                        <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-1 custom-scrollbar">
+                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3">Dados da Venda</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Data Lead</label><input type="date" required className="input-dark" value={formData.leadDate} onChange={e => setFormData({...formData, leadDate: e.target.value})} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Data Fechamento</label><input type="date" required className="input-dark" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} /></div>
+                            </div>
+                            
+                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Dados do Cliente</h4>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Razão Social (Loja)</label><input type="text" required className="input-dark" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} /></div>
+                             <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">CNPJ</label><input type="text" className="input-dark" value={formData.cnpj || ''} onChange={e => setFormData({...formData, cnpj: e.target.value})} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Insc. Estadual</label><input type="text" className="input-dark" value={formData.ie || ''} onChange={e => setFormData({...formData, ie: e.target.value})} /></div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Responsável (Nome)</label><input type="text" className="input-dark" value={formData.contact || ''} onChange={e => setFormData({...formData, contact: e.target.value})} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Email</label><input type="email" className="input-dark" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} /></div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">WhatsApp</label><input type="text" className="input-dark" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Instagram</label><input type="text" className="input-dark" value={formData.instagram || ''} onChange={e => setFormData({...formData, instagram: e.target.value})} /></div>
+                            </div>
+                            
+                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Localização</h4>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="col-span-2"><label className="block text-xs uppercase mb-1 text-slate-400">Cidade</label><input type="text" required className="input-dark" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} /></div>
+                                <div>
+                                    <label className="block text-xs uppercase mb-1 text-slate-400">UF</label>
+                                    <select required className="input-dark" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})}>
+                                        <option value="" disabled>Selecione</option>
+                                        {BRAZIL_STATES.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Endereço Completo</label><input type="text" className="input-dark" value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} /></div>
+                            
+                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Pedido</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Qtd Pares</label><input type="number" required className="input-dark" value={formData.pairs} onChange={e => setFormData({...formData, pairs: e.target.value})} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Total (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} /></div>
+                            </div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Observações</label><textarea className="input-dark h-20" value={formData.obs || ''} onChange={e => setFormData({...formData, obs: e.target.value})}></textarea></div>
+                            
+                            <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded mt-4">Salvar Dados</button>
+                        </form>
+                    </Modal>
+                    <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar Exclusão"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este registro?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
+                </div>
+            );
+        };
+
+        const AdsView = ({ ads, addItem, updateItem, deleteItem }) => {
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [editingItem, setEditingItem] = useState(null);
+            const [formData, setFormData] = useState({});
+            const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+            const [sortConfig, setSortConfig] = useState({ key: 'month', direction: 'asc' });
+
+            const handleSort = (key) => {
+                let direction = 'asc';
+                if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+                setSortConfig({ key, direction });
+            };
+
+            const sortedAds = useMemo(() => {
+                let sortableItems = [...ads];
+                sortableItems.sort((a, b) => {
+                    let aValue = a[sortConfig.key];
+                    let bValue = b[sortConfig.key];
+                    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+                    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                return sortableItems;
+            }, [ads, sortConfig]);
+
+            const openModal = (item = null) => { setEditingItem(item); setFormData(item || { month: new Date().toISOString().slice(0, 7), value: '' }); setIsModalOpen(true); };
+            const handleSubmit = (e) => { e.preventDefault(); const newItem = { ...formData, value: Number(formData.value) }; if (editingItem) updateItem({ ...newItem, id: editingItem.id }); else addItem(newItem); setIsModalOpen(false); };
+            const confirmDelete = () => { if(deleteConfirmId) { deleteItem(deleteConfirmId); setDeleteConfirmId(null); } };
+            const SortIcon = ({ column }) => { if (sortConfig.key !== column) return null; return sortConfig.direction === 'asc' ? <ChevronUp size={14} className="ml-1 inline" /> : <ChevronDown size={14} className="ml-1 inline" />; };
+
+            return (
+                <div className="animate-fadeIn">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold text-white">Investimento em Anúncios</h2>
+                        <button onClick={() => openModal()} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-emerald-900/20"><Plus size={18} /> Novo Mês</button>
+                    </div>
+                    <div className="glass-panel rounded-lg overflow-hidden max-w-3xl">
+                        <table className="w-full text-sm text-left text-slate-400">
+                            <thead className="text-xs text-slate-200 uppercase bg-slate-800/50">
+                                <tr>
+                                    <th className="px-6 py-4 sortable" onClick={() => handleSort('month')}>Mês Referência <SortIcon column="month"/></th>
+                                    <th className="px-6 py-4 text-right sortable" onClick={() => handleSort('value')}>Investimento (Ads) <SortIcon column="value"/></th>
+                                    <th className="px-6 py-4 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-700/50">{sortedAds.map((ad) => (<tr key={ad.id} className="hover:bg-slate-800/30 transition-colors"><td className="px-6 py-4 font-bold text-white">{ad.month}</td><td className="px-6 py-4 text-right font-mono text-slate-300">{fmtMoney(ad.value)}</td><td className="px-6 py-4 text-right"><div className="flex items-center justify-end gap-2"><button onClick={() => openModal(ad)} className="p-2 hover:bg-slate-700 rounded text-blue-400"><Edit2 size={16} /></button><button onClick={() => setDeleteConfirmId(ad.id)} className="p-2 hover:bg-slate-700 rounded text-red-400"><Trash2 size={16} /></button></div></td></tr>))}</tbody>
+                        </table>
+                    </div>
+                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? "Editar Custo" : "Novo Investimento"}><form onSubmit={handleSubmit} className="space-y-4"><div><label className="block text-xs uppercase mb-1 text-slate-400">Mês (YYYY-MM)</label><input type="month" required className="input-dark" value={formData.month} onChange={e => setFormData({...formData, month: e.target.value})} /></div><div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Investido (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} /></div><button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded mt-4">Salvar</button></form></Modal>
+                    <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar Exclusão"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este custo?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
+                </div>
+            );
+        };
+
+        const LoginView = ({ onLogin, loginError }) => {
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const handleSubmit = (e) => { e.preventDefault(); onLogin(username, password); };
+            return (
+                <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4">
+                    <div className="glass-panel w-full max-w-md p-8 rounded-xl shadow-2xl animate-fadeIn border-t-4 border-amber-500">
+                        <div className="text-center mb-8"><div className="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-full mb-4"><Shield className="text-amber-500" size={32} /></div><h2 className="text-2xl font-bold text-white">Acesso Restrito</h2><p className="text-slate-400 text-sm">Painel Administrativo Rico Lojistas</p></div>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Usuário</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><User size={18} /></div><input type="text" className="input-dark pl-10" value={username} onChange={e=>setUsername(e.target.value)} required /></div></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Senha</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><Lock size={18} /></div><input type="password" className="input-dark pl-10" value={password} onChange={e=>setPassword(e.target.value)} required /></div></div>
+                            {loginError && <p className="text-red-400 text-xs text-center">{loginError}</p>}
+                            <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded mt-4 transition-colors">Entrar</button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        const SettingsView = ({ credentials, onUpdateCredentials, apiUrl, onUpdateApiUrl, importData }) => {
+            const [username, setUsername] = useState(credentials.username);
+            const [password, setPassword] = useState(credentials.password);
+            const [url, setUrl] = useState(apiUrl);
+            const [msg, setMsg] = useState('');
+            const handleSave = (e) => { e.preventDefault(); onUpdateCredentials(username, password); onUpdateApiUrl(url); setMsg('Configurações atualizadas com sucesso!'); setTimeout(() => setMsg(''), 3000); };
+            const handleImport = () => { if(confirm('Atenção: Isso irá carregar os dados de exemplo no seu banco de dados online. Deseja continuar?')) importData(); };
+            return (
+                <div className="animate-fadeIn max-w-2xl mx-auto">
+                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2"><Settings className="text-slate-400" /> Configurações de Acesso</h2>
+                    <div className="glass-panel p-8 rounded-lg">
+                        <form onSubmit={handleSave} className="space-y-6">
+                            <div><label className="block text-sm font-bold mb-2 text-white">Novo Usuário</label><input type="text" className="input-dark p-3" value={username} onChange={e=>setUsername(e.target.value)} required /></div>
+                            <div><label className="block text-sm font-bold mb-2 text-white">Nova Senha</label><input type="text" className="input-dark p-3" value={password} onChange={e=>setPassword(e.target.value)} required /></div>
+                            
+                            <hr className="border-slate-700 my-6" />
+                            
+                            <div>
+                                <label className="block text-sm font-bold mb-2 text-white flex items-center gap-2">Link da API (Script Google Sheets) <LinkIcon size={16}/></label>
+                                <p className="text-xs text-slate-400 mb-2">Cole aqui o link do seu Web App do Google Apps Script para puxar leads reais.</p>
+                                <input type="url" className="input-dark p-3" placeholder="https://script.google.com/macros/s/..." value={url} onChange={e=>setUrl(e.target.value)} />
+                            </div>
+
+                            {msg && <div className="bg-emerald-500/20 text-emerald-400 p-3 rounded text-sm text-center">{msg}</div>}
+                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition-colors">Salvar Alterações</button>
+                        </form>
+                        <hr className="border-slate-700 my-8" />
+                        <div className="text-center">
+                            <p className="text-slate-400 text-sm mb-4">Base de Dados</p>
+                            <button onClick={handleImport} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2 mx-auto"><DatabaseIcon size={16} /> Restaurar Dados de Exemplo</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const AnalyticsView = ({ sales, ads }) => {
+            const [filterDate, setFilterDate] = useState('all'); 
+            const [sections, setSections] = useState({ financial: true, geo: true, ops: true });
+            const availableMonths = useMemo(() => { const months = new Set([ ...sales.map(s => s.date.slice(0, 7)), ...ads.map(a => a.month) ]); return Array.from(months).sort(); }, [sales, ads]);
+
+            const data = useMemo(() => {
+                let filteredSales = sales;
+                let filteredAds = ads;
+                if (filterDate !== 'all') { filteredSales = sales.filter(s => s.date.startsWith(filterDate)); filteredAds = ads.filter(a => a.month === filterDate); }
+                const rev = filteredSales.reduce((acc, c) => acc + c.value, 0);
+                const adCost = filteredAds.reduce((acc, c) => acc + c.value, 0);
+                const pairs = filteredSales.reduce((acc, c) => acc + c.pairs, 0);
+                const ticket = filteredSales.length > 0 ? rev / filteredSales.length : 0;
+                const roi = adCost > 0 ? rev / adCost : 0;
+                const netResult = rev - adCost;
+                const totalDeals = filteredSales.length;
+                const avgPairsPerDeal = totalDeals > 0 ? pairs / totalDeals : 0;
+                const uniqueRetailers = new Set(filteredSales.map(s => s.company)).size;
+
+                const monthsList = filterDate === 'all' ? availableMonths : [filterDate];
+                const monthlyChartData = monthsList.map(m => {
+                    const mSales = sales.filter(s => s.date.startsWith(m));
+                    const mCost = ads.find(a => a.month === m)?.value || 0;
+                    const mRev = mSales.reduce((acc,c) => acc + c.value, 0);
+                    const mPairs = mSales.reduce((acc,c) => acc + c.pairs, 0);
+                    const mTicket = mSales.length > 0 ? mRev / mSales.length : 0;
+                    const mRoi = mCost > 0 ? mRev / mCost : 0;
+                    let newRetailers = new Set(mSales.map(s => s.company)).size;
+                    const [y, mn] = m.split('-');
+                    const label = `${fullMonthNames[parseInt(mn)-1].substring(0,3)}/${y.substring(2)}`;
+                    return { rawMonth: m, label, revenue: mRev, cost: mCost, roi: mRoi, pairs: mPairs, ticket: mTicket, newRetailers };
+                });
+
+                const stateStats = {};
+                const regionStats = {};
+                filteredSales.forEach(s => {
+                    if(!stateStats[s.state]) stateStats[s.state] = { rev:0, count:0, receita: 0, pedidos: 0 };
+                    stateStats[s.state].rev += s.value;
+                    stateStats[s.state].count++;
+                    stateStats[s.state].receita += s.value;
+                    stateStats[s.state].pedidos++;
+                    const reg = Object.keys(REGIONS).find(r => REGIONS[r].includes(s.state)) || 'Outro';
+                    if(!regionStats[reg]) regionStats[reg] = 0;
+                    regionStats[reg] += s.value;
+                });
+
+                const ops = { week: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d => ({name:d, count:0, rev:0})), monthDay: Array.from({length:31}, (_,i)=>({day:i+1, count:0})), buckets: {'1-12':0, '13-24':0, '25-48':0, '49+':0} };
+                filteredSales.forEach(s => { const d = new Date(s.date); ops.week[d.getDay()].count++; ops.week[d.getDay()].rev += s.value; ops.monthDay[d.getDate()-1].count++; if(s.pairs<=12) ops.buckets['1-12']++; else if(s.pairs<=24) ops.buckets['13-24']++; else if(s.pairs<=48) ops.buckets['25-48']++; else ops.buckets['49+']++; });
+
+                return { kpis: { rev, roi, pairs, ticket, netResult, adCost, avgPairsPerDeal, uniqueRetailers }, monthly: monthlyChartData, geo: { state: stateStats, region: regionStats }, ops };
+            }, [sales, ads, filterDate, availableMonths]);
+
+            const cRev = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Faturamento', data: data.monthly.map(d=>d.revenue), backgroundColor: '#f59e0b', borderRadius:4 }] };
+            const cRoi = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'ROI (x)', data: data.monthly.map(d=>d.roi.toFixed(1)), backgroundColor: '#8b5cf6', borderRadius:4 }] };
+            const cPairs = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Pares', data: data.monthly.map(d=>d.pairs), backgroundColor: '#3b82f6', borderRadius:4 }] };
+            const cRevVsAds = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Retorno', data: data.monthly.map(d=>d.revenue), backgroundColor: '#10b981', borderRadius:3 }, { label: 'Ads', data: data.monthly.map(d=>d.cost), backgroundColor: '#64748b', borderRadius:3 }] };
+            const cTicketM = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Ticket Médio', data: data.monthly.map(d=>d.ticket), backgroundColor: '#6366f1', borderRadius:4 }] };
+            const cNew = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Novos Lojistas', data: data.monthly.map(d=>d.newRetailers), backgroundColor: '#ec4899', borderRadius:4 }] };
+            const sortedStates = Object.entries(data.geo.state).sort((a,b)=>b[1].rev - a[1].rev);
+            const cGeoRev = { labels: sortedStates.map(s=>s[0]), datasets:[{label:'Receita', data: sortedStates.map(s=>s[1].rev), backgroundColor:'#f59e0b', borderRadius:4, indexAxis:'y'}] };
+            const cGeoCount = { labels: sortedStates.map(s=>s[0]), datasets:[{label:'Pedidos', data: sortedStates.map(s=>s[1].count), backgroundColor:'#3b82f6', borderRadius:4}] };
+            const cGeoTicket = { labels: sortedStates.map(s=>s[0]), datasets:[{label:'Ticket Médio', data: sortedStates.map(s=>s[1].rev/s[1].count), backgroundColor:'#8b5cf6', borderRadius:4}] };
+            const cReg = { labels: Object.keys(data.geo.region), datasets:[{ data: Object.values(data.geo.region), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'], borderWidth:0 }] };
+            const cBuckets = { labels:Object.keys(data.ops.buckets), datasets:[{data:Object.values(data.ops.buckets), backgroundColor: ['#64748b', '#3b82f6', '#8b5cf6', '#f59e0b'], borderWidth:0}] };
+            const cWeekCount = { labels: data.ops.week.map(w=>w.name), datasets:[{label:'Pedidos', data: data.ops.week.map(w=>w.count), backgroundColor:'#06b6d4', borderRadius:4}] };
+            const cWeekRev = { labels: data.ops.week.map(w=>w.name), datasets:[{label:'Receita', data: data.ops.week.map(w=>w.rev), backgroundColor:'#10b981', borderRadius:4}] };
+            const cMonthDay = { labels: data.ops.monthDay.map(d=>d.day), datasets:[{label:'Pedidos', data: data.ops.monthDay.map(d=>d.count), backgroundColor:'#ec4899', borderRadius:4}] };
+            const toggle = (k) => setSections(p => ({...p, [k]: !p[k]}));
+
+            return (
+                <div className="animate-fadeIn">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                        <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2"><TrendingUp className="text-amber-500" /> Dashboard Analítico</h2>
+                        <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-700">
+                            <span className="text-slate-400 text-xs font-bold uppercase px-3">Período:</span>
+                            <select className="bg-slate-800 text-white text-sm border-none rounded py-1 px-3 focus:ring-1 focus:ring-amber-500 outline-none cursor-pointer" value={filterDate} onChange={(e) => setFilterDate(e.target.value)}>
+                                <option value="all">Visão Consolidada (Todos)</option>
+                                {availableMonths.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <KpiCard title="Faturamento Total" value={fmtMoney(data.kpis.rev)} subtext={filterDate === 'all' ? 'Total Acumulado' : 'Neste Mês'} icon={DollarSign} colorClass="border-amber-500" />
+                        <KpiCard title="Retorno Líquido" value={fmtMoney(data.kpis.netResult)} subtext="Lucro Operacional" icon={TrendingUp} colorClass="border-emerald-600" />
+                        <KpiCard title="Lojistas Fechados" value={data.kpis.uniqueRetailers} subtext="Clientes Únicos" icon={Users} colorClass="border-purple-500" />
+                        <KpiCard title="Volume Vendas" value={data.kpis.pairs} subtext="Pares Vendidos" icon={Target} colorClass="border-blue-500" />
+                        <KpiCard title="ROI Marketing" value={`${data.kpis.roi.toFixed(2)}x`} subtext="Retorno sobre Ads" icon={Activity} colorClass="border-indigo-500" />
+                        <KpiCard title="Valor Investimento" value={fmtMoney(data.kpis.adCost)} subtext="Custo Ads" icon={DollarSign} colorClass="border-slate-500" />
+                    </div>
+                    <SectionHeader title="Financeiro" icon={BarChart3} color="bg-amber-500" isOpen={sections.financial} onToggle={() => toggle('financial')} />
+                    {sections.financial && (
+                        <div className="space-y-6">
+                            <ChartContainer title="Receita Mês a Mês"><ChartComponent type="bar" data={cRev} labelType="money"/></ChartContainer>
+                            <ChartContainer title="Retorno vs Investimento"><ChartComponent type="bar" data={cRevVsAds} labelType="money"/></ChartContainer>
+                            <ChartContainer title="ROI por Mês"><ChartComponent type="bar" data={cRoi} labelType="roi"/></ChartContainer>
+                            <ChartContainer title="Ticket Médio por Mês"><ChartComponent type="bar" data={cTicketM} labelType="money"/></ChartContainer>
+                            <ChartContainer title="Receita por Dia da Semana"><ChartComponent type="bar" data={cWeekRev} labelType="money"/></ChartContainer>
+                        </div>
+                    )}
+                    <SectionHeader title="Geográfico" icon={Globe} color="bg-blue-500" isOpen={sections.geo} onToggle={() => toggle('geo')} />
+                    {sections.geo && (
+                        <div className="space-y-6">
+                            <ChartContainer title="Receita por Estado"><ChartComponent type="bar" data={cGeoRev} options={{indexAxis:'y', scales: {x: {display: false}, y: {display: true, grid: {display: false}, ticks: {color: '#e2e8f0', font: {size: 12, weight: 'bold'}}}}}} height={400} labelType="money"/></ChartContainer>
+                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Receita por Região"><ChartComponent type="doughnut" data={cReg} labelType="money"/></ChartContainer></div></div>
+                            <ChartContainer title="Pedidos por Estado"><ChartComponent type="bar" data={cGeoCount}/></ChartContainer>
+                            <ChartContainer title="Ticket Médio por Estado"><ChartComponent type="bar" data={cGeoTicket} labelType="money"/></ChartContainer>
+                        </div>
+                    )}
+                    <SectionHeader title="Operacional" icon={Layers} color="bg-emerald-500" isOpen={sections.ops} onToggle={() => toggle('ops')} />
+                    {sections.ops && (
+                        <div className="space-y-6">
+                            <ChartContainer title="Novos Lojistas por Mês"><ChartComponent type="bar" data={cNew}/></ChartContainer>
+                            <ChartContainer title="Pares Vendidos por Mês"><ChartComponent type="bar" data={cPairs}/></ChartContainer>
+                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Distribuição de Pares por Pedido"><ChartComponent type="pie" data={cBuckets}/></ChartContainer></div></div>
+                            <ChartContainer title="Pedidos por Dia da Semana"><ChartComponent type="bar" data={cWeekCount}/></ChartContainer>
+                            <ChartContainer title="Pedidos por Dia do Mês"><ChartComponent type="bar" data={cMonthDay}/></ChartContainer>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        function App() {
+            const [view, setView] = useState('analytics');
+            const [firebaseUser, setFirebaseUser] = useState(null);
+
+            // Auth Effect for Firebase - Conexão
+            useEffect(() => {
+                if (window.firebaseAuth && window.auth) {
+                    const { signInAnonymously, onAuthStateChanged } = window.firebaseAuth;
+                    const unsubscribe = onAuthStateChanged(window.auth, (user) => {
+                        if (user) {
+                            setFirebaseUser(user);
+                        } else {
+                            signInAnonymously(window.auth).catch(console.error);
+                        }
+                    });
+                    return () => unsubscribe();
+                }
+            }, []);
+
+            // Hooks conectados ao Firebase (Substituem o useState local)
+            const { data: sales, addItem: addSale, updateItem: updateSale, deleteItem: deleteSale } = useFirebaseData('sales', [], firebaseUser);
+            const { data: ads, addItem: addAd, updateItem: updateAd, deleteItem: deleteAd } = useFirebaseData('ads', [], firebaseUser);
+            const { data: leads, addItem: addLead, updateItem: updateLead } = useFirebaseData('leads', [], firebaseUser);
+            
+            const [prefillData, setPrefillData] = useState(null);
+            const [isAuthenticated, setIsAuthenticated] = useState(false);
+            const [credentials, setCredentials] = useState({ username: 'admin', password: 'admin' });
+            const [loginError, setLoginError] = useState('');
+            const [newLeadAlert, setNewLeadAlert] = useState(false);
+            const [leadsApiUrl, setLeadsApiUrl] = useState('');
+
+            // Função para Restaurar os Dados Originais no Firebase (se estiver vazio)
+            const importInitialData = async () => {
+                if (window.db && firebaseUser) {
+                   // Loop simples para inserir os dados iniciais um por um
+                   for (const s of INITIAL_SALES) { await addSale(s); }
+                   for (const a of INITIAL_ADS) { await addAd(a); }
+                   // Leads vazios inicialmente, mas se tiver na lista, adicionaria aqui
+                   alert("Dados restaurados com sucesso! Os gráficos devem aparecer agora.");
+                }
+            };
+
+            const syncFromApi = async () => {
+                if (!leadsApiUrl) {
+                    // Modo simulação se não houver URL
+                    const incomingLead = { id: Date.now(), date: new Date().toISOString().split('T')[0], name: 'Novo Cliente Simulado', contact: 'Lead Demo', city: 'Belo Horizonte', state: 'MG', source: 'Simulação Demo', status: 'new', isNew: true };
+                    await addLead(incomingLead);
+                    setNewLeadAlert(true);
+                    return;
+                }
+                try {
+                    const response = await fetch(leadsApiUrl);
+                    const data = await response.json();
+                    
+                    const newLeads = data.map((item, index) => {
+                        const getVal = (key) => {
+                            if (item[key] !== undefined) return item[key];
+                            const foundKey = Object.keys(item).find(k => k.trim().toLowerCase().includes(key.toLowerCase()));
+                            return foundKey ? item[foundKey] : '';
+                        };
+                        const dateRaw = getVal('Carimbo') || getVal('Data') || new Date();
+                        return {
+                            date: dateRaw ? new Date(dateRaw).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                            company: getVal('Razão'), contact: getVal('Nome'), phone: getVal('whatsapp'), email: getVal('mail'), city: getVal('Cidade'), state: getVal('Estado'), cnpj: getVal('CNPJ'), ie: getVal('Inscrição'), address: getVal('Endereço'), instagram: getVal('Instagram'), obs: getVal('Observações'), source: 'Google Forms', status: 'new', isNew: true
+                        };
+                    });
+                    
+                    // Verifica duplicatas simples pelo nome+data antes de adicionar
+                    // (Em produção idealmente verificaria ID no banco, mas aqui simplificamos para o demo)
+                    let count = 0;
+                    const existingSignatures = new Set(leads.map(l => (l.contact || l.name) + l.date));
+                    
+                    for (const l of newLeads) {
+                        const sig = (l.contact || l.name) + l.date;
+                        if (!existingSignatures.has(sig)) {
+                            await addLead(l);
+                            count++;
+                        }
+                    }
+                    if (count > 0) setNewLeadAlert(true);
+                    
+                } catch (error) {
+                    console.error("Erro ao buscar leads:", error);
+                    alert("Erro ao conectar na API. Verifique o link e as permissões.");
+                }
+            };
+
+            const handleLogin = (u, p) => { if (u === credentials.username && p === credentials.password) { setIsAuthenticated(true); setLoginError(''); } else { setLoginError('Credenciais inválidas. Tente novamente.'); } };
+            const handleLogout = () => { setIsAuthenticated(false); setView('analytics'); };
+            const handleUpdateCredentials = (u, p) => { setCredentials({ username: u, password: p }); };
+            const handleAcknowledgeLead = () => { setNewLeadAlert(false); setView('leads'); };
+            const handleConvertToSale = (lead) => {
+                updateLead({ ...lead, status: 'converted' });
+                setPrefillData(lead);
+                setView('retailers');
+            };
+
+            const newLeadsCount = leads.filter(l => l.status === 'new').length;
+
+            if (!isAuthenticated) return <LoginView onLogin={handleLogin} loginError={loginError} />;
+            return (
+                <div className="flex bg-[#0f172a] min-h-screen text-slate-200">
+                    <Sidebar view={view} setView={setView} onLogout={handleLogout} notificationCount={newLeadsCount} />
+                    <main className="flex-1 ml-64 p-8 overflow-y-auto h-screen relative">
+                        {/* Botão de Emergência para Restaurar Dados se estiver vazio */}
+                        {sales.length === 0 && ads.length === 0 && leads.length === 0 && (
+                            <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/50 rounded-lg flex items-center justify-between animate-fadeIn">
+                                <div className="text-amber-500 flex items-center gap-2"><DatabaseIcon size={20}/> <span>Banco de dados vazio? Clique aqui para ver os gráficos.</span></div>
+                                <button onClick={importInitialData} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded font-bold text-sm shadow-lg transition-transform hover:scale-105">Restaurar Dados Iniciais</button>
+                            </div>
+                        )}
+
+                        {view === 'analytics' && <AnalyticsView sales={sales} ads={ads} />}
+                        {view === 'lead-analytics' && <LeadAnalyticsView sales={sales} leads={leads} ads={ads} />}
+                        {view === 'leads' && <LeadsView leads={leads} addItem={addLead} updateItem={updateLead} onConvertToSale={handleConvertToSale} clearNotification={() => setNewLeadAlert(false)} onSync={syncFromApi} apiUrl={leadsApiUrl} />}
+                        {view === 'retailers' && <RetailersView sales={sales} addItem={addSale} updateItem={updateSale} deleteItem={deleteSale} prefillData={prefillData} setPrefillData={setPrefillData} />}
+                        {view === 'ads' && <AdsView ads={ads} addItem={addAd} updateItem={updateAd} deleteItem={deleteAd} />}
+                        {view === 'settings' && <SettingsView credentials={credentials} onUpdateCredentials={handleUpdateCredentials} apiUrl={leadsApiUrl} onUpdateApiUrl={setLeadsApiUrl} importData={importInitialData} />}
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
