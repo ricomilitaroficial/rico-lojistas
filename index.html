@@ -23,7 +23,7 @@
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- SEU CÓDIGO DO FIREBASE AQUI ---
-        // Configuração segura (Substituído com suas chaves)
+        // Configuração segura
         const firebaseConfig = {
             apiKey: "AIzaSyD-8HjnC7fOS98WmqkKCJv___1A7f20oJ0",
             authDomain: "rico-lojistas.firebaseapp.com",
@@ -33,18 +33,16 @@
             appId: "1:207345876980:web:fd6d3f7b1c632951c883a1"
         };
         
-        // Inicializa se a config existir
         if (firebaseConfig) {
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
             const db = getFirestore(app);
             
-            // Expondo variáveis para o React usar
             window.db = db;
             window.auth = auth;
             window.firebaseAuth = { signInAnonymously, onAuthStateChanged };
             window.firebaseStore = { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, writeBatch };
-            window.appId = 'rico-lojistas-app-id'; // ID interno do app
+            window.appId = 'rico-lojistas-app-id'; 
         }
     </script>
     
@@ -58,7 +56,7 @@
             font-family: 'Red Hat Display', sans-serif; 
             background-color: #0f172a; 
             color: #e2e8f0; 
-            font-size: 14px; 
+            font-size: 13px;
         }
         .glass-panel { 
             background: rgba(30, 41, 59, 0.4); 
@@ -99,10 +97,7 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-        .badge-new { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
-        .badge-contact { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-        .badge-converted { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-
+        
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
@@ -118,6 +113,12 @@
         
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        
+        .break-word-cell {
+            word-wrap: break-word;
+            white-space: normal;
+            min-width: 100px;
+        }
     </style>
 </head>
 <body>
@@ -147,7 +148,7 @@
         const ChevronUp = (p) => <IconBase {...p}><polyline points="18 15 12 9 6 15"/></IconBase>;
         const Wallet = (p) => <IconBase {...p}><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" /><path d="M4 6v12c0 1.1.9 2 2 2h14v-4" /><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" /></IconBase>;
         const Lock = (p) => <IconBase {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></IconBase>;
-        const Settings = (p) => <IconBase {...p}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></IconBase>;
+        const Settings = (p) => <IconBase {...p}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></IconBase>;
         const LogOut = (p) => <IconBase {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></IconBase>;
         const User = (p) => <IconBase {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></IconBase>;
         const Filter = (p) => <IconBase {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></IconBase>;
@@ -193,8 +194,6 @@
             { month: '2025-10', value: 464.47 },
         ];
 
-        const INITIAL_LEADS = [];
-
         const REGIONS = {
             'Sul': ['RS', 'SC', 'PR'],
             'Sudeste': ['SP', 'RJ', 'MG', 'ES'],
@@ -211,9 +210,12 @@
         // --- HOOK DE DADOS FIREBASE (ADAPTADOR ONLINE) ---
         const useFirebaseData = (collectionName, initialData = [], user) => {
             const [data, setData] = useState(initialData);
+            const [loading, setLoading] = useState(true);
             
             useEffect(() => {
-                if (!window.db || !window.firebaseStore || !window.appId || !user) return;
+                if (!window.db || !window.firebaseStore || !window.appId || !user) {
+                    return;
+                }
                 
                 const { collection, onSnapshot } = window.firebaseStore;
                 const colRef = collection(window.db, 'artifacts', window.appId, 'users', user.uid, collectionName);
@@ -221,6 +223,7 @@
                 const unsubscribe = onSnapshot(colRef, (snapshot) => {
                     const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     setData(items);
+                    setLoading(false);
                 });
                 
                 return () => unsubscribe();
@@ -229,7 +232,7 @@
             const addItem = async (item) => {
                 if (!window.db || !user) { setData(prev => [...prev, { ...item, id: Date.now() }]); return; }
                 const { collection, addDoc } = window.firebaseStore;
-                const { id, ...dataToSave } = item; // Remove ID to let Firebase gen it or handle differently
+                const { id, ...dataToSave } = item;
                 await addDoc(collection(window.db, 'artifacts', window.appId, 'users', user.uid, collectionName), dataToSave);
             };
 
@@ -248,7 +251,7 @@
                 await deleteDoc(docRef);
             };
 
-            return { data, addItem, updateItem, deleteItem };
+            return { data, loading, addItem, updateItem, deleteItem };
         };
 
         // --- CHART COMPONENT ---
@@ -437,8 +440,12 @@
 
                 const leadsByState = {};
                 const leadsByRegion = {};
+                const leadsBySource = {};
+                const leadsByStatus = { 'new': 0, 'contacted': 0, 'qualified': 0, 'converted': 0, 'lost': 0 };
+                const leadsByDay = {};
                 
                 filteredLeads.forEach(l => {
+                    // Geo
                     const st = l.state && l.state.trim() !== '' ? l.state : null;
                     if (st) {
                         leadsByState[st] = (leadsByState[st] || 0) + 1;
@@ -447,12 +454,35 @@
                             leadsByRegion[reg] = (leadsByRegion[reg] || 0) + 1;
                         }
                     }
+                    // Source
+                    const src = l.source || 'Desconhecido';
+                    leadsBySource[src] = (leadsBySource[src] || 0) + 1;
+                    
+                    // Status
+                    if(l.status) leadsByStatus[l.status] = (leadsByStatus[l.status] || 0) + 1;
+
+                    // Day Trend
+                    leadsByDay[l.date] = (leadsByDay[l.date] || 0) + 1;
+                });
+
+                // Ordenação por Estado (Pareto)
+                const sortedStates = Object.entries(leadsByState).sort((a, b) => b[1] - a[1]);
+                const sortedStateLabels = sortedStates.map(s => s[0]);
+                const sortedStateValues = sortedStates.map(s => s[1]);
+
+                // Ordenação por Data (Últimos 30 dias se muitos)
+                const sortedDays = Object.keys(leadsByDay).sort().slice(-30); // Últimos 30 dias registrados
+                const trendData = sortedDays.map(d => leadsByDay[d]);
+                const trendLabels = sortedDays.map(d => {
+                    const parts = d.split('-');
+                    return `${parts[2]}/${parts[1]}`;
                 });
 
                 return {
                     kpis: { totalLeads, cpl, conversionRate, conversionRatio, totalAds, totalSales, avgLeadsPerMonth },
                     monthly: monthlyData,
-                    geo: { state: leadsByState, region: leadsByRegion }
+                    geo: { state: { labels: sortedStateLabels, values: sortedStateValues }, region: leadsByRegion },
+                    bi: { source: leadsBySource, status: leadsByStatus, trend: { labels: trendLabels, values: trendData } }
                 };
             }, [sales, leads, ads, filterDate, availableMonths]);
 
@@ -482,10 +512,10 @@
             };
 
             const cLeadsState = {
-                labels: Object.keys(data.geo.state),
+                labels: data.geo.state.labels,
                 datasets: [{
                     label: 'Leads por Estado',
-                    data: Object.values(data.geo.state),
+                    data: data.geo.state.values,
                     backgroundColor: '#3b82f6',
                     borderRadius: 4
                 }]
@@ -495,7 +525,7 @@
                 <div className="animate-fadeIn">
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                         <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2">
-                            <PieChart className="text-blue-500" /> Análise de Leads
+                            <PieChart className="text-blue-500" /> Inteligência de Leads (BI)
                         </h2>
                         <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-700">
                             <span className="text-slate-400 text-xs font-bold uppercase px-3">Período:</span>
@@ -518,24 +548,29 @@
                         <KpiCard title="Média Leads/Mês" value={data.kpis.avgLeadsPerMonth.toFixed(1)} subtext="Média do período" icon={Activity} colorClass="border-cyan-500" />
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <ChartContainer title="Evolução Mensal (Leads vs Vendas)" subtitle="Volume de entrada e conversão">
-                             <ChartComponent type="bar" data={cLeadsMonth} options={{ scales: { y: {display: false}, y1: { type: 'linear', display: false, position: 'right', grid: {drawOnChartArea: false} } } }} />
-                        </ChartContainer>
-
-                        <ChartContainer title="Custo por Lead (Mensal)" subtitle="Eficiência do investimento (R$)">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Linha 1: Evolução e Custo */}
+                        <div className="lg:col-span-2">
+                            <ChartContainer title="Evolução Mensal (Funil Macro)" subtitle="Comparativo Leads vs Vendas">
+                                <ChartComponent type="bar" data={cLeadsMonth} options={{ scales: { y: {display: false}, y1: { type: 'linear', display: false, position: 'right', grid: {drawOnChartArea: false} } } }} />
+                            </ChartContainer>
+                        </div>
+                        <ChartContainer title="Custo por Lead (CPL)" subtitle="Eficiência do investimento (R$)">
                              <ChartComponent type="bar" data={cCplMonth} labelType="money" />
                         </ChartContainer>
 
-                         <ChartContainer title="Leads por Região" subtitle="Distribuição geográfica">
-                            <div className="flex justify-center"><div className="w-[300px]">
+                        {/* Linha 3: Geo Detalhado */}
+                        <ChartContainer title="Distribuição Regional" subtitle="Leads por Região">
+                            <div className="flex justify-center h-48">
                                 <ChartComponent type="doughnut" data={cLeadsRegion} labelType="percent" />
-                            </div></div>
+                            </div>
                         </ChartContainer>
                         
-                        <ChartContainer title="Leads por Estado" subtitle="Volume por UF">
-                             <ChartComponent type="bar" data={cLeadsState} />
-                        </ChartContainer>
+                         <div className="lg:col-span-2">
+                             <ChartContainer title="Ranking de Estados" subtitle="Leads por UF (Maior para Menor)">
+                                 <ChartComponent type="bar" data={cLeadsState} />
+                            </ChartContainer>
+                        </div>
                     </div>
                 </div>
             );
@@ -601,52 +636,55 @@
 
                     <div className="glass-panel rounded-lg overflow-hidden">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-sm text-left text-slate-400 whitespace-nowrap">
+                            <table className="w-full text-sm text-left text-slate-400">
                                 <thead className="text-xs text-slate-200 uppercase bg-slate-800/50">
                                     <tr>
-                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('date')}>Data <SortIcon column="date"/></th>
-                                        <th className="px-6 py-4">E-mail</th>
-                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact"/></th>
-                                        <th className="px-6 py-4">WhatsApp</th>
-                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('state')}>Estado <SortIcon column="state"/></th>
-                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('city')}>Cidade <SortIcon column="city"/></th>
-                                        <th className="px-6 py-4">CNPJ</th>
-                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('company')}>Razão Social <SortIcon column="company"/></th>
-                                        <th className="px-6 py-4">IE</th>
-                                        <th className="px-6 py-4">Endereço</th>
-                                        <th className="px-6 py-4">Instagram</th>
-                                        <th className="px-6 py-4">Obs</th>
-                                        <th className="px-6 py-4 text-right">Ação</th>
+                                        <th className="px-3 py-2 sortable" onClick={() => handleSort('date')}>Data <SortIcon column="date"/></th>
+                                        <th className="px-3 py-2">E-mail</th>
+                                        <th className="px-3 py-2 sortable" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact"/></th>
+                                        <th className="px-3 py-2">WhatsApp</th>
+                                        <th className="px-3 py-2 sortable" onClick={() => handleSort('state')}>UF <SortIcon column="state"/></th>
+                                        <th className="px-3 py-2 sortable" onClick={() => handleSort('city')}>Cidade <SortIcon column="city"/></th>
+                                        <th className="px-3 py-2">CNPJ</th>
+                                        <th className="px-3 py-2 sortable" onClick={() => handleSort('company')}>Empresa <SortIcon column="company"/></th>
+                                        <th className="px-3 py-2">IE</th>
+                                        <th className="px-3 py-2">Endereço</th>
+                                        <th className="px-3 py-2">Instagram</th>
+                                        <th className="px-3 py-2">Obs</th>
+                                        <th className="px-3 py-2 text-right">Ação</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-700/50">
+                                <tbody className="divide-y divide-slate-700/50 whitespace-normal">
                                     {sortedLeads.map((lead) => (
                                         <tr key={lead.id} className="hover:bg-slate-800/30 transition-colors animate-fadeIn">
-                                            <td className="px-6 py-4 font-mono text-xs text-slate-300">{fmtDate(lead.date)}</td>
-                                            <td className="px-6 py-4">{lead.email}</td>
-                                            <td className="px-6 py-4 font-bold text-white">{lead.contact} {lead.isNew && <span className="text-[10px] bg-red-500 text-white px-1 rounded ml-1">NOVO</span>}</td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-3 py-2 font-mono text-xs text-slate-300 w-24 align-top">{fmtDate(lead.date)}</td>
+                                            <td className="px-3 py-2 max-w-[150px] break-word-cell align-top text-xs">{lead.email}</td>
+                                            <td className="px-3 py-2 font-bold text-white max-w-[150px] break-word-cell align-top">
+                                                {lead.contact} 
+                                                {lead.isNew && <span className="block w-fit mt-1 text-[9px] bg-red-500 text-white px-1 rounded">NOVO</span>}
+                                            </td>
+                                            <td className="px-3 py-2 w-28 align-top">
                                                 {lead.phone ? (
-                                                    <a href={`https://wa.me/${String(lead.phone).replace(/\D/g,'')}`} target="_blank" className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300">
-                                                        <Phone size={14} /> {lead.phone}
+                                                    <a href={`https://wa.me/${String(lead.phone).replace(/\D/g,'')}`} target="_blank" className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300">
+                                                        <Phone size={12} /> <span className="text-xs">{lead.phone}</span>
                                                     </a>
                                                 ) : <span className="text-slate-600">-</span>}
                                             </td>
-                                            <td className="px-6 py-4">{lead.state}</td>
-                                            <td className="px-6 py-4">{lead.city}</td>
-                                            <td className="px-6 py-4 font-mono text-xs">{lead.cnpj}</td>
-                                            <td className="px-6 py-4">{lead.company}</td>
-                                            <td className="px-6 py-4 text-xs">{lead.ie}</td>
-                                            <td className="px-6 py-4 text-xs max-w-[200px] truncate" title={lead.address}>{lead.address}</td>
-                                            <td className="px-6 py-4">{lead.instagram}</td>
-                                            <td className="px-6 py-4 text-xs max-w-[200px] truncate" title={lead.obs}>{lead.obs}</td>
-                                            <td className="px-6 py-4 text-right sticky right-0 bg-slate-900/50 backdrop-blur-sm">
+                                            <td className="px-3 py-2 w-12 align-top">{lead.state}</td>
+                                            <td className="px-3 py-2 w-24 align-top">{lead.city}</td>
+                                            <td className="px-3 py-2 font-mono text-xs w-28 align-top">{lead.cnpj}</td>
+                                            <td className="px-3 py-2 max-w-[150px] break-word-cell align-top">{lead.company}</td>
+                                            <td className="px-3 py-2 text-xs w-20 align-top">{lead.ie}</td>
+                                            <td className="px-3 py-2 text-xs max-w-[200px] break-word-cell align-top" title={lead.address}>{lead.address}</td>
+                                            <td className="px-3 py-2 w-24 break-word-cell align-top">{lead.instagram}</td>
+                                            <td className="px-3 py-2 text-xs max-w-[200px] break-word-cell align-top" title={lead.obs}>{lead.obs}</td>
+                                            <td className="px-3 py-2 text-right align-top">
                                                 {lead.status !== 'converted' && (
-                                                    <button onClick={() => onConvertToSale(lead)} className="bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1 ml-auto">
-                                                        Converter <ArrowRight size={12} />
+                                                    <button onClick={() => onConvertToSale(lead)} className="bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center gap-1 ml-auto">
+                                                        Converter
                                                     </button>
                                                 )}
-                                                {lead.status === 'converted' && <span className="text-xs text-emerald-500">Convertido</span>}
+                                                {lead.status === 'converted' && <span className="text-[10px] text-emerald-500">Convertido</span>}
                                             </td>
                                         </tr>
                                     ))}
@@ -850,6 +888,10 @@
                 return sortableItems;
             }, [ads, sortConfig]);
 
+            // Cálculos para o rodapé
+            const totalInvestment = sortedAds.reduce((acc, ad) => acc + ad.value, 0);
+            const avgInvestment = sortedAds.length > 0 ? totalInvestment / sortedAds.length : 0;
+
             const openModal = (item = null) => { setEditingItem(item); setFormData(item || { month: new Date().toISOString().slice(0, 7), value: '' }); setIsModalOpen(true); };
             const handleSubmit = (e) => { e.preventDefault(); const newItem = { ...formData, value: Number(formData.value) }; if (editingItem) updateItem({ ...newItem, id: editingItem.id }); else addItem(newItem); setIsModalOpen(false); };
             const confirmDelete = () => { if(deleteConfirmId) { deleteItem(deleteConfirmId); setDeleteConfirmId(null); } };
@@ -870,7 +912,27 @@
                                     <th className="px-6 py-4 text-right">Ações</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-700/50">{sortedAds.map((ad) => (<tr key={ad.id} className="hover:bg-slate-800/30 transition-colors"><td className="px-6 py-4 font-bold text-white">{ad.month}</td><td className="px-6 py-4 text-right font-mono text-slate-300">{fmtMoney(ad.value)}</td><td className="px-6 py-4 text-right"><div className="flex items-center justify-end gap-2"><button onClick={() => openModal(ad)} className="p-2 hover:bg-slate-700 rounded text-blue-400"><Edit2 size={16} /></button><button onClick={() => setDeleteConfirmId(ad.id)} className="p-2 hover:bg-slate-700 rounded text-red-400"><Trash2 size={16} /></button></div></td></tr>))}</tbody>
+                            <tbody className="divide-y divide-slate-700/50">
+                                {sortedAds.map((ad) => (
+                                    <tr key={ad.id} className="hover:bg-slate-800/30 transition-colors">
+                                        <td className="px-6 py-4 font-bold text-white">{ad.month}</td>
+                                        <td className="px-6 py-4 text-right font-mono text-slate-300">{fmtMoney(ad.value)}</td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button onClick={() => openModal(ad)} className="p-2 hover:bg-slate-700 rounded text-blue-400"><Edit2 size={16} /></button>
+                                                <button onClick={() => setDeleteConfirmId(ad.id)} className="p-2 hover:bg-slate-700 rounded text-red-400"><Trash2 size={16} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot className="bg-slate-800/80 text-slate-200 font-bold border-t border-slate-700">
+                                <tr>
+                                    <td className="px-6 py-4 text-right uppercase text-xs text-slate-400">Média Mensal: <span className="text-white ml-1 text-sm">{fmtMoney(avgInvestment)}</span></td>
+                                    <td className="px-6 py-4 text-right uppercase text-xs text-slate-400">Total Investido: <span className="text-emerald-400 ml-1 text-lg">{fmtMoney(totalInvestment)}</span></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                     <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? "Editar Custo" : "Novo Investimento"}><form onSubmit={handleSubmit} className="space-y-4"><div><label className="block text-xs uppercase mb-1 text-slate-400">Mês (YYYY-MM)</label><input type="month" required className="input-dark" value={formData.month} onChange={e => setFormData({...formData, month: e.target.value})} /></div><div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Investido (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} /></div><button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded mt-4">Salvar</button></form></Modal>
@@ -993,10 +1055,24 @@
             const cTicketM = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Ticket Médio', data: data.monthly.map(d=>d.ticket), backgroundColor: '#6366f1', borderRadius:4 }] };
             const cNew = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Novos Lojistas', data: data.monthly.map(d=>d.newRetailers), backgroundColor: '#ec4899', borderRadius:4 }] };
             const sortedStates = Object.entries(data.geo.state).sort((a,b)=>b[1].rev - a[1].rev);
+            
+            // Novos ordenadores para os gráficos específicos
+            const sortedStatesByCount = Object.entries(data.geo.state).sort((a,b)=>b[1].count - a[1].count);
+            const sortedStatesByTicket = Object.entries(data.geo.state).sort((a,b)=>(b[1].rev/b[1].count) - (a[1].rev/a[1].count));
+
             const cGeoRev = { labels: sortedStates.map(s=>s[0]), datasets:[{label:'Receita', data: sortedStates.map(s=>s[1].rev), backgroundColor:'#f59e0b', borderRadius:4, indexAxis:'y'}] };
-            const cGeoCount = { labels: sortedStates.map(s=>s[0]), datasets:[{label:'Pedidos', data: sortedStates.map(s=>s[1].count), backgroundColor:'#3b82f6', borderRadius:4}] };
-            const cGeoTicket = { labels: sortedStates.map(s=>s[0]), datasets:[{label:'Ticket Médio', data: sortedStates.map(s=>s[1].rev/s[1].count), backgroundColor:'#8b5cf6', borderRadius:4}] };
-            const cReg = { labels: Object.keys(data.geo.region), datasets:[{ data: Object.values(data.geo.region), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'], borderWidth:0 }] };
+            
+            // Usando os ordenadores específicos
+            const cGeoCount = { labels: sortedStatesByCount.map(s=>s[0]), datasets:[{label:'Pedidos', data: sortedStatesByCount.map(s=>s[1].count), backgroundColor:'#3b82f6', borderRadius:4}] };
+            const cGeoTicket = { labels: sortedStatesByTicket.map(s=>s[0]), datasets:[{label:'Ticket Médio', data: sortedStatesByTicket.map(s=>s[1].rev/s[1].count), backgroundColor:'#8b5cf6', borderRadius:4}] };
+            
+            // Ordenação da Região (Maior para menor)
+            const sortedRegions = Object.entries(data.geo.region).sort((a, b) => b[1] - a[1]);
+            const cReg = { 
+                labels: sortedRegions.map(r => r[0]), 
+                datasets:[{ data: sortedRegions.map(r => r[1]), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'], borderWidth:0 }] 
+            };
+            
             const cBuckets = { labels:Object.keys(data.ops.buckets), datasets:[{data:Object.values(data.ops.buckets), backgroundColor: ['#64748b', '#3b82f6', '#8b5cf6', '#f59e0b'], borderWidth:0}] };
             const cWeekCount = { labels: data.ops.week.map(w=>w.name), datasets:[{label:'Pedidos', data: data.ops.week.map(w=>w.count), backgroundColor:'#06b6d4', borderRadius:4}] };
             const cWeekRev = { labels: data.ops.week.map(w=>w.name), datasets:[{label:'Receita', data: data.ops.week.map(w=>w.rev), backgroundColor:'#10b981', borderRadius:4}] };
@@ -1076,27 +1152,43 @@
             }, []);
 
             // Hooks conectados ao Firebase (Substituem o useState local)
-            const { data: sales, addItem: addSale, updateItem: updateSale, deleteItem: deleteSale } = useFirebaseData('sales', [], firebaseUser);
-            const { data: ads, addItem: addAd, updateItem: updateAd, deleteItem: deleteAd } = useFirebaseData('ads', [], firebaseUser);
-            const { data: leads, addItem: addLead, updateItem: updateLead } = useFirebaseData('leads', [], firebaseUser);
+            const { data: sales, loading: loadingSales, addItem: addSale, updateItem: updateSale, deleteItem: deleteSale } = useFirebaseData('sales', [], firebaseUser);
+            const { data: ads, loading: loadingAds, addItem: addAd, updateItem: updateAd, deleteItem: deleteAd } = useFirebaseData('ads', [], firebaseUser);
+            const { data: leads, loading: loadingLeads, addItem: addLead, updateItem: updateLead } = useFirebaseData('leads', [], firebaseUser);
             
             const [prefillData, setPrefillData] = useState(null);
             const [isAuthenticated, setIsAuthenticated] = useState(false);
             const [credentials, setCredentials] = useState({ username: 'admin', password: 'admin' });
             const [loginError, setLoginError] = useState('');
             const [newLeadAlert, setNewLeadAlert] = useState(false);
-            const [leadsApiUrl, setLeadsApiUrl] = useState('');
+            const [leadsApiUrl, setLeadsApiUrl] = useState('https://script.google.com/macros/s/AKfycbx-Vr1TbLdJoXM7Y1pusPzQau7eJFhfqVDsjhCEissJ3-JFJPJ1mSweoKrpiRMp0geznQ/exec');
+            const [hasAutoSynced, setHasAutoSynced] = useState(false);
 
             // Função para Restaurar os Dados Originais no Firebase (se estiver vazio)
             const importInitialData = async () => {
                 if (window.db && firebaseUser) {
+                   const batchPromises = [];
                    // Loop simples para inserir os dados iniciais um por um
-                   for (const s of INITIAL_SALES) { await addSale(s); }
-                   for (const a of INITIAL_ADS) { await addAd(a); }
+                   for (const s of INITIAL_SALES) { batchPromises.push(addSale(s)); }
+                   for (const a of INITIAL_ADS) { batchPromises.push(addAd(a)); }
+                   
+                   await Promise.all(batchPromises);
                    // Leads vazios inicialmente, mas se tiver na lista, adicionaria aqui
-                   alert("Dados restaurados com sucesso! Os gráficos devem aparecer agora.");
+                   // alert("Dados restaurados com sucesso! Os gráficos devem aparecer agora."); // Comentado para ser silencioso
                 }
             };
+
+            // AUTO-SEED: Verifica se o banco está vazio e popula automaticamente
+            useEffect(() => {
+                // Só executa se o usuário estiver logado e o carregamento tiver terminado
+                if (firebaseUser && !loadingSales && !loadingAds) {
+                    // Se não houver vendas nem anúncios, assume banco vazio e carrega os dados iniciais
+                    if (sales.length === 0 && ads.length === 0) {
+                        console.log("Banco vazio detectado. Carregando dados iniciais automaticamente...");
+                        importInitialData();
+                    }
+                }
+            }, [firebaseUser, loadingSales, loadingAds, sales.length, ads.length]);
 
             const syncFromApi = async () => {
                 if (!leadsApiUrl) {
@@ -1117,9 +1209,28 @@
                             return foundKey ? item[foundKey] : '';
                         };
                         const dateRaw = getVal('Carimbo') || getVal('Data') || new Date();
+                        
+                        // Lógica de Ano para definir status
+                        const dateObj = dateRaw ? new Date(dateRaw) : new Date();
+                        const year = dateObj.getFullYear();
+                        const is2026OrLater = year >= 2026;
+
                         return {
                             date: dateRaw ? new Date(dateRaw).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-                            company: getVal('Razão'), contact: getVal('Nome'), phone: getVal('whatsapp'), email: getVal('mail'), city: getVal('Cidade'), state: getVal('Estado'), cnpj: getVal('CNPJ'), ie: getVal('Inscrição'), address: getVal('Endereço'), instagram: getVal('Instagram'), obs: getVal('Observações'), source: 'Google Forms', status: 'new', isNew: true
+                            company: getVal('Razão Social'), 
+                            contact: getVal('Nome'), 
+                            phone: getVal('whatsapp'), 
+                            email: getVal('mail'), 
+                            city: getVal('Cidade'), 
+                            state: getVal('Estado'), 
+                            cnpj: getVal('CNPJ'), 
+                            ie: getVal('Inscrição'), 
+                            address: getVal('Endereço'), 
+                            instagram: getVal('Instagram'), 
+                            obs: getVal('Observações'), 
+                            source: 'Google Forms', 
+                            status: is2026OrLater ? 'new' : 'contacted', // Se for antes de 2026, já foi contactado
+                            isNew: is2026OrLater // Só é novo visualmente se for de 2026 em diante
                         };
                     });
                     
@@ -1128,20 +1239,45 @@
                     let count = 0;
                     const existingSignatures = new Set(leads.map(l => (l.contact || l.name) + l.date));
                     
+                    const leadsToAdd = [];
                     for (const l of newLeads) {
                         const sig = (l.contact || l.name) + l.date;
                         if (!existingSignatures.has(sig)) {
-                            await addLead(l);
+                            leadsToAdd.push(addLead(l));
                             count++;
                         }
                     }
-                    if (count > 0) setNewLeadAlert(true);
+                    
+                    if (leadsToAdd.length > 0) {
+                        await Promise.all(leadsToAdd);
+                        setNewLeadAlert(true);
+                    }
                     
                 } catch (error) {
                     console.error("Erro ao buscar leads:", error);
-                    alert("Erro ao conectar na API. Verifique o link e as permissões.");
+                    // Não alertar erro silenciosamente no auto-sync
                 }
             };
+
+            // AUTO-SYNC LEADS: Sincroniza automaticamente quando o usuário loga e os leads carregam
+            useEffect(() => {
+                if (firebaseUser && !loadingLeads && !hasAutoSynced && leadsApiUrl) {
+                    syncFromApi();
+                    setHasAutoSynced(true);
+                }
+            }, [firebaseUser, loadingLeads, hasAutoSynced, leadsApiUrl]);
+
+            // AUTO-CHECK: Checa novos leads a cada 5 minutos
+            useEffect(() => {
+                if (!isAuthenticated || !leadsApiUrl) return;
+
+                const interval = setInterval(() => {
+                    console.log("Verificação automática de leads (5min)...");
+                    syncFromApi();
+                }, 5 * 60 * 1000);
+
+                return () => clearInterval(interval);
+            }, [isAuthenticated, leadsApiUrl, leads]); // Dependência 'leads' recria o intervalo quando leads mudam, garantindo closure atualizado
 
             const handleLogin = (u, p) => { if (u === credentials.username && p === credentials.password) { setIsAuthenticated(true); setLoginError(''); } else { setLoginError('Credenciais inválidas. Tente novamente.'); } };
             const handleLogout = () => { setIsAuthenticated(false); setView('analytics'); };
@@ -1163,8 +1299,8 @@
                         {/* Botão de Emergência para Restaurar Dados se estiver vazio */}
                         {sales.length === 0 && ads.length === 0 && leads.length === 0 && (
                             <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/50 rounded-lg flex items-center justify-between animate-fadeIn">
-                                <div className="text-amber-500 flex items-center gap-2"><DatabaseIcon size={20}/> <span>Banco de dados vazio? Clique aqui para ver os gráficos.</span></div>
-                                <button onClick={importInitialData} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded font-bold text-sm shadow-lg transition-transform hover:scale-105">Restaurar Dados Iniciais</button>
+                                <div className="text-amber-500 flex items-center gap-2"><DatabaseIcon size={20}/> <span>Banco de dados vazio? O carregamento automático deve iniciar em breve...</span></div>
+                                <button onClick={importInitialData} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded font-bold text-sm shadow-lg transition-transform hover:scale-105">Forçar Restauração</button>
                             </div>
                         )}
 
