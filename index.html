@@ -146,6 +146,8 @@
         const X = (p) => <IconBase {...p}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></IconBase>;
         const ChevronDown = (p) => <IconBase {...p}><polyline points="6 9 12 15 18 9"/></IconBase>;
         const ChevronUp = (p) => <IconBase {...p}><polyline points="18 15 12 9 6 15"/></IconBase>;
+        const ChevronLeft = (p) => <IconBase {...p}><polyline points="15 18 9 12 15 6"></polyline></IconBase>;
+        const ChevronRight = (p) => <IconBase {...p}><polyline points="9 18 15 12 9 6"></polyline></IconBase>;
         const Wallet = (p) => <IconBase {...p}><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" /><path d="M4 6v12c0 1.1.9 2 2 2h14v-4" /><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" /></IconBase>;
         const Lock = (p) => <IconBase {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></IconBase>;
         const Settings = (p) => <IconBase {...p}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></IconBase>;
@@ -158,7 +160,6 @@
         const Phone = (p) => <IconBase {...p}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></IconBase>;
         const PieChart = (p) => <IconBase {...p}><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></IconBase>;
         const DatabaseIcon = (p) => <IconBase {...p}><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></IconBase>;
-        const ChevronLeft = (p) => <IconBase {...p}><polyline points="15 18 9 12 15 6"></polyline></IconBase>;
 
         // --- CONSTANTES ---
         const BRAZIL_STATES = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
@@ -342,7 +343,7 @@
             </div>
         );
 
-        const Sidebar = ({ view, setView, onLogout, notificationCount }) => {
+        const Sidebar = ({ view, setView, onLogout, notificationCount, isCollapsed, toggleSidebar }) => {
             const items = [
                 { id: 'analytics', label: 'Análises', icon: BarChart3 },
                 { id: 'lead-analytics', label: 'Análise de Leads', icon: PieChart },
@@ -351,25 +352,50 @@
                 { id: 'ads', label: 'Anúncios (Ads)', icon: DollarSign },
                 { id: 'settings', label: 'Configurações', icon: Settings },
             ];
+            
+            // Largura dinâmica baseada no estado collapsed
+            const sidebarClass = isCollapsed ? 'w-20' : 'w-64';
+
             return (
-                <div className="w-64 bg-slate-900 border-r border-slate-700 h-screen fixed left-0 top-0 flex flex-col z-50">
-                    <div className="h-20 flex items-center gap-3 px-6 border-b border-slate-700">
-                        <Shield className="text-amber-500" size={28} />
-                        <div>
-                            <h1 className="text-xl font-bold text-white tracking-wide">RICO</h1>
-                            <p className="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Militar</p>
-                        </div>
+                <div className={`${sidebarClass} bg-slate-900 border-r border-slate-700 h-screen fixed left-0 top-0 flex flex-col z-50 transition-all duration-300`}>
+                    <div className={`h-20 flex items-center ${isCollapsed ? 'justify-center' : 'px-6 gap-3'} border-b border-slate-700 relative`}>
+                        <Shield className="text-amber-500 shrink-0" size={28} />
+                        {!isCollapsed && (
+                            <div className="overflow-hidden whitespace-nowrap">
+                                <h1 className="text-xl font-bold text-white tracking-wide">RICO</h1>
+                                <p className="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Militar</p>
+                            </div>
+                        )}
+                        <button 
+                            onClick={toggleSidebar} 
+                            className="absolute -right-3 top-8 bg-slate-800 border border-slate-600 rounded-full p-1 text-slate-300 hover:text-white shadow-lg z-50"
+                        >
+                            {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                        </button>
                     </div>
-                    <nav className="flex-1 p-4 space-y-2">
+                    
+                    <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
                         {items.map(item => (
-                            <button key={item.id} onClick={() => setView(item.id)} className={`nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${view === item.id ? 'active' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
-                                <item.icon size={20} /> {item.label}
+                            <button 
+                                key={item.id} 
+                                onClick={() => setView(item.id)} 
+                                title={isCollapsed ? item.label : ''}
+                                className={`nav-item w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-3 rounded-lg text-sm font-medium transition-all ${view === item.id ? 'active' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                            >
+                                <item.icon size={20} className="shrink-0" /> 
+                                {!isCollapsed && <span className="whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>}
                             </button>
                         ))}
                     </nav>
+                    
                     <div className="p-4 border-t border-slate-700 space-y-2">
-                        <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-2 text-slate-400 hover:text-red-400 text-sm font-medium hover:bg-slate-800/50 rounded-lg transition-colors">
-                            <LogOut size={18} /> Sair do Sistema
+                        <button 
+                            onClick={onLogout} 
+                            title={isCollapsed ? 'Sair' : ''}
+                            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-2 text-slate-400 hover:text-red-400 text-sm font-medium hover:bg-slate-800/50 rounded-lg transition-colors`}
+                        >
+                            <LogOut size={18} className="shrink-0" /> 
+                            {!isCollapsed && <span className="whitespace-nowrap">Sair</span>}
                         </button>
                     </div>
                 </div>
@@ -522,8 +548,6 @@
                 }]
             };
 
-            // BI Charts removed as requested... only keeping allowed ones
-
             return (
                 <div className="animate-fadeIn">
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
@@ -648,24 +672,25 @@
                         </button>
                     </div>
 
-                    <div className="glass-panel rounded-lg overflow-hidden flex flex-col">
-                        <div className="overflow-x-auto custom-scrollbar">
-                            <table className="w-full text-sm text-left text-slate-400 min-w-[1000px]">
-                                <thead className="text-xs text-slate-200 uppercase bg-slate-800/90 sticky top-0 z-10 backdrop-blur-sm">
+                    {/* Fixed Height Container for Table - Fixes Scrolling Issue */}
+                    <div className="glass-panel rounded-lg overflow-hidden flex flex-col h-full max-h-[70vh]">
+                        <div className="overflow-auto custom-scrollbar flex-1 relative">
+                            <table className="w-full text-sm text-left text-slate-400 min-w-[1200px]">
+                                <thead className="text-xs text-slate-200 uppercase bg-slate-800/95 sticky top-0 z-20 backdrop-blur-sm border-b border-slate-700 shadow-md">
                                     <tr>
-                                        <th className="px-3 py-3 sortable w-24" onClick={() => handleSort('date')}>Data <SortIcon column="date"/></th>
-                                        <th className="px-3 py-3 w-40">E-mail</th>
-                                        <th className="px-3 py-3 sortable w-40" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact"/></th>
-                                        <th className="px-3 py-3 w-32">WhatsApp</th>
-                                        <th className="px-3 py-3 sortable w-16" onClick={() => handleSort('state')}>UF <SortIcon column="state"/></th>
-                                        <th className="px-3 py-3 sortable w-32" onClick={() => handleSort('city')}>Cidade <SortIcon column="city"/></th>
-                                        <th className="px-3 py-3 w-32">CNPJ</th>
-                                        <th className="px-3 py-3 sortable w-40" onClick={() => handleSort('company')}>Empresa <SortIcon column="company"/></th>
-                                        <th className="px-3 py-3 w-24">IE</th>
-                                        <th className="px-3 py-3 w-48">Endereço</th>
-                                        <th className="px-3 py-3 w-32">Instagram</th>
-                                        <th className="px-3 py-3 w-48">Obs</th>
-                                        <th className="px-3 py-3 text-right w-24 sticky right-0 bg-slate-800/90 z-20">Ação</th>
+                                        <th className="px-3 py-3 sortable w-24 sticky top-0 bg-slate-800" onClick={() => handleSort('date')}>Data <SortIcon column="date"/></th>
+                                        <th className="px-3 py-3 w-40 sticky top-0 bg-slate-800">E-mail</th>
+                                        <th className="px-3 py-3 sortable w-40 sticky top-0 bg-slate-800" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact"/></th>
+                                        <th className="px-3 py-3 w-32 sticky top-0 bg-slate-800">WhatsApp</th>
+                                        <th className="px-3 py-3 sortable w-16 sticky top-0 bg-slate-800" onClick={() => handleSort('state')}>UF <SortIcon column="state"/></th>
+                                        <th className="px-3 py-3 sortable w-32 sticky top-0 bg-slate-800" onClick={() => handleSort('city')}>Cidade <SortIcon column="city"/></th>
+                                        <th className="px-3 py-3 w-32 sticky top-0 bg-slate-800">CNPJ</th>
+                                        <th className="px-3 py-3 sortable w-40 sticky top-0 bg-slate-800" onClick={() => handleSort('company')}>Empresa <SortIcon column="company"/></th>
+                                        <th className="px-3 py-3 w-24 sticky top-0 bg-slate-800">IE</th>
+                                        <th className="px-3 py-3 w-48 sticky top-0 bg-slate-800">Endereço</th>
+                                        <th className="px-3 py-3 w-32 sticky top-0 bg-slate-800">Instagram</th>
+                                        <th className="px-3 py-3 w-48 sticky top-0 bg-slate-800">Obs</th>
+                                        <th className="px-3 py-3 text-right w-24 sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700/50 whitespace-normal">
@@ -690,13 +715,13 @@
                                             <td className="px-3 py-2 align-top">{lead.company}</td>
                                             <td className="px-3 py-2 text-xs align-top">{lead.ie}</td>
                                             <td className="px-3 py-2 text-xs align-top" title={lead.address}>
-                                                <div className="line-clamp-2 hover:line-clamp-none transition-all">{lead.address}</div>
+                                                <div className="line-clamp-2 hover:line-clamp-none transition-all cursor-help">{lead.address}</div>
                                             </td>
                                             <td className="px-3 py-2 align-top break-all">{lead.instagram}</td>
                                             <td className="px-3 py-2 text-xs align-top" title={lead.obs}>
-                                                <div className="line-clamp-2 hover:line-clamp-none transition-all">{lead.obs}</div>
+                                                <div className="line-clamp-2 hover:line-clamp-none transition-all cursor-help">{lead.obs}</div>
                                             </td>
-                                            <td className="px-3 py-2 text-right align-top sticky right-0 bg-slate-900/90 group-hover:bg-slate-800/90 backdrop-blur-sm transition-colors border-l border-slate-700/50 z-10">
+                                            <td className="px-3 py-2 text-right align-top sticky right-0 bg-slate-900/95 group-hover:bg-slate-800/95 backdrop-blur-sm transition-colors border-l border-slate-700/50 z-10 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">
                                                 {lead.status !== 'converted' && (
                                                     <button onClick={() => onConvertToSale(lead)} className="bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center gap-1 ml-auto whitespace-nowrap">
                                                         Converter
@@ -715,7 +740,7 @@
                         
                         {/* Pagination Controls */}
                         {totalPages > 1 && (
-                            <div className="flex justify-between items-center p-4 border-t border-slate-700 bg-slate-800/30">
+                            <div className="flex justify-between items-center p-4 border-t border-slate-700 bg-slate-800/50 sticky bottom-0 z-20">
                                 <span className="text-xs text-slate-400">
                                     Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, leads.length)} de {leads.length} leads
                                 </span>
@@ -1180,6 +1205,7 @@
 
         function App() {
             const [view, setView] = useState('analytics');
+            const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
             const [firebaseUser, setFirebaseUser] = useState(null);
 
             // Auth Effect for Firebase - Conexão
@@ -1340,8 +1366,15 @@
             if (!isAuthenticated) return <LoginView onLogin={handleLogin} loginError={loginError} />;
             return (
                 <div className="flex bg-[#0f172a] min-h-screen text-slate-200">
-                    <Sidebar view={view} setView={setView} onLogout={handleLogout} notificationCount={newLeadsCount} />
-                    <main className="flex-1 ml-64 p-8 overflow-y-auto h-screen relative">
+                    <Sidebar 
+                        view={view} 
+                        setView={setView} 
+                        onLogout={handleLogout} 
+                        notificationCount={newLeadsCount} 
+                        isCollapsed={isSidebarCollapsed}
+                        toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    />
+                    <main className={`flex-1 p-8 overflow-y-auto h-screen relative transition-all duration-300 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
                         {/* Botão de Emergência para Restaurar Dados se estiver vazio */}
                         {sales.length === 0 && ads.length === 0 && leads.length === 0 && (
                             <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/50 rounded-lg flex items-center justify-between animate-fadeIn">
