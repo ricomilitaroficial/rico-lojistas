@@ -209,10 +209,14 @@
         const fmtDate = (d) => new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
         const fullMonthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-        // --- HOOK DE DADOS FIREBASE (ADAPTADOR ONLINE) ---
+       // --- HOOK DE DADOS FIREBASE (CORRIGIDO PARA PERSISTÊNCIA) ---
         const useFirebaseData = (collectionName, initialData = [], user) => {
             const [data, setData] = useState(initialData);
             const [loading, setLoading] = useState(true);
+            
+            // Caminho FIXO para os dados não sumirem
+            // Antes era: ... 'users', user.uid, collectionName
+            // Agora é:   ... 'public', 'data', collectionName
             
             useEffect(() => {
                 if (!window.db || !window.firebaseStore || !window.appId || !user) {
@@ -220,7 +224,8 @@
                 }
                 
                 const { collection, onSnapshot } = window.firebaseStore;
-                const colRef = collection(window.db, 'artifacts', window.appId, 'users', user.uid, collectionName);
+                // MUDANÇA AQUI:
+                const colRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', collectionName);
                 
                 const unsubscribe = onSnapshot(colRef, (snapshot) => {
                     const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -235,21 +240,24 @@
                 if (!window.db || !user) { setData(prev => [...prev, { ...item, id: Date.now() }]); return; }
                 const { collection, addDoc } = window.firebaseStore;
                 const { id, ...dataToSave } = item;
-                await addDoc(collection(window.db, 'artifacts', window.appId, 'users', user.uid, collectionName), dataToSave);
+                // MUDANÇA AQUI:
+                await addDoc(collection(window.db, 'artifacts', window.appId, 'public', 'data', collectionName), dataToSave);
             };
 
             const updateItem = async (item) => {
                 if (!window.db || !user) { setData(prev => prev.map(i => i.id === item.id ? item : i)); return; }
                 const { doc, updateDoc } = window.firebaseStore;
                 const { id, ...dataToSave } = item;
-                const docRef = doc(window.db, 'artifacts', window.appId, 'users', user.uid, collectionName, String(id));
+                // MUDANÇA AQUI:
+                const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', collectionName, String(id));
                 await updateDoc(docRef, dataToSave);
             };
 
             const deleteItem = async (id) => {
                 if (!window.db || !user) { setData(prev => prev.filter(i => i.id !== id)); return; }
                 const { doc, deleteDoc } = window.firebaseStore;
-                const docRef = doc(window.db, 'artifacts', window.appId, 'users', user.uid, collectionName, String(id));
+                // MUDANÇA AQUI:
+                const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', collectionName, String(id));
                 await deleteDoc(docRef);
             };
 
