@@ -381,6 +381,423 @@
                             {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
                         </button>
                     </div>
+                    
+                    <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
+                        {items.map(item => (
+                            <button 
+                                key={item.id} 
+                                onClick={() => setView(item.id)} 
+                                title={isCollapsed ? item.label : ''}
+                                className={`nav-item w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-3 rounded-lg text-sm font-medium transition-all ${view === item.id ? 'active' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                            >
+                                <item.icon size={20} className="shrink-0" /> 
+                                {!isCollapsed && <span className="whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>}
+                            </button>
+                        ))}
+                    </nav>
+                    
+                    <div className="p-4 border-t border-slate-700 space-y-2">
+                        <button 
+                            onClick={onLogout} 
+                            title={isCollapsed ? 'Sair' : ''}
+                            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-2 text-slate-400 hover:text-red-400 text-sm font-medium hover:bg-slate-800/50 rounded-lg transition-colors`}
+                        >
+                            <LogOut size={18} className="shrink-0" /> 
+                            {!isCollapsed && <span className="whitespace-nowrap">Sair</span>}
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const Modal = ({ isOpen, onClose, title, children }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+                    <div className="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-fadeIn h-5/6 overflow-y-auto custom-scrollbar">
+                        <div className="flex justify-between items-center p-4 border-b border-slate-700 bg-slate-800/50 sticky top-0 z-10 backdrop-blur-md">
+                            <h3 className="text-lg font-bold text-white">{title}</h3>
+                            <button onClick={onClose} className="text-slate-400 hover:text-white"><X size={20} /></button>
+                        </div>
+                        <div className="p-6">{children}</div>
+                    </div>
+                </div>
+            );
+        };
+
+        const LeadAnalyticsView = ({ sales, leads, ads }) => {
+            const [filterDate, setFilterDate] = useState('all');
+
+             const availableMonths = useMemo(() => {
+                const months = new Set([
+                    ...sales.map(s => s.date.slice(0, 7)),
+                    ...ads.map(a => a.month),
+                     ...leads.map(l => l.date.slice(0, 7))
+                ]);
+                return Array.from(months).sort();
+            }, [sales, ads, leads]);
+
+            const data = useMemo(() => {
+                let filteredSales = sales;
+                let filteredAds = ads;
+                let filteredLeads = leads;
+                
+                if (filterDate !== 'all') {
+                    filteredSales = sales.filter(s => s.date.startsWith(filterDate));
+                    filteredAds = ads.filter(a => a.month === filterDate);
+                    filteredLeads = leads.filter(l => l.date.startsWith(filterDate));
+                }
+
+                const totalLeads = filteredLeads.length;
+                const totalSales = filteredSales.length;
+                const totalAds = filteredAds.reduce((acc, a) => acc + a.value, 0);
+                
+                const cpl = totalLeads > 0 ? totalAds / totalLeads : 0;
+                const conversionRate = totalLeads > 0 ? (totalSales / totalLeads) * 100 : 0;
+                const conversionRatio = totalSales > 0 ? Math.round(totalLeads / totalSales) : 0;
+                
+                const monthsCount = filterDate === 'all' ? availableMonths.length : 1;
+                const avgLeadsPerMonth = monthsCount > 0 ? totalLeads / monthsCount : 0;
+
+                const monthsList = filterDate === 'all' ? availableMonths : [filterDate];
+                const monthlyData = monthsList.map(m => {
+                    const mLeads = leads.filter(l => l.date.startsWith(m)).length;
+                    const mSales = sales.filter(s => s.date.startsWith(m)).length;
+                    const mAds = ads.find(a => a.month === m)?.value || 0;
+                    const mCpl = mLeads > 0 ? mAds / mLeads : 0;
+                    const mRate = mLeads > 0 ? (mSales / mLeads) * 100 : 0;
+
+                    const [y, mn] = m.split('-');
+                    const label = `${fullMonthNames[parseInt(mn)-1].substring(0,3)}/${y.substring(2)}`;
+                    
+                    return { label, leads: mLeads, sales: mSales, cpl: mCpl, rate: mRate };
+                });
+
+                const leadsByState = {};
+                const leadsByRegion = {};
+                const leadsBySource = {};
+                const leadsByStatus = { 'new': 0, 'contacted': 0, 'qualified': 0, 'converted': 0, 'lost': 0 };
+                const leadsByDay = {};
+                
+                filteredLeads.forEach(l => {
+                    // Geo
+                    const st = l.state && l.state.trim() !== '' ? l.state : null;
+                    if (st) {
+                        leadsByState[st] = (leadsByState[st] || 0) + 1;
+                        const reg = Object.keys(REGIONS).find(r => REGIONS[r].includes(st));
+                        if (reg) {
+                            leadsByRegion[reg] = (leadsByRegion[reg] || 0) + 1;
+                        }
+                    }
+                    // Source
+                    const src = l.source || 'Desconhecido';
+                    leadsBySource[src] = (leadsBySource[src] || 0) + 1;
+                    
+                    // Status
+                    if(l.status) leadsByStatus[l.status] = (leadsByStatus[l.status] || 0) + 1;
+
+                    // Day Trend
+                    leadsByDay[l.date] = (leadsByDay[l.date] || 0) + 1;
+                });
+
+                // Ordenação por Estado (Pareto)
+                const sortedStates = Object.entries(leadsByState).sort((a, b) => b[1] - a[1]);
+                const sortedStateLabels = sortedStates.map(s => s[0]);
+                const sortedStateValues = sortedStates.map(s => s[1]);
+
+                // Ordenação por Data (Últimos 30 dias se muitos)
+                const sortedDays = Object.keys(leadsByDay).sort().slice(-30); // Últimos 30 dias registrados
+                const trendData = sortedDays.map(d => leadsByDay[d]);
+                const trendLabels = sortedDays.map(d => {
+                    const parts = d.split('-');
+                    return `${parts[2]}/${parts[1]}`;
+                });
+
+                return {
+                    kpis: { totalLeads, cpl, conversionRate, conversionRatio, totalAds, totalSales, avgLeadsPerMonth },
+                    monthly: monthlyData,
+                    geo: { state: { labels: sortedStateLabels, values: sortedStateValues }, region: leadsByRegion },
+                    bi: { source: leadsBySource, status: leadsByStatus, trend: { labels: trendLabels, values: trendData } }
+                };
+            }, [sales, leads, ads, filterDate, availableMonths]);
+
+            const cLeadsMonth = {
+                labels: data.monthly.map(d => d.label),
+                datasets: [
+                    { type: 'line', label: 'Taxa Conv. (%)', data: data.monthly.map(d => d.rate.toFixed(1)), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', yAxisID: 'y1', order: 0 },
+                    { type: 'bar', label: 'Leads', data: data.monthly.map(d => d.leads), backgroundColor: '#3b82f6', borderRadius: 4, order: 1 },
+                    { type: 'bar', label: 'Vendas', data: data.monthly.map(d => d.sales), backgroundColor: '#10b981', borderRadius: 4, order: 1 }
+                ]
+            };
+
+            const cCplMonth = {
+                labels: data.monthly.map(d => d.label),
+                datasets: [
+                    { label: 'Custo por Lead (CPL)', data: data.monthly.map(d => d.cpl.toFixed(2)), backgroundColor: '#f59e0b', borderRadius: 4, type: 'bar' }
+                ]
+            };
+
+            const cLeadsRegion = {
+                labels: Object.keys(data.geo.region),
+                datasets: [{
+                    data: Object.values(data.geo.region),
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'],
+                    borderWidth: 0
+                }]
+            };
+
+            const cLeadsState = {
+                labels: data.geo.state.labels,
+                datasets: [{
+                    label: 'Leads por Estado',
+                    data: data.geo.state.values,
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 4
+                }]
+            };
+
+            return (
+                <div className="animate-fadeIn">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                        <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2">
+                            <PieChart className="text-blue-500" /> Inteligência de Leads (BI)
+                        </h2>
+                        <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-700">
+                            <span className="text-slate-400 text-xs font-bold uppercase px-3">Período:</span>
+                            <select 
+                                className="bg-slate-800 text-white text-sm border-none rounded py-1 px-3 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
+                                value={filterDate}
+                                onChange={(e) => setFilterDate(e.target.value)}
+                            >
+                                <option value="all">Visão Consolidada (Todos)</option>
+                                {availableMonths.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                        <KpiCard title="Total de Leads" value={data.kpis.totalLeads} subtext="No período selecionado" icon={Filter} colorClass="border-blue-500" />
+                        <KpiCard title="Custo por Lead (CPL)" value={fmtMoney(data.kpis.cpl)} subtext="Investimento / Leads" icon={DollarSign} colorClass="border-amber-500" />
+                        <KpiCard title="Taxa de Conversão" value={data.kpis.conversionRate.toFixed(1) + '%'} subtext={`1 venda a cada ${data.kpis.conversionRatio} leads`} icon={Target} colorClass="border-emerald-500" />
+                        <KpiCard title="Investimento Total" value={fmtMoney(data.kpis.totalAds)} subtext="Gasto em Anúncios" icon={Wallet} colorClass="border-slate-500" />
+                        <KpiCard title="Média Leads/Mês" value={data.kpis.avgLeadsPerMonth.toFixed(1)} subtext="Média do período" icon={Activity} colorClass="border-cyan-500" />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Linha 1: Evolução e Custo */}
+                        <div className="lg:col-span-2">
+                            <ChartContainer title="Evolução Mensal (Funil Macro)" subtitle="Comparativo Leads vs Vendas">
+                                <ChartComponent type="bar" data={cLeadsMonth} options={{ scales: { y: {display: false}, y1: { type: 'linear', display: false, position: 'right', grid: {drawOnChartArea: false} } } }} />
+                            </ChartContainer>
+                        </div>
+                        <ChartContainer title="Custo por Lead (CPL)" subtitle="Eficiência do investimento (R$)">
+                             <ChartComponent type="bar" data={cCplMonth} labelType="money" />
+                        </ChartContainer>
+
+                        {/* Linha 3: Geo Detalhado */}
+                        <ChartContainer title="Distribuição Regional" subtitle="Leads por Região">
+                            <div className="flex justify-center h-48">
+                                <ChartComponent type="doughnut" data={cLeadsRegion} labelType="percent" />
+                            </div>
+                        </ChartContainer>
+                        
+                         <div className="lg:col-span-2">
+                             <ChartContainer title="Ranking de Estados" subtitle="Leads por UF (Maior para Menor)">
+                                 <ChartComponent type="bar" data={cLeadsState} />
+                            </ChartContainer>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const LeadsView = ({ leads, addItem, updateItem, onConvertToSale, clearNotification, onSync, apiUrl }) => {
+            const [syncing, setSyncing] = useState(false);
+            const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+            
+            // Pagination state
+            const [currentPage, setCurrentPage] = useState(1);
+            const itemsPerPage = 50;
+
+            useEffect(() => {
+                clearNotification();
+            }, []);
+
+            const handleSyncClick = async () => {
+                setSyncing(true);
+                await onSync();
+                setSyncing(false);
+            };
+
+            const handleSort = (key) => {
+                let direction = 'asc';
+                if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+                setSortConfig({ key, direction });
+            };
+
+            const sortedLeads = useMemo(() => {
+                let items = [...leads];
+                items.sort((a, b) => {
+                    let aValue = a[sortConfig.key];
+                    let bValue = b[sortConfig.key];
+                    if (sortConfig.key === 'date') { aValue = new Date(aValue); bValue = new Date(bValue); }
+                    if (typeof aValue === 'string') { aValue = aValue.toLowerCase(); bValue = bValue.toLowerCase(); }
+                    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+                    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                return items;
+            }, [leads, sortConfig]);
+
+            // Pagination Logic
+            const totalPages = Math.ceil(sortedLeads.length / itemsPerPage);
+            const paginatedLeads = sortedLeads.slice(
+                (currentPage - 1) * itemsPerPage,
+                currentPage * itemsPerPage
+            );
+
+            const SortIcon = ({ column }) => { if (sortConfig.key !== column) return null; return sortConfig.direction === 'asc' ? <ChevronUp size={14} className="ml-1 inline" /> : <ChevronDown size={14} className="ml-1 inline" />; };
+
+            return (
+                <div className="animate-fadeIn">
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 className="text-2xl font-bold text-white">Funil de Leads (Google Forms)</h2>
+                            <div className="flex items-center gap-2 mt-1">
+                                <p className="text-slate-400 text-sm flex items-center gap-2">
+                                    <span className={`w-2 h-2 rounded-full ${apiUrl ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`}></span>
+                                    {apiUrl ? 'Conectado à API Google Sheets' : 'Modo Simulação (Demo)'}
+                                </p>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={handleSyncClick} 
+                            disabled={syncing} 
+                            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-blue-900/20 disabled:opacity-50 transition-all"
+                        >
+                            <RefreshCw size={18} className={syncing ? "animate-spin" : ""} /> 
+                            {syncing ? 'Sincronizando...' : 'Sincronizar Agora'}
+                        </button>
+                    </div>
+
+                    {/* Fixed Height Container for Table - Fixes Scrolling Issue */}
+                    <div className="glass-panel rounded-lg overflow-hidden flex flex-col h-full max-h-[70vh]">
+                        <div className="overflow-auto custom-scrollbar flex-1 relative">
+                            <table className="w-full text-sm text-left text-slate-400 min-w-[1200px]">
+                                <thead className="text-xs text-slate-200 uppercase bg-slate-800/95 sticky top-0 z-20 backdrop-blur-sm border-b border-slate-700 shadow-md">
+                                    <tr>
+                                        <th className="px-3 py-3 sortable w-24 sticky top-0 bg-slate-800" onClick={() => handleSort('date')}>Data <SortIcon column="date"/></th>
+                                        <th className="px-3 py-3 w-40 sticky top-0 bg-slate-800">E-mail</th>
+                                        <th className="px-3 py-3 sortable w-40 sticky top-0 bg-slate-800" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact"/></th>
+                                        <th className="px-3 py-3 w-32 sticky top-0 bg-slate-800">WhatsApp</th>
+                                        <th className="px-3 py-3 sortable w-16 sticky top-0 bg-slate-800" onClick={() => handleSort('state')}>UF <SortIcon column="state"/></th>
+                                        <th className="px-3 py-3 sortable w-32 sticky top-0 bg-slate-800" onClick={() => handleSort('city')}>Cidade <SortIcon column="city"/></th>
+                                        <th className="px-3 py-3 w-32 sticky top-0 bg-slate-800">CNPJ</th>
+                                        <th className="px-3 py-3 sortable w-40 sticky top-0 bg-slate-800" onClick={() => handleSort('company')}>Empresa <SortIcon column="company"/></th>
+                                        <th className="px-3 py-3 w-24 sticky top-0 bg-slate-800">IE</th>
+                                        <th className="px-3 py-3 w-48 sticky top-0 bg-slate-800">Endereço</th>
+                                        <th className="px-3 py-3 w-32 sticky top-0 bg-slate-800">Instagram</th>
+                                        <th className="px-3 py-3 w-48 sticky top-0 bg-slate-800">Obs</th>
+                                        <th className="px-3 py-3 text-right w-24 sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-700/50 whitespace-normal">
+                                    {paginatedLeads.map((lead) => (
+                                        <tr key={lead.id} className="hover:bg-slate-800/30 transition-colors animate-fadeIn group">
+                                            <td className="px-3 py-2 font-mono text-xs text-slate-300 align-top">{fmtDate(lead.date)}</td>
+                                            <td className="px-3 py-2 text-xs align-top break-all">{lead.email}</td>
+                                            <td className="px-3 py-2 font-bold text-white align-top">
+                                                {lead.contact} 
+                                                {lead.isNew && <span className="block w-fit mt-1 text-[9px] bg-red-500 text-white px-1 rounded shadow-sm shadow-red-900/50">NOVO</span>}
+                                            </td>
+                                            <td className="px-3 py-2 align-top">
+                                                {lead.phone ? (
+                                                    <a href={`https://wa.me/${String(lead.phone).replace(/\D/g,'')}`} target="_blank" className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 transition-colors">
+                                                        <Phone size={12} /> <span className="text-xs">{lead.phone}</span>
+                                                    </a>
+                                                ) : <span className="text-slate-600">-</span>}
+                                            </td>
+                                            <td className="px-3 py-2 align-top">{lead.state}</td>
+                                            <td className="px-3 py-2 align-top">{lead.city}</td>
+                                            <td className="px-3 py-2 font-mono text-xs align-top">{lead.cnpj}</td>
+                                            <td className="px-3 py-2 align-top">{lead.company}</td>
+                                            <td className="px-3 py-2 text-xs align-top">{lead.ie}</td>
+                                            <td className="px-3 py-2 text-xs align-top" title={lead.address}>
+                                                <div className="line-clamp-2 hover:line-clamp-none transition-all cursor-help">{lead.address}</div>
+                                            </td>
+                                            <td className="px-3 py-2 align-top break-all">{lead.instagram}</td>
+                                            <td className="px-3 py-2 text-xs align-top" title={lead.obs}>
+                                                <div className="line-clamp-2 hover:line-clamp-none transition-all cursor-help">{lead.obs}</div>
+                                            </td>
+                                            <td className="px-3 py-2 text-right align-top sticky right-0 bg-slate-900/95 group-hover:bg-slate-800/95 backdrop-blur-sm transition-colors border-l border-slate-700/50 z-10 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">
+                                                {lead.status !== 'converted' && (
+                                                    <button onClick={() => onConvertToSale(lead)} className="bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center gap-1 ml-auto whitespace-nowrap">
+                                                        Converter
+                                                    </button>
+                                                )}
+                                                {lead.status === 'converted' && <span className="text-[10px] text-emerald-500 font-medium">Convertido</span>}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {leads.length === 0 && (
+                                        <tr><td colSpan="13" className="text-center py-12 text-slate-500">Nenhum lead encontrado.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                            <div className="flex justify-between items-center p-4 border-t border-slate-700 bg-slate-800/50 sticky bottom-0 z-20">
+                                <span className="text-xs text-slate-400">
+                                    Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, leads.length)} de {leads.length} leads
+                                </span>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-1 rounded bg-slate-700 text-white disabled:opacity-50 hover:bg-slate-600 transition-colors text-xs"
+                                    >
+                                        Anterior
+                                    </button>
+                                    <span className="px-2 py-1 text-xs text-slate-300 flex items-center">
+                                        Pág {currentPage} de {totalPages}
+                                    </span>
+                                    <button 
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-1 rounded bg-slate-700 text-white disabled:opacity-50 hover:bg-slate-600 transition-colors text-xs"
+                                    >
+                                        Próxima
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const RetailersView = ({ sales, addItem, updateItem, deleteItem, prefillData, setPrefillData }) => {
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [editingItem, setEditingItem] = useState(null);
+            const [formData, setFormData] = useState({});
+            const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+            const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+
+            useEffect(() => {
+                if (prefillData) {
+                    setFormData({
+                        date: new Date().toISOString().split('T')[0],
+                        leadDate: prefillData.date,
+                        company: prefillData.company, 
+                        contact: prefillData.contact, 
+                        phone: prefillData.phone,
+                        email: prefillData.email,
+                        city: prefillData.city,
+                        state: prefillData.state,
+                        cnpj: prefillData.cnpj,
+                        ie: prefillData.ie,
                         address: prefillData.address,
                         instagram: prefillData.instagram,
                         obs: prefillData.obs,
@@ -524,6 +941,7 @@
                 </div>
             );
         };
+
         const AdsView = ({ ads, addItem, updateItem, deleteItem }) => {
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [editingItem, setEditingItem] = useState(null);
