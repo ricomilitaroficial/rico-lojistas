@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RICO MILITAR - Sistema de Gestão</title>
+    <title>RICO MILITAR - Sistema de GestÃ£o</title>
     
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -22,8 +22,8 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- SEU CÓDIGO DO FIREBASE AQUI ---
-        // Configuração segura
+        // --- SEU CÃ“DIGO DO FIREBASE AQUI ---
+        // ConfiguraÃ§Ã£o segura
         const firebaseConfig = {
             apiKey: "AIzaSyD-8HjnC7fOS98WmqkKCJv___1A7f20oJ0",
             authDomain: "rico-lojistas.firebaseapp.com",
@@ -127,7 +127,7 @@
     <script type="text/babel">
         const { useState, useMemo, useEffect, useRef } = React;
 
-        // --- ÍCONES SVG ---
+        // --- ÃCONES SVG ---
         const IconBase = ({ children, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
@@ -150,7 +150,7 @@
         const ChevronRight = (p) => <IconBase {...p}><polyline points="9 18 15 12 9 6"></polyline></IconBase>;
         const Wallet = (p) => <IconBase {...p}><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" /><path d="M4 6v12c0 1.1.9 2 2 2h14v-4" /><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" /></IconBase>;
         const Lock = (p) => <IconBase {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></IconBase>;
-        const Settings = (p) => <IconBase {...p}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></IconBase>;
+        const Settings = (p) => <IconBase {...p}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>;
         const LogOut = (p) => <IconBase {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></IconBase>;
         const User = (p) => <IconBase {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></IconBase>;
         const Filter = (p) => <IconBase {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></IconBase>;
@@ -164,6 +164,33 @@
         // --- CONSTANTES ---
         const BRAZIL_STATES = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
 
+        const UF_MAP = {
+            'ACRE': 'AC', 'ALAGOAS': 'AL', 'AMAPA': 'AP', 'AMAZONAS': 'AM', 'BAHIA': 'BA', 'CEARA': 'CE',
+            'DISTRITO FEDERAL': 'DF', 'ESPIRITO SANTO': 'ES', 'GOIAS': 'GO', 'MARANHAO': 'MA', 'MATO GROSSO': 'MT',
+            'MATO GROSSO DO SUL': 'MS', 'MINAS GERAIS': 'MG', 'PARA': 'PA', 'PARAIBA': 'PB', 'PARANA': 'PR',
+            'PERNAMBUCO': 'PE', 'PIAUI': 'PI', 'RIO DE JANEIRO': 'RJ', 'RIO GRANDE DO NORTE': 'RN',
+            'RIO GRANDE DO SUL': 'RS', 'RONDONIA': 'RO', 'RORAIMA': 'RR', 'SANTA CATARINA': 'SC',
+            'SAO PAULO': 'SP', 'SERGIPE': 'SE', 'TOCANTINS': 'TO',
+            'BRASILIA': 'DF', 'BRASILIA DF': 'DF', 'SAO PAULI': 'SP', 'RIO DE HANEIRO': 'RJ', 'SAO PAULO SP': 'SP',
+            'SÃƒO PAULO': 'SP', 'SANTA CATERINA': 'SC', 'RIO DE JANIERO': 'RJ', 'MARANHAO MS': 'MA'
+        };
+
+        const normalizeUF = (uf) => {
+            if (!uf || typeof uf !== 'string') return null;
+            let clean = uf.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            if (BRAZIL_STATES.includes(clean)) return clean;
+            if (UF_MAP[clean]) return UF_MAP[clean];
+            
+            // Busca sigla solta no texto (ex: "SÃƒO PAULO - SP")
+            const words = clean.split(/[\s-]+/);
+            for (const word of words) {
+                if (BRAZIL_STATES.includes(word)) return word;
+            }
+
+            return null; // Se nÃ£o for um estado conhecido, ignora
+        };
+
         const INITIAL_SALES = [
             { date: '2025-04-15', company: 'Lojista CE', city: 'Consolidado', state: 'CE', pairs: 22, value: 3403.80, leadDate: '2025-04-01' },
             { date: '2025-05-10', company: 'Lojista RJ 1', city: 'Consolidado', state: 'RJ', pairs: 24, value: 3060.00, leadDate: '2025-05-01' },
@@ -174,14 +201,14 @@
             { date: '2025-06-10', company: 'Lojista TO', city: 'Consolidado', state: 'TO', pairs: 30, value: 4842.00, leadDate: '2025-06-01' },
             { date: '2025-06-16', company: 'Lojista Curitiba', city: 'Curitiba', state: 'PR', pairs: 36, value: 7920.00, leadDate: '2025-06-10' },
             { date: '2025-06-18', company: 'Lojista Campo Grande', city: 'Campo Grande', state: 'MS', pairs: 24, value: 4026.00, leadDate: '2025-06-12' },
-            { date: '2025-06-24', company: 'Lojista Santa Inês', city: 'Santa Inês', state: 'MA', pairs: 24, value: 3876.00, leadDate: '2025-06-18' },
+            { date: '2025-06-24', company: 'Lojista Santa InÃªs', city: 'Santa InÃªs', state: 'MA', pairs: 24, value: 3876.00, leadDate: '2025-06-18' },
             { date: '2025-07-01', company: 'Lojista Tupancireta', city: 'Tupancireta', state: 'RS', pairs: 24, value: 5280.00, leadDate: '2025-06-25' },
             { date: '2025-07-22', company: 'Alfa Stillus', city: 'Boa Vista', state: 'RR', pairs: 48, value: 8592.00, leadDate: '2025-07-17' },
             { date: '2025-07-25', company: 'Velho Curteiro', city: 'Governador Valadares', state: 'MG', pairs: 24, value: 4116.00, leadDate: '2025-07-20' },
-            { date: '2025-08-05', company: 'Lojista Várzea', city: 'Várzea Grande', state: 'MT', pairs: 12, value: 1982.00, leadDate: '2025-08-01' },
+            { date: '2025-08-05', company: 'Lojista VÃ¡rzea', city: 'VÃ¡rzea Grande', state: 'MT', pairs: 12, value: 1982.00, leadDate: '2025-08-01' },
             { date: '2025-08-05', company: 'Lojista Navegantes', city: 'Navegantes', state: 'SC', pairs: 26, value: 4524.00, leadDate: '2025-08-01' },
             { date: '2025-08-18', company: 'Lojista Palmas', city: 'Palmas', state: 'PR', pairs: 12, value: 2592.00, leadDate: '2025-08-10' },
-            { date: '2025-08-18', company: 'Lojista Guará', city: 'Guaratinguetá', state: 'SP', pairs: 24, value: 3936.00, leadDate: '2025-08-12' },
+            { date: '2025-08-18', company: 'Lojista GuarÃ¡', city: 'GuaratinguetÃ¡', state: 'SP', pairs: 24, value: 3936.00, leadDate: '2025-08-12' },
             { date: '2025-08-22', company: 'Lojista Bom Despacho', city: 'Bom Despacho', state: 'MG', pairs: 24, value: 3887.00, leadDate: '2025-08-15' },
             { date: '2025-09-03', company: 'Lojista Erechim', city: 'Erechim', state: 'RS', pairs: 12, value: 2028.00, leadDate: '2025-08-28' }
         ];
@@ -207,16 +234,16 @@
         // --- HELPERS ---
         const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
         const fmtDate = (d) => new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-        const fullMonthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        const fullMonthNames = ['Janeiro', 'Fevereiro', 'MarÃ§o', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-       // --- HOOK DE DADOS FIREBASE (CORRIGIDO PARA PERSISTÊNCIA) ---
+       // --- HOOK DE DADOS FIREBASE (CORRIGIDO PARA PERSISTÃŠNCIA) ---
         const useFirebaseData = (collectionName, initialData = [], user) => {
             const [data, setData] = useState(initialData);
             const [loading, setLoading] = useState(true);
             
-            // Caminho FIXO para os dados não sumirem
+            // Caminho FIXO para os dados nÃ£o sumirem
             // Antes era: ... 'users', user.uid, collectionName
-            // Agora é:   ... 'public', 'data', collectionName
+            // Agora Ã©:   ... 'public', 'data', collectionName
             
             useEffect(() => {
                 if (!window.db || !window.firebaseStore || !window.appId || !user) {
@@ -224,7 +251,7 @@
                 }
                 
                 const { collection, onSnapshot } = window.firebaseStore;
-                // MUDANÇA AQUI:
+                // MUDANÃ‡A AQUI:
                 const colRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', collectionName);
                 
                 const unsubscribe = onSnapshot(colRef, (snapshot) => {
@@ -240,7 +267,7 @@
                 if (!window.db || !user) { setData(prev => [...prev, { ...item, id: Date.now() }]); return; }
                 const { collection, addDoc } = window.firebaseStore;
                 const { id, ...dataToSave } = item;
-                // MUDANÇA AQUI:
+                // MUDANÃ‡A AQUI:
                 await addDoc(collection(window.db, 'artifacts', window.appId, 'public', 'data', collectionName), dataToSave);
             };
 
@@ -248,7 +275,7 @@
                 if (!window.db || !user) { setData(prev => prev.map(i => i.id === item.id ? item : i)); return; }
                 const { doc, updateDoc } = window.firebaseStore;
                 const { id, ...dataToSave } = item;
-                // MUDANÇA AQUI:
+                // MUDANÃ‡A AQUI:
                 const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', collectionName, String(id));
                 await updateDoc(docRef, dataToSave);
             };
@@ -256,7 +283,7 @@
             const deleteItem = async (id) => {
                 if (!window.db || !user) { setData(prev => prev.filter(i => i.id !== id)); return; }
                 const { doc, deleteDoc } = window.firebaseStore;
-                // MUDANÇA AQUI:
+                // MUDANÃ‡A AQUI:
                 const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', collectionName, String(id));
                 await deleteDoc(docRef);
             };
@@ -353,15 +380,16 @@
 
         const Sidebar = ({ view, setView, onLogout, notificationCount, isCollapsed, toggleSidebar }) => {
             const items = [
-                { id: 'analytics', label: 'Análises', icon: BarChart3 },
-                { id: 'lead-analytics', label: 'Análise de Leads', icon: PieChart },
-                { id: 'leads', label: `Leads (Funil) ${notificationCount > 0 ? '🔴 ' + notificationCount : ''}`, icon: Filter },
+                { id: 'analytics', label: 'AnÃ¡lises', icon: BarChart3 },
+                { id: 'lead-analytics', label: 'AnÃ¡lise de Leads', icon: PieChart },
+                { id: 'leads', label: `Leads (Funil) ${notificationCount > 0 ? 'ðŸ”´ ' + notificationCount : ''}`, icon: Filter },
+                { id: 'crm', label: 'CRM (NegociaÃ§Ãµes)', icon: Target },
                 { id: 'retailers', label: 'Lojistas (CRM)', icon: Users },
-                { id: 'ads', label: 'Anúncios (Ads)', icon: DollarSign },
-                { id: 'settings', label: 'Configurações', icon: Settings },
+                { id: 'ads', label: 'AnÃºncios (Ads)', icon: DollarSign },
+                { id: 'settings', label: 'ConfiguraÃ§Ãµes', icon: Settings },
             ];
             
-            // Largura dinâmica baseada no estado collapsed
+            // Largura dinÃ¢mica baseada no estado collapsed
             const sidebarClass = isCollapsed ? 'w-20' : 'w-64';
 
             return (
@@ -481,7 +509,7 @@
                 
                 filteredLeads.forEach(l => {
                     // Geo
-                    const st = l.state && l.state.trim() !== '' ? l.state : null;
+                    const st = normalizeUF(l.state);
                     if (st) {
                         leadsByState[st] = (leadsByState[st] || 0) + 1;
                         const reg = Object.keys(REGIONS).find(r => REGIONS[r].includes(st));
@@ -500,13 +528,13 @@
                     leadsByDay[l.date] = (leadsByDay[l.date] || 0) + 1;
                 });
 
-                // Ordenação por Estado (Pareto)
+                // OrdenaÃ§Ã£o por Estado (Pareto)
                 const sortedStates = Object.entries(leadsByState).sort((a, b) => b[1] - a[1]);
                 const sortedStateLabels = sortedStates.map(s => s[0]);
                 const sortedStateValues = sortedStates.map(s => s[1]);
 
-                // Ordenação por Data (Últimos 30 dias se muitos)
-                const sortedDays = Object.keys(leadsByDay).sort().slice(-30); // Últimos 30 dias registrados
+                // OrdenaÃ§Ã£o por Data (Ãšltimos 30 dias se muitos)
+                const sortedDays = Object.keys(leadsByDay).sort().slice(-30); // Ãšltimos 30 dias registrados
                 const trendData = sortedDays.map(d => leadsByDay[d]);
                 const trendLabels = sortedDays.map(d => {
                     const parts = d.split('-');
@@ -560,42 +588,42 @@
                 <div className="animate-fadeIn">
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                         <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2">
-                            <PieChart className="text-blue-500" /> Inteligência de Leads (BI)
+                            <PieChart className="text-blue-500" /> InteligÃªncia de Leads (BI)
                         </h2>
                         <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-700">
-                            <span className="text-slate-400 text-xs font-bold uppercase px-3">Período:</span>
+                            <span className="text-slate-400 text-xs font-bold uppercase px-3">PerÃ­odo:</span>
                             <select 
                                 className="bg-slate-800 text-white text-sm border-none rounded py-1 px-3 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
                                 value={filterDate}
                                 onChange={(e) => setFilterDate(e.target.value)}
                             >
-                                <option value="all">Visão Consolidada (Todos)</option>
+                                <option value="all">VisÃ£o Consolidada (Todos)</option>
                                 {availableMonths.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-                        <KpiCard title="Total de Leads" value={data.kpis.totalLeads} subtext="No período selecionado" icon={Filter} colorClass="border-blue-500" />
+                        <KpiCard title="Total de Leads" value={data.kpis.totalLeads} subtext="No perÃ­odo selecionado" icon={Filter} colorClass="border-blue-500" />
                         <KpiCard title="Custo por Lead (CPL)" value={fmtMoney(data.kpis.cpl)} subtext="Investimento / Leads" icon={DollarSign} colorClass="border-amber-500" />
-                        <KpiCard title="Taxa de Conversão" value={data.kpis.conversionRate.toFixed(1) + '%'} subtext={`1 venda a cada ${data.kpis.conversionRatio} leads`} icon={Target} colorClass="border-emerald-500" />
-                        <KpiCard title="Investimento Total" value={fmtMoney(data.kpis.totalAds)} subtext="Gasto em Anúncios" icon={Wallet} colorClass="border-slate-500" />
-                        <KpiCard title="Média Leads/Mês" value={data.kpis.avgLeadsPerMonth.toFixed(1)} subtext="Média do período" icon={Activity} colorClass="border-cyan-500" />
+                        <KpiCard title="Taxa de ConversÃ£o" value={data.kpis.conversionRate.toFixed(1) + '%'} subtext={`1 venda a cada ${data.kpis.conversionRatio} leads`} icon={Target} colorClass="border-emerald-500" />
+                        <KpiCard title="Investimento Total" value={fmtMoney(data.kpis.totalAds)} subtext="Gasto em AnÃºncios" icon={Wallet} colorClass="border-slate-500" />
+                        <KpiCard title="MÃ©dia Leads/MÃªs" value={data.kpis.avgLeadsPerMonth.toFixed(1)} subtext="MÃ©dia do perÃ­odo" icon={Activity} colorClass="border-cyan-500" />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Linha 1: Evolução e Custo */}
+                        {/* Linha 1: EvoluÃ§Ã£o e Custo */}
                         <div className="lg:col-span-2">
-                            <ChartContainer title="Evolução Mensal (Funil Macro)" subtitle="Comparativo Leads vs Vendas">
+                            <ChartContainer title="EvoluÃ§Ã£o Mensal (Funil Macro)" subtitle="Comparativo Leads vs Vendas">
                                 <ChartComponent type="bar" data={cLeadsMonth} options={{ scales: { y: {display: false}, y1: { type: 'linear', display: false, position: 'right', grid: {drawOnChartArea: false} } } }} />
                             </ChartContainer>
                         </div>
-                        <ChartContainer title="Custo por Lead (CPL)" subtitle="Eficiência do investimento (R$)">
+                        <ChartContainer title="Custo por Lead (CPL)" subtitle="EficiÃªncia do investimento (R$)">
                              <ChartComponent type="bar" data={cCplMonth} labelType="money" />
                         </ChartContainer>
 
                         {/* Linha 3: Geo Detalhado */}
-                        <ChartContainer title="Distribuição Regional" subtitle="Leads por Região">
+                        <ChartContainer title="DistribuiÃ§Ã£o Regional" subtitle="Leads por RegiÃ£o">
                             <div className="flex justify-center h-48">
                                 <ChartComponent type="doughnut" data={cLeadsRegion} labelType="percent" />
                             </div>
@@ -617,7 +645,7 @@
             
             // Pagination state
             const [currentPage, setCurrentPage] = useState(1);
-            const itemsPerPage = 50;
+            const [itemsPerPage, setItemsPerPage] = useState(50);
 
             useEffect(() => {
                 clearNotification();
@@ -666,119 +694,172 @@
                             <div className="flex items-center gap-2 mt-1">
                                 <p className="text-slate-400 text-sm flex items-center gap-2">
                                     <span className={`w-2 h-2 rounded-full ${apiUrl ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`}></span>
-                                    {apiUrl ? 'Conectado à API Google Sheets' : 'Modo Simulação (Demo)'}
+                                    {apiUrl ? 'Conectado Ã  API Google Sheets' : 'Modo SimulaÃ§Ã£o (Demo)'}
                                 </p>
                             </div>
                         </div>
-                        <button 
-                            onClick={handleSyncClick} 
-                            disabled={syncing} 
-                            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-blue-900/20 disabled:opacity-50 transition-all"
-                        >
-                            <RefreshCw size={18} className={syncing ? "animate-spin" : ""} /> 
-                            {syncing ? 'Sincronizando...' : 'Sincronizar Agora'}
-                        </button>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded border border-slate-700">
+                                <label>Exibir:</label>
+                                <select 
+                                    value={itemsPerPage} 
+                                    onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                                    className="bg-transparent text-white font-bold outline-none drop-shadow focus:ring-0"
+                                >
+                                    <option value={50} className="bg-slate-800">50</option>
+                                    <option value={100} className="bg-slate-800">100</option>
+                                    <option value={200} className="bg-slate-800">200</option>
+                                    <option value={100000} className="bg-slate-800">Todos</option>
+                                </select>
+                            </div>
+                            <button 
+                                onClick={handleSyncClick} 
+                                disabled={syncing} 
+                                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-blue-900/20 disabled:opacity-50 transition-all"
+                            >
+                                <RefreshCw size={18} className={syncing ? "animate-spin" : ""} /> 
+                                {syncing ? 'Sincronizando...' : 'Sincronizar Agora'}
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Fixed Height Container for Table - Fixes Scrolling Issue */}
-                    <div className="glass-panel rounded-lg overflow-hidden flex flex-col h-full max-h-[70vh]">
-                        <div className="overflow-auto custom-scrollbar flex-1 relative">
-                            <table className="w-full text-sm text-left text-slate-400 min-w-[1200px]">
-                                <thead className="text-xs text-slate-200 uppercase bg-slate-800/95 sticky top-0 z-20 backdrop-blur-sm border-b border-slate-700 shadow-md">
+                    <div className="glass-panel rounded-lg overflow-hidden flex flex-col mb-6">
+                        <div className="overflow-x-auto custom-scrollbar transition-all">
+                            <table className="w-full min-w-[1200px] table-fixed text-[13px] text-left text-slate-400">
+                                <thead className="text-[11px] text-slate-200 uppercase bg-slate-800/95 sticky top-0 z-20 backdrop-blur-sm border-b border-slate-700 shadow-md">
                                     <tr>
-                                        <th className="px-3 py-3 sortable w-24 sticky top-0 bg-slate-800" onClick={() => handleSort('date')}>Data <SortIcon column="date"/></th>
-                                        <th className="px-3 py-3 w-40 sticky top-0 bg-slate-800">E-mail</th>
-                                        <th className="px-3 py-3 sortable w-40 sticky top-0 bg-slate-800" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact"/></th>
-                                        <th className="px-3 py-3 w-32 sticky top-0 bg-slate-800">WhatsApp</th>
-                                        <th className="px-3 py-3 sortable w-16 sticky top-0 bg-slate-800" onClick={() => handleSort('state')}>UF <SortIcon column="state"/></th>
-                                        <th className="px-3 py-3 sortable w-32 sticky top-0 bg-slate-800" onClick={() => handleSort('city')}>Cidade <SortIcon column="city"/></th>
-                                        <th className="px-3 py-3 w-32 sticky top-0 bg-slate-800">CNPJ</th>
-                                        <th className="px-3 py-3 sortable w-40 sticky top-0 bg-slate-800" onClick={() => handleSort('company')}>Empresa <SortIcon column="company"/></th>
-                                        <th className="px-3 py-3 w-24 sticky top-0 bg-slate-800">IE</th>
-                                        <th className="px-3 py-3 w-48 sticky top-0 bg-slate-800">Endereço</th>
-                                        <th className="px-3 py-3 w-32 sticky top-0 bg-slate-800">Instagram</th>
-                                        <th className="px-3 py-3 w-48 sticky top-0 bg-slate-800">Obs</th>
-                                        <th className="px-3 py-3 text-right w-24 sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">Ação</th>
+                                        <th className="px-3 py-3 sortable w-[80px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('date')}>Data <SortIcon column="date"/></th>
+                                        <th className="px-3 py-3 sortable w-[150px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact"/></th>
+                                        <th className="px-3 py-3 w-[110px] text-center sticky top-0 bg-slate-800">WhatsApp</th>
+                                        <th className="px-3 py-3 sortable w-[120px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('state')}>Local <SortIcon column="state"/></th>
+                                        <th className="px-3 py-3 w-[150px] text-center sticky top-0 bg-slate-800">Lojista/CNPJ</th>
+                                        <th className="px-3 py-3 w-[160px] text-center sticky top-0 bg-slate-800">E-mail</th>
+                                        <th className="px-3 py-3 w-[180px] text-center sticky top-0 bg-slate-800">EndereÃ§o/Instagram</th>
+                                        <th className="px-3 py-3 text-center sticky top-0 bg-slate-800">ObservaÃ§Ãµes</th>
+                                        <th className="px-3 py-3 text-center w-[120px] sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">AÃ§Ã£o</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-700/50 whitespace-normal">
+                                <tbody className="divide-y divide-slate-700/50">
                                     {paginatedLeads.map((lead) => (
                                         <tr key={lead.id} className="hover:bg-slate-800/30 transition-colors animate-fadeIn group">
-                                            <td className="px-3 py-2 font-mono text-xs text-slate-300 align-top">{fmtDate(lead.date)}</td>
-                                            <td className="px-3 py-2 text-xs align-top break-all">{lead.email}</td>
-                                            <td className="px-3 py-2 font-bold text-white align-top">
-                                                {lead.contact} 
-                                                {lead.isNew && <span className="block w-fit mt-1 text-[9px] bg-red-500 text-white px-1 rounded shadow-sm shadow-red-900/50">NOVO</span>}
+                                            <td className="px-3 py-4 font-mono text-[11px] text-slate-400 align-top text-center">{fmtDate(lead.date)}</td>
+                                            <td className="px-3 py-4 align-top whitespace-normal break-words">
+                                                <div className="font-bold text-white text-[13px] leading-tight">{lead.contact}</div>
+                                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                                    {lead.isNew && <span className="text-[9px] bg-red-600/90 text-white px-1.5 py-0.5 rounded uppercase font-bold tracking-tight animate-pulse">NOVO</span>}
+                                                    {lead.status === 'read' && <span className="text-[9px] bg-slate-700/80 text-slate-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-slate-600/30">LIDO</span>}
+                                                    {['contacted', 'negotiating', 'qualified'].includes(lead.status) && <span className="text-[9px] bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-amber-500/30">EM CRM</span>}
+                                                    {lead.status === 'converted' && <span className="text-[9px] bg-emerald-500/20 text-emerald-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-emerald-500/30">VENDIDO</span>}
+                                                </div>
                                             </td>
-                                            <td className="px-3 py-2 align-top">
+                                            <td className="px-3 py-4 align-top text-center whitespace-normal">
                                                 {lead.phone ? (
-                                                    <a href={`https://wa.me/${String(lead.phone).replace(/\D/g,'')}`} target="_blank" className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 transition-colors">
-                                                        <Phone size={12} /> <span className="text-xs">{lead.phone}</span>
+                                                    <a 
+                                                        href={`https://wa.me/${String(lead.phone).replace(/\D/g,'')}`} 
+                                                        target="_blank" 
+                                                        onClick={() => {
+                                                            if (['new', 'read'].includes(lead.status) || lead.isNew) {
+                                                                updateItem({ ...lead, isNew: false, status: 'contacted' });
+                                                            }
+                                                        }}
+                                                        className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300"
+                                                    >
+                                                        <Phone size={12} /> <span className="text-[12px]">{lead.phone}</span>
                                                     </a>
                                                 ) : <span className="text-slate-600">-</span>}
                                             </td>
-                                            <td className="px-3 py-2 align-top">{lead.state}</td>
-                                            <td className="px-3 py-2 align-top">{lead.city}</td>
-                                            <td className="px-3 py-2 font-mono text-xs align-top">{lead.cnpj}</td>
-                                            <td className="px-3 py-2 align-top">{lead.company}</td>
-                                            <td className="px-3 py-2 text-xs align-top">{lead.ie}</td>
-                                            <td className="px-3 py-2 text-xs align-top" title={lead.address}>
-                                                <div className="line-clamp-2 hover:line-clamp-none transition-all cursor-help">{lead.address}</div>
+                                            <td className="px-3 py-4 align-top whitespace-normal">
+                                                <div className="text-white font-medium text-center">{lead.state || '?'}</div>
+                                                <div className="text-[11px] text-slate-500 text-center">{lead.city}</div>
                                             </td>
-                                            <td className="px-3 py-2 align-top break-all">{lead.instagram}</td>
-                                            <td className="px-3 py-2 text-xs align-top" title={lead.obs}>
-                                                <div className="line-clamp-2 hover:line-clamp-none transition-all cursor-help">{lead.obs}</div>
+                                            <td className="px-3 py-4 align-top whitespace-normal">
+                                                <div className="text-slate-200 font-medium leading-tight">{lead.company}</div>
+                                                <div className="text-[11px] font-mono text-slate-500 mt-1">{lead.cnpj}</div>
                                             </td>
-                                            <td className="px-3 py-2 text-right align-top sticky right-0 bg-slate-900/95 group-hover:bg-slate-800/95 backdrop-blur-sm transition-colors border-l border-slate-700/50 z-10 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">
-                                                {lead.status !== 'converted' && (
-                                                    <button onClick={() => onConvertToSale(lead)} className="bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center gap-1 ml-auto whitespace-nowrap">
+                                            <td className="px-3 py-4 align-top break-all text-slate-500 text-[11px]">{lead.email}</td>
+                                            <td className="px-3 py-4 align-top whitespace-normal overflow-hidden max-w-[180px]">
+                                                <div className="text-[11px] text-slate-400 leading-snug break-words">{lead.address}</div>
+                                                <div className="text-[11px] text-blue-400 mt-1 break-all">{lead.instagram}</div>
+                                            </td>
+                                            <td className="px-3 py-4 align-top whitespace-normal">
+                                                <div className="text-[12px] text-slate-300 leading-relaxed italic break-words">{lead.obs ? `"${lead.obs}"` : '-'}</div>
+                                            </td>
+                                            <td className="px-3 py-4 text-center align-top sticky right-0 bg-slate-900/95 group-hover:bg-slate-800/95 backdrop-blur-sm transition-colors border-l border-slate-700/50 z-10 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">
+                                                {lead.status === 'converted' ? (
+                                                    <div className="flex flex-col gap-1 items-center">
+                                                        <span className="text-[11px] text-emerald-500 font-medium bg-emerald-500/10 px-2 py-1 rounded">Feito</span>
+                                                        <button 
+                                                            onClick={() => updateItem({ ...lead, status: 'contacted' })} 
+                                                            className="text-[9px] text-slate-500 hover:text-slate-300 underline mt-1"
+                                                        >
+                                                            Desfazer
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button onClick={() => onConvertToSale(lead)} className="bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-3 py-1.5 rounded text-[11px] font-bold transition-all whitespace-nowrap">
                                                         Converter
                                                     </button>
                                                 )}
-                                                {lead.status === 'converted' && <span className="text-[10px] text-emerald-500 font-medium">Convertido</span>}
                                             </td>
                                         </tr>
                                     ))}
                                     {leads.length === 0 && (
-                                        <tr><td colSpan="13" className="text-center py-12 text-slate-500">Nenhum lead encontrado.</td></tr>
+                                        <tr><td colSpan="9" className="text-center py-12 text-slate-500">Nenhum lead encontrado.</td></tr>
                                     )}
                                 </tbody>
                             </table>
                         </div>
+                    </div>
                         
                         {/* Pagination Controls */}
-                        {totalPages > 1 && (
+                        {totalPages > 0 && (
                             <div className="flex justify-between items-center p-4 border-t border-slate-700 bg-slate-800/50 sticky bottom-0 z-20">
-                                <span className="text-xs text-slate-400">
-                                    Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, leads.length)} de {leads.length} leads
-                                </span>
-                                <div className="flex gap-2">
-                                    <button 
-                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                <div className="flex items-center gap-4 text-xs text-slate-400">
+                                    <span>
+                                        Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, leads.length)} de {leads.length} leads
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                                        <label>Leads por pÃ¡gina:</label>
+                                        <select 
+                                            value={itemsPerPage} 
+                                            onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                                            className="bg-slate-900 border border-slate-600 text-white rounded px-2 py-1 outline-none relative z-50 text-[11px]"
+                                        >
+                                            <option value={50}>50</option>
+                                            <option value={100}>100</option>
+                                            <option value={200}>200</option>
+                                            <option value={100000}>Todos</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button 
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                         disabled={currentPage === 1}
                                         className="px-3 py-1 rounded bg-slate-700 text-white disabled:opacity-50 hover:bg-slate-600 transition-colors text-xs"
                                     >
                                         Anterior
                                     </button>
                                     <span className="px-2 py-1 text-xs text-slate-300 flex items-center">
-                                        Pág {currentPage} de {totalPages}
+                                        PÃ¡g {currentPage} de {totalPages}
                                     </span>
                                     <button 
                                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                         disabled={currentPage === totalPages}
                                         className="px-3 py-1 rounded bg-slate-700 text-white disabled:opacity-50 hover:bg-slate-600 transition-colors text-xs"
                                     >
-                                        Próxima
+                                        PrÃ³xima
                                     </button>
                                 </div>
                             </div>
+                        </div>
                         )}
                     </div>
-                </div>
             );
         };
 
-        const RetailersView = ({ sales, addItem, updateItem, deleteItem, prefillData, setPrefillData }) => {
+        const RetailersView = ({ sales, addItem, updateItem, deleteItem, prefillData, setPrefillData, updateLead, leads }) => {
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [editingItem, setEditingItem] = useState(null);
             const [formData, setFormData] = useState({});
@@ -835,11 +916,33 @@
                 setIsModalOpen(true);
             };
 
+            useEffect(() => {
+                if (prefillData) {
+                    openModal({
+                        ...prefillData,
+                        leadDate: prefillData.date || '',
+                        date: new Date().toISOString().split('T')[0],
+                        id: undefined // NÃ£o usar ID do lead como ID da venda
+                    });
+                    setPrefillData(null);
+                }
+            }, [prefillData, setPrefillData]);
+
             const handleSubmit = (e) => {
                 e.preventDefault();
                 const newItem = { ...formData, pairs: Number(formData.pairs), value: Number(formData.value) };
-                if (editingItem) updateItem({ ...newItem, id: editingItem.id });
-                else addItem(newItem);
+                if (editingItem) {
+                    updateItem({ ...newItem, id: editingItem.id });
+                } else {
+                    addItem(newItem);
+                    // Atualiza o lead original para VENDIDO se vier do CRM/Funil
+                    if (formData.leadId && updateLead && leads) {
+                        const leadToConvert = leads.find(l => String(l.id) === String(formData.leadId));
+                        if (leadToConvert) {
+                            updateLead({ ...leadToConvert, status: 'converted', isNew: false });
+                        }
+                    }
+                }
                 setIsModalOpen(false);
             };
 
@@ -855,7 +958,7 @@
             return (
                 <div className="animate-fadeIn">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-white">Gestão de Lojistas</h2>
+                        <h2 className="text-2xl font-bold text-white">GestÃ£o de Lojistas</h2>
                         <button onClick={() => openModal()} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-amber-900/20"><Plus size={18} /> Novo Lojista</button>
                     </div>
                     <div className="glass-panel rounded-lg overflow-hidden">
@@ -868,7 +971,7 @@
                                         <th className="px-6 py-4 sortable" onClick={() => handleSort('state')}>Local <SortIcon column="state"/></th>
                                         <th className="px-6 py-4 text-center sortable" onClick={() => handleSort('pairs')}>Pares <SortIcon column="pairs"/></th>
                                         <th className="px-6 py-4 text-right sortable" onClick={() => handleSort('value')}>Valor <SortIcon column="value"/></th>
-                                        <th className="px-6 py-4 text-right">Ações</th>
+                                        <th className="px-6 py-4 text-right">AÃ§Ãµes</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700/50">
@@ -900,13 +1003,13 @@
                             </div>
                             
                             <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Dados do Cliente</h4>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Razão Social (Loja)</label><input type="text" required className="input-dark" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} /></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">RazÃ£o Social (Loja)</label><input type="text" required className="input-dark" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} /></div>
                              <div className="grid grid-cols-2 gap-4">
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">CNPJ</label><input type="text" className="input-dark" value={formData.cnpj || ''} onChange={e => setFormData({...formData, cnpj: e.target.value})} /></div>
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Insc. Estadual</label><input type="text" className="input-dark" value={formData.ie || ''} onChange={e => setFormData({...formData, ie: e.target.value})} /></div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Responsável (Nome)</label><input type="text" className="input-dark" value={formData.contact || ''} onChange={e => setFormData({...formData, contact: e.target.value})} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">ResponsÃ¡vel (Nome)</label><input type="text" className="input-dark" value={formData.contact || ''} onChange={e => setFormData({...formData, contact: e.target.value})} /></div>
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Email</label><input type="email" className="input-dark" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} /></div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -914,7 +1017,7 @@
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Instagram</label><input type="text" className="input-dark" value={formData.instagram || ''} onChange={e => setFormData({...formData, instagram: e.target.value})} /></div>
                             </div>
                             
-                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Localização</h4>
+                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">LocalizaÃ§Ã£o</h4>
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="col-span-2"><label className="block text-xs uppercase mb-1 text-slate-400">Cidade</label><input type="text" required className="input-dark" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} /></div>
                                 <div>
@@ -925,19 +1028,19 @@
                                     </select>
                                 </div>
                             </div>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Endereço Completo</label><input type="text" className="input-dark" value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} /></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">EndereÃ§o Completo</label><input type="text" className="input-dark" value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} /></div>
                             
                             <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Pedido</h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Qtd Pares</label><input type="number" required className="input-dark" value={formData.pairs} onChange={e => setFormData({...formData, pairs: e.target.value})} /></div>
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Total (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} /></div>
                             </div>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Observações</label><textarea className="input-dark h-20" value={formData.obs || ''} onChange={e => setFormData({...formData, obs: e.target.value})}></textarea></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">ObservaÃ§Ãµes</label><textarea className="input-dark h-20" value={formData.obs || ''} onChange={e => setFormData({...formData, obs: e.target.value})}></textarea></div>
                             
                             <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded mt-4">Salvar Dados</button>
                         </form>
                     </Modal>
-                    <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar Exclusão"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este registro?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
+                    <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar ExclusÃ£o"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este registro?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
                 </div>
             );
         };
@@ -967,7 +1070,7 @@
                 return sortableItems;
             }, [ads, sortConfig]);
 
-            // Cálculos para o rodapé
+            // CÃ¡lculos para o rodapÃ©
             const totalInvestment = sortedAds.reduce((acc, ad) => acc + ad.value, 0);
             const avgInvestment = sortedAds.length > 0 ? totalInvestment / sortedAds.length : 0;
 
@@ -979,16 +1082,16 @@
             return (
                 <div className="animate-fadeIn">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-white">Investimento em Anúncios</h2>
-                        <button onClick={() => openModal()} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-emerald-900/20"><Plus size={18} /> Novo Mês</button>
+                        <h2 className="text-2xl font-bold text-white">Investimento em AnÃºncios</h2>
+                        <button onClick={() => openModal()} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-emerald-900/20"><Plus size={18} /> Novo MÃªs</button>
                     </div>
-                    <div className="glass-panel rounded-lg overflow-hidden max-w-3xl">
+                    <div className="glass-panel rounded-lg overflow-hidden w-full">
                         <table className="w-full text-sm text-left text-slate-400">
                             <thead className="text-xs text-slate-200 uppercase bg-slate-800/50">
                                 <tr>
-                                    <th className="px-6 py-4 sortable" onClick={() => handleSort('month')}>Mês Referência <SortIcon column="month"/></th>
+                                    <th className="px-6 py-4 sortable" onClick={() => handleSort('month')}>MÃªs ReferÃªncia <SortIcon column="month"/></th>
                                     <th className="px-6 py-4 text-right sortable" onClick={() => handleSort('value')}>Investimento (Ads) <SortIcon column="value"/></th>
-                                    <th className="px-6 py-4 text-right">Ações</th>
+                                    <th className="px-6 py-4 text-right">AÃ§Ãµes</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-700/50">
@@ -1007,15 +1110,15 @@
                             </tbody>
                             <tfoot className="bg-slate-800/80 text-slate-200 font-bold border-t border-slate-700">
                                 <tr>
-                                    <td className="px-6 py-4 text-right uppercase text-xs text-slate-400">Média Mensal: <span className="text-white ml-1 text-sm">{fmtMoney(avgInvestment)}</span></td>
+                                    <td className="px-6 py-4 text-right uppercase text-xs text-slate-400">MÃ©dia Mensal: <span className="text-white ml-1 text-sm">{fmtMoney(avgInvestment)}</span></td>
                                     <td className="px-6 py-4 text-right uppercase text-xs text-slate-400">Total Investido: <span className="text-emerald-400 ml-1 text-lg">{fmtMoney(totalInvestment)}</span></td>
                                     <td></td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
-                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? "Editar Custo" : "Novo Investimento"}><form onSubmit={handleSubmit} className="space-y-4"><div><label className="block text-xs uppercase mb-1 text-slate-400">Mês (YYYY-MM)</label><input type="month" required className="input-dark" value={formData.month} onChange={e => setFormData({...formData, month: e.target.value})} /></div><div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Investido (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} /></div><button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded mt-4">Salvar</button></form></Modal>
-                    <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar Exclusão"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este custo?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
+                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? "Editar Custo" : "Novo Investimento"}><form onSubmit={handleSubmit} className="space-y-4"><div><label className="block text-xs uppercase mb-1 text-slate-400">MÃªs (YYYY-MM)</label><input type="month" required className="input-dark" value={formData.month} onChange={e => setFormData({...formData, month: e.target.value})} /></div><div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Investido (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} /></div><button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded mt-4">Salvar</button></form></Modal>
+                    <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar ExclusÃ£o"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este custo?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
                 </div>
             );
         };
@@ -1029,7 +1132,7 @@
                     <div className="glass-panel w-full max-w-md p-8 rounded-xl shadow-2xl animate-fadeIn border-t-4 border-amber-500">
                         <div className="text-center mb-8"><div className="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-full mb-4"><Shield className="text-amber-500" size={32} /></div><h2 className="text-2xl font-bold text-white">Rico Militar</h2><p className="text-slate-400 text-sm">Painel Administrativo Rico Lojistas</p></div>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Usuário</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><User size={18} /></div><input type="text" className="input-dark pl-10" value={username} onChange={e=>setUsername(e.target.value)} required /></div></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">UsuÃ¡rio</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><User size={18} /></div><input type="text" className="input-dark pl-10" value={username} onChange={e=>setUsername(e.target.value)} required /></div></div>
                             <div><label className="block text-xs uppercase mb-1 text-slate-400">Senha</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><Lock size={18} /></div><input type="password" className="input-dark pl-10" value={password} onChange={e=>setPassword(e.target.value)} required /></div></div>
                             {loginError && <p className="text-red-400 text-xs text-center">{loginError}</p>}
                             <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded mt-4 transition-colors">Entrar</button>
@@ -1039,20 +1142,23 @@
             );
         };
 
-        const SettingsView = ({ credentials, onUpdateCredentials, apiUrl, onUpdateApiUrl, importData }) => {
+        const SettingsView = ({ credentials, onUpdateCredentials, apiUrl, onUpdateApiUrl, importData, onCleanTags }) => {
             const [username, setUsername] = useState(credentials.username);
             const [password, setPassword] = useState(credentials.password);
             const [url, setUrl] = useState(apiUrl);
             const [msg, setMsg] = useState('');
-            const handleSave = (e) => { e.preventDefault(); onUpdateCredentials(username, password); onUpdateApiUrl(url); setMsg('Configurações atualizadas com sucesso!'); setTimeout(() => setMsg(''), 3000); };
-            const handleImport = () => { if(confirm('Atenção: Isso irá carregar os dados de exemplo no seu banco de dados online. Deseja continuar?')) importData(); };
+            const handleSave = (e) => { e.preventDefault(); onUpdateCredentials(username, password); onUpdateApiUrl(url); setMsg('ConfiguraÃ§Ãµes atualizadas com sucesso!'); setTimeout(() => setMsg(''), 3000); };
+
+            const handleClean = () => { if(confirm('Isso irÃ¡ remover a etiqueta NOVO de todos os leads de hoje para trÃ¡s. Deseja continuar?')) onCleanTags(); };
             return (
                 <div className="animate-fadeIn max-w-2xl mx-auto">
-                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2"><Settings className="text-slate-400" /> Configurações de Acesso</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2"><Settings className="text-slate-400" /> ConfiguraÃ§Ãµes de Dashboard</h2>
                     <div className="glass-panel p-8 rounded-lg">
                         <form onSubmit={handleSave} className="space-y-6">
-                            <div><label className="block text-sm font-bold mb-2 text-white">Novo Usuário</label><input type="text" className="input-dark p-3" value={username} onChange={e=>setUsername(e.target.value)} required /></div>
-                            <div><label className="block text-sm font-bold mb-2 text-white">Nova Senha</label><input type="text" className="input-dark p-3" value={password} onChange={e=>setPassword(e.target.value)} required /></div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-sm font-bold mb-2 text-white">UsuÃ¡rio</label><input type="text" className="input-dark p-3" value={username} onChange={e=>setUsername(e.target.value)} required /></div>
+                                <div><label className="block text-sm font-bold mb-2 text-white">Senha</label><input type="text" className="input-dark p-3" value={password} onChange={e=>setPassword(e.target.value)} required /></div>
+                            </div>
                             
                             <hr className="border-slate-700 my-6" />
                             
@@ -1063,14 +1169,278 @@
                             </div>
 
                             {msg && <div className="bg-emerald-500/20 text-emerald-400 p-3 rounded text-sm text-center">{msg}</div>}
-                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition-colors">Salvar Alterações</button>
+                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition-colors shadow-lg shadow-blue-900/20">Salvar AlteraÃ§Ãµes</button>
                         </form>
-                        <hr className="border-slate-700 my-8" />
-                        <div className="text-center">
-                            <p className="text-slate-400 text-sm mb-4">Base de Dados</p>
-                            <button onClick={handleImport} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2 mx-auto"><DatabaseIcon size={16} /> Restaurar Dados de Exemplo</button>
+                        
+                        <div className="mt-12 pt-8 border-t border-slate-700">
+                             <h3 className="text-white font-bold mb-4 flex items-center gap-2"><DatabaseIcon size={18} className="text-slate-500"/> ManutenÃ§Ã£o de Dados</h3>
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button onClick={handleClean} className="bg-amber-600/20 text-amber-500 border border-amber-500/30 hover:bg-amber-600 hover:text-white px-4 py-3 rounded text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-sm">
+                                    <Trash2 size={16} /> Limpar Etiquetas Antigas
+                                </button>
+                             </div>
+                             <p className="text-slate-500 text-[10px] mt-4 text-center italic">Use "Limpar Etiquetas Antigas" para marcar todos os leads de hoje ou anteriores como jÃ¡ visualizados.</p>
                         </div>
                     </div>
+                </div>
+            );
+        };
+
+        const CRMView = ({ leads, sales, updateItem, onConvertToSale }) => {
+            const [selectedLead, setSelectedLead] = useState(null);
+            const [notes, setNotes] = useState('');
+
+            const stages = [
+                { id: 'contacted', label: 'Iniciado', color: 'bg-blue-500/20 text-blue-400 border-blue-500/50' },
+                { id: 'negotiating', label: 'NegociaÃ§Ã£o', color: 'bg-amber-500/20 text-amber-400 border-amber-500/50' },
+                { id: 'qualified', label: 'Proposta', color: 'bg-purple-500/20 text-purple-400 border-purple-500/50' },
+                { id: 'converted', label: 'Fechado', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50' }
+            ];
+
+            const crmLeads = useMemo(() => {
+                const activeLeads = leads.filter(l => ['contacted', 'negotiating', 'qualified'].includes(l.status));
+                const cleanNum = (str) => str ? String(str).replace(/\D/g,'') : '';
+                const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
+
+                const closedDeals = sales.map(s => {
+                    const origLead = leads.find(l => l.status === 'converted' && (
+                        (l.cnpj && s.cnpj && cleanNum(l.cnpj) === cleanNum(s.cnpj)) ||
+                        (l.phone && s.phone && cleanNum(l.phone) === cleanNum(s.phone)) ||
+                        (l.company && s.company && normalize(l.company) === normalize(s.company)) ||
+                        (l.contact && s.company && normalize(l.contact) === normalize(s.company))
+                    ));
+
+                    return {
+                        id: `sale_${s.id}`,
+                        contact: s.company || origLead?.contact || 'Lojista',
+                        date: s.date,
+                        city: s.city || origLead?.city || '',
+                        state: s.state || origLead?.state || '',
+                        phone: s.phone || origLead?.phone || '',
+                        crmNotes: origLead?.crmNotes ? `${origLead.crmNotes}\n\nFechado: ${s.pairs} pares (${fmtMoney(s.value)})` : `Lojista fechado em ${fmtDate(s.date)}: ${s.pairs} pares (${fmtMoney(s.value)}).\nCadastrado direto via Lojistas.`,
+                        status: 'converted',
+                        isSaleOnly: !origLead,
+                        email: origLead?.email || s.email,
+                        address: s.address || origLead?.address,
+                        origLeadId: origLead?.id
+                    };
+                });
+                return [...activeLeads, ...closedDeals].sort((a,b) => new Date(b.date) - new Date(a.date));
+            }, [leads, sales]);
+
+            const moveStage = (leadId, newStatus) => {
+                if (String(leadId).startsWith('sale_')) return; // Sale cards read-only move
+                const lead = leads.find(l => l.id === leadId);
+                if (lead) updateItem({ ...lead, status: newStatus });
+            };
+
+            const handleDragStart = (e, leadId) => {
+                e.dataTransfer.setData('leadId', leadId);
+                e.currentTarget.style.opacity = '0.5';
+            };
+
+            const handleDragEnd = (e) => {
+                e.currentTarget.style.opacity = '1';
+            };
+
+            const handleDragOver = (e) => {
+                e.preventDefault();
+                e.currentTarget.classList.add('bg-slate-800/80');
+            };
+
+            const handleDragLeave = (e) => {
+                e.currentTarget.classList.remove('bg-slate-800/80');
+            };
+
+            const handleDrop = (e, status) => {
+                e.preventDefault();
+                e.currentTarget.classList.remove('bg-slate-800/80');
+                const leadId = e.dataTransfer.getData('leadId');
+                if (String(leadId).startsWith('sale_')) return;
+                
+                if (status === 'converted') {
+                    const lead = leads.find(l => String(l.id) === String(leadId));
+                    if (lead) onConvertToSale(lead);
+                } else {
+                    moveStage(leadId, status);
+                }
+            };
+
+            const openDetail = (lead) => {
+                setSelectedLead(lead);
+                if (lead.origLeadId) {
+                    const orig = leads.find(l => String(l.id) === String(lead.origLeadId));
+                    setNotes(orig?.crmNotes || '');
+                } else {
+                    setNotes(lead.crmNotes || '');
+                }
+            };
+
+            const saveNotes = () => {
+                if (selectedLead) {
+                    if (String(selectedLead.id).startsWith('sale_')) {
+                        if (selectedLead.isSaleOnly) {
+                            alert("Esta Ã© uma venda cadastrada manualmente. As notas sÃ£o automÃ¡ticas. Ã‰ necessÃ¡rio um Lead para registrar notas.");
+                            return;
+                        }
+                        const origLead = leads.find(l => String(l.id) === String(selectedLead.origLeadId));
+                        if (origLead) updateItem({ ...origLead, crmNotes: notes });
+                    } else {
+                        updateItem({ ...selectedLead, crmNotes: notes });
+                    }
+                    setSelectedLead(null);
+                }
+            };
+
+            return (
+                <div className="animate-fadeIn">
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2">
+                                <Target className="text-amber-500" /> CRM de NegociaÃ§Ãµes
+                            </h2>
+                            <p className="text-slate-400 text-sm mt-1">Arraste os leads para mudar o status ou clique para ver detalhes</p>
+                        </div>
+                        <div className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 flex items-center gap-2">
+                            <span className="text-slate-400 text-xs font-bold uppercase">Total em Funil:</span>
+                            <span className="text-white font-bold">{crmLeads.length}</span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-[calc(100vh-250px)]">
+                        {stages.map(stage => {
+                            const stageLeads = crmLeads.filter(l => l.status === stage.id);
+                            return (
+                                <div 
+                                    key={stage.id} 
+                                    className="flex flex-col bg-slate-900/50 border border-slate-700/50 rounded-xl overflow-hidden glass-panel transition-colors duration-200"
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={(e) => handleDrop(e, stage.id)}
+                                >
+                                    <div className={`p-4 border-b border-slate-700/50 flex justify-between items-center ${stage.color.split(' ')[0]}`}>
+                                        <h3 className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider">
+                                            {stage.label}
+                                        </h3>
+                                        <span className="bg-slate-800/80 text-[10px] px-2 py-0.5 rounded-full text-slate-300 font-bold border border-slate-600">{stageLeads.length}</span>
+                                    </div>
+                                    
+                                    <div className="flex-1 p-2 overflow-y-auto custom-scrollbar space-y-3 bg-slate-900/30">
+                                        {stageLeads.length === 0 && (
+                                            <div className="text-center py-10 text-slate-600 italic text-[10px]">Arraste um lead para aqui</div>
+                                        )}
+                                        {stageLeads.map(lead => (
+                                            <div 
+                                                key={lead.id} 
+                                                draggable="true"
+                                                onDragStart={(e) => handleDragStart(e, lead.id)}
+                                                onDragEnd={handleDragEnd}
+                                                onClick={() => openDetail(lead)}
+                                                className="bg-slate-800/80 border border-slate-700/60 p-3 rounded-lg shadow-sm hover:border-amber-500/50 transition-all cursor-move active:scale-95 duration-200"
+                                            >
+                                                <div className="flex justify-between items-start mb-2 gap-2">
+                                                    <h4 className="font-bold text-white text-[12px] leading-tight line-clamp-1">{lead.contact}</h4>
+                                                    <span className="text-[9px] text-slate-500 font-mono whitespace-nowrap">{fmtDate(lead.date)}</span>
+                                                </div>
+                                                <p className="text-[10px] text-slate-400 mb-2 flex items-center gap-1">
+                                                    <Globe size={10} className="text-blue-500" /> {lead.city} - {lead.state}
+                                                </p>
+                                                
+                                                {lead.crmNotes && (
+                                                    <div className="bg-amber-500/5 p-1.5 rounded text-[9px] text-amber-200/60 italic mb-2 border border-amber-500/10 line-clamp-2">
+                                                        {lead.crmNotes}
+                                                    </div>
+                                                )}
+
+                                                <div className="flex items-center justify-between gap-1 pt-2 border-t border-slate-700/50">
+                                                    <a 
+                                                        href={`https://wa.me/${String(lead.phone).replace(/\D/g,'')}`} 
+                                                        target="_blank" 
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="p-1.5 bg-emerald-600/20 text-emerald-500 hover:bg-emerald-600 hover:text-white rounded-md transition-all"
+                                                    >
+                                                        <Phone size={12} />
+                                                    </a>
+                                                    
+                                                    {stage.id !== 'converted' ? (
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); onConvertToSale(lead); }}
+                                                            className="px-2 py-1 bg-amber-600/20 text-amber-500 hover:bg-amber-600 hover:text-white text-[9px] font-bold rounded-md transition-all flex items-center gap-1"
+                                                        >
+                                                            Fechar <ArrowRight size={10} />
+                                                        </button>
+                                                    ) : (
+                                                        <span className="text-[9px] text-emerald-500 font-bold flex items-center gap-1">
+                                                            <Shield size={10} /> Cliente
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Modal de Detalhes do Lead */}
+                    {selectedLead && (
+                        <Modal isOpen={!!selectedLead} onClose={() => setSelectedLead(null)} title="Ficha do Lead / NegociaÃ§Ã£o">
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4 bg-slate-800/50 p-4 rounded-lg border border-slate-700/50">
+                                    <div>
+                                        <label className="block text-[10px] uppercase text-slate-500 font-bold mb-1">Nome / Contato</label>
+                                        <p className="text-white font-bold">{selectedLead.contact}</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] uppercase text-slate-500 font-bold mb-1">Data de Entrada</label>
+                                        <p className="text-slate-300 font-mono">{fmtDate(selectedLead.date)}</p>
+                                    </div>
+                                    <div className="col-span-2">
+                                        <label className="block text-[10px] uppercase text-slate-500 font-bold mb-1">Empresa / Lojista</label>
+                                        <p className="text-slate-300">{selectedLead.company || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] uppercase text-slate-500 font-bold mb-1">WhatsApp</label>
+                                        <p className="text-emerald-400 font-bold">{selectedLead.phone || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] uppercase text-slate-500 font-bold mb-1">E-mail</label>
+                                        <p className="text-slate-400 text-xs">{selectedLead.email || '-'}</p>
+                                    </div>
+                                    <div className="col-span-2">
+                                        <label className="block text-[10px] uppercase text-slate-500 font-bold mb-1">LocalizaÃ§Ã£o</label>
+                                        <p className="text-slate-300">{selectedLead.address}, {selectedLead.city} - {selectedLead.state}</p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] uppercase text-amber-500 font-bold mb-2">AnotaÃ§Ãµes da NegociaÃ§Ã£o</label>
+                                    <textarea 
+                                        className="input-dark w-full h-40 text-sm p-3 focus:ring-1 focus:ring-amber-500"
+                                        placeholder="Escreva aqui o histÃ³rico da negociaÃ§Ã£o, condiÃ§Ãµes especiais, prÃ³ximos passos..."
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                    ></textarea>
+                                </div>
+
+                                <div className="flex gap-3 pt-4 border-t border-slate-700">
+                                    <button 
+                                        onClick={() => setSelectedLead(null)}
+                                        className="flex-1 px-4 py-3 rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800 font-bold text-sm transition-all"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button 
+                                        onClick={saveNotes}
+                                        className="flex-1 px-4 py-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition-all shadow-lg shadow-amber-900/20"
+                                    >
+                                        Salvar AnotaÃ§Ãµes
+                                    </button>
+                                </div>
+                            </div>
+                        </Modal>
+                    )}
                 </div>
             );
         };
@@ -1111,17 +1481,19 @@
                 const stateStats = {};
                 const regionStats = {};
                 filteredSales.forEach(s => {
-                    if(!stateStats[s.state]) stateStats[s.state] = { rev:0, count:0, receita: 0, pedidos: 0 };
-                    stateStats[s.state].rev += s.value;
-                    stateStats[s.state].count++;
-                    stateStats[s.state].receita += s.value;
-                    stateStats[s.state].pedidos++;
-                    const reg = Object.keys(REGIONS).find(r => REGIONS[r].includes(s.state)) || 'Outro';
+                    const st = normalizeUF(s.state);
+                    if (!st) return; // Ignora "gata" e outros lixos
+                    if(!stateStats[st]) stateStats[st] = { rev:0, count:0, receita: 0, pedidos: 0 };
+                    stateStats[st].rev += s.value;
+                    stateStats[st].count++;
+                    stateStats[st].receita += s.value;
+                    stateStats[st].pedidos++;
+                    const reg = Object.keys(REGIONS).find(r => REGIONS[r].includes(st)) || 'Outro';
                     if(!regionStats[reg]) regionStats[reg] = 0;
                     regionStats[reg] += s.value;
                 });
 
-                const ops = { week: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d => ({name:d, count:0, rev:0})), monthDay: Array.from({length:31}, (_,i)=>({day:i+1, count:0})), buckets: {'1-12':0, '13-24':0, '25-48':0, '49+':0} };
+                const ops = { week: ['Dom','Seg','Ter','Qua','Qui','Sex','SÃ¡b'].map(d => ({name:d, count:0, rev:0})), monthDay: Array.from({length:31}, (_,i)=>({day:i+1, count:0})), buckets: {'1-12':0, '13-24':0, '25-48':0, '49+':0} };
                 filteredSales.forEach(s => { const d = new Date(s.date); ops.week[d.getDay()].count++; ops.week[d.getDay()].rev += s.value; ops.monthDay[d.getDate()-1].count++; if(s.pairs<=12) ops.buckets['1-12']++; else if(s.pairs<=24) ops.buckets['13-24']++; else if(s.pairs<=48) ops.buckets['25-48']++; else ops.buckets['49+']++; });
 
                 return { kpis: { rev, roi, pairs, ticket, netResult, adCost, avgPairsPerDeal, uniqueRetailers }, monthly: monthlyChartData, geo: { state: stateStats, region: regionStats }, ops };
@@ -1131,21 +1503,21 @@
             const cRoi = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'ROI (x)', data: data.monthly.map(d=>d.roi.toFixed(1)), backgroundColor: '#8b5cf6', borderRadius:4 }] };
             const cPairs = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Pares', data: data.monthly.map(d=>d.pairs), backgroundColor: '#3b82f6', borderRadius:4 }] };
             const cRevVsAds = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Retorno', data: data.monthly.map(d=>d.revenue), backgroundColor: '#10b981', borderRadius:3 }, { label: 'Ads', data: data.monthly.map(d=>d.cost), backgroundColor: '#64748b', borderRadius:3 }] };
-            const cTicketM = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Ticket Médio', data: data.monthly.map(d=>d.ticket), backgroundColor: '#6366f1', borderRadius:4 }] };
+            const cTicketM = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Ticket MÃ©dio', data: data.monthly.map(d=>d.ticket), backgroundColor: '#6366f1', borderRadius:4 }] };
             const cNew = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Novos Lojistas', data: data.monthly.map(d=>d.newRetailers), backgroundColor: '#ec4899', borderRadius:4 }] };
             const sortedStates = Object.entries(data.geo.state).sort((a,b)=>b[1].rev - a[1].rev);
             
-            // Novos ordenadores para os gráficos específicos
+            // Novos ordenadores para os grÃ¡ficos especÃ­ficos
             const sortedStatesByCount = Object.entries(data.geo.state).sort((a,b)=>b[1].count - a[1].count);
             const sortedStatesByTicket = Object.entries(data.geo.state).sort((a,b)=>(b[1].rev/b[1].count) - (a[1].rev/a[1].count));
 
             const cGeoRev = { labels: sortedStates.map(s=>s[0]), datasets:[{label:'Receita', data: sortedStates.map(s=>s[1].rev), backgroundColor:'#f59e0b', borderRadius:4, indexAxis:'y'}] };
             
-            // Usando os ordenadores específicos
+            // Usando os ordenadores especÃ­ficos
             const cGeoCount = { labels: sortedStatesByCount.map(s=>s[0]), datasets:[{label:'Pedidos', data: sortedStatesByCount.map(s=>s[1].count), backgroundColor:'#3b82f6', borderRadius:4}] };
-            const cGeoTicket = { labels: sortedStatesByTicket.map(s=>s[0]), datasets:[{label:'Ticket Médio', data: sortedStatesByTicket.map(s=>s[1].rev/s[1].count), backgroundColor:'#8b5cf6', borderRadius:4}] };
+            const cGeoTicket = { labels: sortedStatesByTicket.map(s=>s[0]), datasets:[{label:'Ticket MÃ©dio', data: sortedStatesByTicket.map(s=>s[1].rev/s[1].count), backgroundColor:'#8b5cf6', borderRadius:4}] };
             
-            // Ordenação da Região (Maior para menor)
+            // OrdenaÃ§Ã£o da RegiÃ£o (Maior para menor)
             const sortedRegions = Object.entries(data.geo.region).sort((a, b) => b[1] - a[1]);
             const cReg = { 
                 labels: sortedRegions.map(r => r[0]), 
@@ -1161,19 +1533,19 @@
             return (
                 <div className="animate-fadeIn">
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                        <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2"><TrendingUp className="text-amber-500" /> Dashboard Analítico</h2>
+                        <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2"><TrendingUp className="text-amber-500" /> Dashboard AnalÃ­tico</h2>
                         <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-700">
-                            <span className="text-slate-400 text-xs font-bold uppercase px-3">Período:</span>
+                            <span className="text-slate-400 text-xs font-bold uppercase px-3">PerÃ­odo:</span>
                             <select className="bg-slate-800 text-white text-sm border-none rounded py-1 px-3 focus:ring-1 focus:ring-amber-500 outline-none cursor-pointer" value={filterDate} onChange={(e) => setFilterDate(e.target.value)}>
-                                <option value="all">Visão Consolidada (Todos)</option>
+                                <option value="all">VisÃ£o Consolidada (Todos)</option>
                                 {availableMonths.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <KpiCard title="Faturamento Total" value={fmtMoney(data.kpis.rev)} subtext={filterDate === 'all' ? 'Total Acumulado' : 'Neste Mês'} icon={DollarSign} colorClass="border-amber-500" />
-                        <KpiCard title="Retorno Líquido" value={fmtMoney(data.kpis.netResult)} subtext="Lucro Operacional" icon={TrendingUp} colorClass="border-emerald-600" />
-                        <KpiCard title="Lojistas Fechados" value={data.kpis.uniqueRetailers} subtext="Clientes Únicos" icon={Users} colorClass="border-purple-500" />
+                        <KpiCard title="Faturamento Total" value={fmtMoney(data.kpis.rev)} subtext={filterDate === 'all' ? 'Total Acumulado' : 'Neste MÃªs'} icon={DollarSign} colorClass="border-amber-500" />
+                        <KpiCard title="Retorno LÃ­quido" value={fmtMoney(data.kpis.netResult)} subtext="Lucro Operacional" icon={TrendingUp} colorClass="border-emerald-600" />
+                        <KpiCard title="Lojistas Fechados" value={data.kpis.uniqueRetailers} subtext="Clientes Ãšnicos" icon={Users} colorClass="border-purple-500" />
                         <KpiCard title="Volume Vendas" value={data.kpis.pairs} subtext="Pares Vendidos" icon={Target} colorClass="border-blue-500" />
                         <KpiCard title="ROI Marketing" value={`${data.kpis.roi.toFixed(2)}x`} subtext="Retorno sobre Ads" icon={Activity} colorClass="border-indigo-500" />
                         <KpiCard title="Valor Investimento" value={fmtMoney(data.kpis.adCost)} subtext="Custo Ads" icon={DollarSign} colorClass="border-slate-500" />
@@ -1181,30 +1553,30 @@
                     <SectionHeader title="Financeiro" icon={BarChart3} color="bg-amber-500" isOpen={sections.financial} onToggle={() => toggle('financial')} />
                     {sections.financial && (
                         <div className="space-y-6">
-                            <ChartContainer title="Receita Mês a Mês"><ChartComponent type="bar" data={cRev} labelType="money"/></ChartContainer>
+                            <ChartContainer title="Receita MÃªs a MÃªs"><ChartComponent type="bar" data={cRev} labelType="money"/></ChartContainer>
                             <ChartContainer title="Retorno vs Investimento"><ChartComponent type="bar" data={cRevVsAds} labelType="money"/></ChartContainer>
-                            <ChartContainer title="ROI por Mês"><ChartComponent type="bar" data={cRoi} labelType="roi"/></ChartContainer>
-                            <ChartContainer title="Ticket Médio por Mês"><ChartComponent type="bar" data={cTicketM} labelType="money"/></ChartContainer>
+                            <ChartContainer title="ROI por MÃªs"><ChartComponent type="bar" data={cRoi} labelType="roi"/></ChartContainer>
+                            <ChartContainer title="Ticket MÃ©dio por MÃªs"><ChartComponent type="bar" data={cTicketM} labelType="money"/></ChartContainer>
                             <ChartContainer title="Receita por Dia da Semana"><ChartComponent type="bar" data={cWeekRev} labelType="money"/></ChartContainer>
                         </div>
                     )}
-                    <SectionHeader title="Geográfico" icon={Globe} color="bg-blue-500" isOpen={sections.geo} onToggle={() => toggle('geo')} />
+                    <SectionHeader title="GeogrÃ¡fico" icon={Globe} color="bg-blue-500" isOpen={sections.geo} onToggle={() => toggle('geo')} />
                     {sections.geo && (
                         <div className="space-y-6">
                             <ChartContainer title="Receita por Estado"><ChartComponent type="bar" data={cGeoRev} options={{indexAxis:'y', scales: {x: {display: false}, y: {display: true, grid: {display: false}, ticks: {color: '#e2e8f0', font: {size: 12, weight: 'bold'}}}}}} height={400} labelType="money"/></ChartContainer>
-                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Receita por Região"><ChartComponent type="doughnut" data={cReg} labelType="money"/></ChartContainer></div></div>
+                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Receita por RegiÃ£o"><ChartComponent type="doughnut" data={cReg} labelType="money"/></ChartContainer></div></div>
                             <ChartContainer title="Pedidos por Estado"><ChartComponent type="bar" data={cGeoCount}/></ChartContainer>
-                            <ChartContainer title="Ticket Médio por Estado"><ChartComponent type="bar" data={cGeoTicket} labelType="money"/></ChartContainer>
+                            <ChartContainer title="Ticket MÃ©dio por Estado"><ChartComponent type="bar" data={cGeoTicket} labelType="money"/></ChartContainer>
                         </div>
                     )}
                     <SectionHeader title="Operacional" icon={Layers} color="bg-emerald-500" isOpen={sections.ops} onToggle={() => toggle('ops')} />
                     {sections.ops && (
                         <div className="space-y-6">
-                            <ChartContainer title="Novos Lojistas por Mês"><ChartComponent type="bar" data={cNew}/></ChartContainer>
-                            <ChartContainer title="Pares Vendidos por Mês"><ChartComponent type="bar" data={cPairs}/></ChartContainer>
-                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Distribuição de Pares por Pedido"><ChartComponent type="pie" data={cBuckets}/></ChartContainer></div></div>
+                            <ChartContainer title="Novos Lojistas por MÃªs"><ChartComponent type="bar" data={cNew}/></ChartContainer>
+                            <ChartContainer title="Pares Vendidos por MÃªs"><ChartComponent type="bar" data={cPairs}/></ChartContainer>
+                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="DistribuiÃ§Ã£o de Pares por Pedido"><ChartComponent type="pie" data={cBuckets}/></ChartContainer></div></div>
                             <ChartContainer title="Pedidos por Dia da Semana"><ChartComponent type="bar" data={cWeekCount}/></ChartContainer>
-                            <ChartContainer title="Pedidos por Dia do Mês"><ChartComponent type="bar" data={cMonthDay}/></ChartContainer>
+                            <ChartContainer title="Pedidos por Dia do MÃªs"><ChartComponent type="bar" data={cMonthDay}/></ChartContainer>
                         </div>
                     )}
                 </div>
@@ -1213,10 +1585,10 @@
 
         function App() {
             const [view, setView] = useState('analytics');
-            const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+            const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
             const [firebaseUser, setFirebaseUser] = useState(null);
 
-            // Auth Effect for Firebase - Conexão
+            // Auth Effect for Firebase - ConexÃ£o
             useEffect(() => {
                 if (window.firebaseAuth && window.auth) {
                     const { signInAnonymously, onAuthStateChanged } = window.firebaseAuth;
@@ -1236,6 +1608,71 @@
             const { data: ads, loading: loadingAds, addItem: addAd, updateItem: updateAd, deleteItem: deleteAd } = useFirebaseData('ads', [], firebaseUser);
             const { data: leads, loading: loadingLeads, addItem: addLead, updateItem: updateLead } = useFirebaseData('leads', [], firebaseUser);
             
+            // SincronizaÃ§Ã£o automÃ¡tica de Leads com Lojistas (Vendas) e MigraÃ§Ã£o
+            useEffect(() => {
+                if (loadingLeads || loadingSales || !leads.length || !window.db) return;
+                
+                // MIGRATION_KEY garante que a limpeza pesada dos "contacted" bugados aconteÃ§a sÃ³ UMA VEZ
+                const MIGRATION_KEY = 'crm_migration_v8';
+                const hasMigrated = localStorage.getItem(MIGRATION_KEY);
+                
+                if (hasAutoSynced && hasMigrated) return;
+                
+                const { writeBatch, doc } = window.firebaseStore;
+                const batch = writeBatch(window.db);
+                let count = 0;
+
+                const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
+                const cleanNum = (str) => str ? String(str).replace(/\D/g,'') : '';
+
+                leads.forEach(lead => {
+                    const hasSale = sales.some(s => {
+                        const matchCnpj = cleanNum(s.cnpj) && cleanNum(lead.cnpj) && cleanNum(s.cnpj) === cleanNum(lead.cnpj);
+                        const matchPhone = cleanNum(s.phone) && cleanNum(lead.phone) && cleanNum(s.phone) === cleanNum(lead.phone);
+                        
+                        const sComp = normalize(s.company);
+                        const lComp = normalize(lead.company);
+                        const lCont = normalize(lead.contact);
+
+                        const matchComp = sComp && lComp && sComp === lComp && sComp.length > 2;
+                        const matchCont = sComp && lCont && sComp === lCont && sComp.length > 2;
+
+                        return matchCnpj || matchPhone || matchComp || matchCont;
+                    });
+                    
+                    // 1. ForÃ§ar para VENDIDO se bateu com alguma venda na Lojistas
+                    if (hasSale && lead.status !== 'converted') {
+                        const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(lead.id));
+                        batch.update(docRef, { status: 'converted', isNew: false });
+                        count++;
+                    } 
+                    // 2. MIGRAÃ‡ÃƒO: Limpar leads antigos "contacted" que estÃ£o inundando o quadro CRM
+                    else if (!hasMigrated && !hasSale && ['contacted', 'negotiating', 'qualified'].includes(lead.status)) {
+                        const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(lead.id));
+                        batch.update(docRef, { status: 'read', isNew: false });
+                        count++;
+                    }
+                });
+
+                if (count > 0) {
+                    console.log(`MigraÃ§Ã£o Batch: resolvendo ${count} leads pendentes...`);
+                    batch.commit()
+                        .then(() => {
+                            localStorage.setItem(MIGRATION_KEY, 'true');
+                            setHasAutoSynced(true);
+                            if (!hasMigrated) window.location.reload(); 
+                        })
+                        .catch(err => {
+                            console.error("Erro na migraÃ§Ã£o batch:", err);
+                            localStorage.setItem(MIGRATION_KEY, 'true');
+                            setHasAutoSynced(true);
+                        });
+                } else {
+                    localStorage.setItem(MIGRATION_KEY, 'true');
+                    setHasAutoSynced(true);
+                }
+            }, [sales, leads.length, hasAutoSynced, loadingLeads, loadingSales]); 
+
             const [prefillData, setPrefillData] = useState(null);
             const [isAuthenticated, setIsAuthenticated] = useState(false);
             const [credentials, setCredentials] = useState({ username: 'ricomilitar', password: 'admin' });
@@ -1244,7 +1681,7 @@
             const [leadsApiUrl, setLeadsApiUrl] = useState('https://script.google.com/macros/s/AKfycbx-Vr1TbLdJoXM7Y1pusPzQau7eJFhfqVDsjhCEissJ3-JFJPJ1mSweoKrpiRMp0geznQ/exec');
             const [hasAutoSynced, setHasAutoSynced] = useState(false);
 
-            // Função para Restaurar os Dados Originais no Firebase (se estiver vazio)
+            // FunÃ§Ã£o para Restaurar os Dados Originais no Firebase (se estiver vazio)
             const importInitialData = async () => {
                 if (window.db && firebaseUser) {
                    const batchPromises = [];
@@ -1254,15 +1691,15 @@
                    
                    await Promise.all(batchPromises);
                    // Leads vazios inicialmente, mas se tiver na lista, adicionaria aqui
-                   // alert("Dados restaurados com sucesso! Os gráficos devem aparecer agora."); // Comentado para ser silencioso
+                   // alert("Dados restaurados com sucesso! Os grÃ¡ficos devem aparecer agora."); // Comentado para ser silencioso
                 }
             };
 
-            // AUTO-SEED: Verifica se o banco está vazio e popula automaticamente
+            // AUTO-SEED: Verifica se o banco estÃ¡ vazio e popula automaticamente
             useEffect(() => {
-                // Só executa se o usuário estiver logado e o carregamento tiver terminado
+                // SÃ³ executa se o usuÃ¡rio estiver logado e o carregamento tiver terminado
                 if (firebaseUser && !loadingSales && !loadingAds) {
-                    // Se não houver vendas nem anúncios, assume banco vazio e carrega os dados iniciais
+                    // Se nÃ£o houver vendas nem anÃºncios, assume banco vazio e carrega os dados iniciais
                     if (sales.length === 0 && ads.length === 0) {
                         console.log("Banco vazio detectado. Carregando dados iniciais automaticamente...");
                         importInitialData();
@@ -1272,8 +1709,8 @@
 
             const syncFromApi = async () => {
                 if (!leadsApiUrl) {
-                    // Modo simulação se não houver URL
-                    const incomingLead = { id: Date.now(), date: new Date().toISOString().split('T')[0], name: 'Novo Cliente Simulado', contact: 'Lead Demo', city: 'Belo Horizonte', state: 'MG', source: 'Simulação Demo', status: 'new', isNew: true };
+                    // Modo simulaÃ§Ã£o se nÃ£o houver URL
+                    const incomingLead = { id: Date.now(), date: new Date().toISOString().split('T')[0], name: 'Novo Cliente Simulado', contact: 'Lead Demo', city: 'Belo Horizonte', state: 'MG', source: 'SimulaÃ§Ã£o Demo', status: 'new', isNew: true };
                     await addLead(incomingLead);
                     setNewLeadAlert(true);
                     return;
@@ -1289,33 +1726,34 @@
                             return foundKey ? item[foundKey] : '';
                         };
                         const dateRaw = getVal('Carimbo') || getVal('Data') || new Date();
-                        
-                        // Lógica de Ano para definir status
                         const dateObj = dateRaw ? new Date(dateRaw) : new Date();
-                        const year = dateObj.getFullYear();
-                        const is2026OrLater = year >= 2026;
+                        const today = new Date().toISOString().split('T')[0];
+                        const leadDate = dateObj.toISOString().split('T')[0];
+                        
+                        // Considerar NOVO apenas se for de HOJE em diante
+                        const isHistoricallyOld = leadDate < today;
 
                         return {
-                            date: dateRaw ? new Date(dateRaw).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-                            company: getVal('Razão Social'), 
+                            date: leadDate,
+                            company: getVal('RazÃ£o Social'), 
                             contact: getVal('Nome'), 
                             phone: getVal('whatsapp'), 
                             email: getVal('mail'), 
                             city: getVal('Cidade'), 
-                            state: getVal('Estado'), 
+                            state: normalizeUF(getVal('Estado')), 
                             cnpj: getVal('CNPJ'), 
-                            ie: getVal('Inscrição'), 
-                            address: getVal('Endereço'), 
+                            ie: getVal('InscriÃ§Ã£o'), 
+                            address: getVal('EndereÃ§o'), 
                             instagram: getVal('Instagram'), 
-                            obs: getVal('Observações'), 
+                            obs: getVal('ObservaÃ§Ãµes'), 
                             source: 'Google Forms', 
-                            status: is2026OrLater ? 'new' : 'contacted', // Se for antes de 2026, já foi contactado
-                            isNew: is2026OrLater // Só é novo visualmente se for de 2026 em diante
+                            status: isHistoricallyOld ? 'read' : 'new', 
+                            isNew: !isHistoricallyOld
                         };
                     });
                     
                     // Verifica duplicatas simples pelo nome+data antes de adicionar
-                    // (Em produção idealmente verificaria ID no banco, mas aqui simplificamos para o demo)
+                    // (Em produÃ§Ã£o idealmente verificaria ID no banco, mas aqui simplificamos para o demo)
                     let count = 0;
                     const existingSignatures = new Set(leads.map(l => (l.contact || l.name) + l.date));
                     
@@ -1335,11 +1773,11 @@
                     
                 } catch (error) {
                     console.error("Erro ao buscar leads:", error);
-                    // Não alertar erro silenciosamente no auto-sync
+                    // NÃ£o alertar erro silenciosamente no auto-sync
                 }
             };
 
-            // AUTO-SYNC LEADS: Sincroniza automaticamente quando o usuário loga e os leads carregam
+            // AUTO-SYNC LEADS: Sincroniza automaticamente quando o usuÃ¡rio loga e os leads carregam
             useEffect(() => {
                 if (firebaseUser && !loadingLeads && !hasAutoSynced && leadsApiUrl) {
                     syncFromApi();
@@ -1352,14 +1790,14 @@
                 if (!isAuthenticated || !leadsApiUrl) return;
 
                 const interval = setInterval(() => {
-                    console.log("Verificação automática de leads (5min)...");
+                    console.log("VerificaÃ§Ã£o automÃ¡tica de leads (5min)...");
                     syncFromApi();
                 }, 5 * 60 * 1000);
 
                 return () => clearInterval(interval);
-            }, [isAuthenticated, leadsApiUrl, leads]); // Dependência 'leads' recria o intervalo quando leads mudam, garantindo closure atualizado
+            }, [isAuthenticated, leadsApiUrl, leads]); // DependÃªncia 'leads' recria o intervalo quando leads mudam, garantindo closure atualizado
 
-            const handleLogin = (u, p) => { if (u === credentials.username && p === credentials.password) { setIsAuthenticated(true); setLoginError(''); } else { setLoginError('Credenciais inválidas. Tente novamente.'); } };
+            const handleLogin = (u, p) => { if (u === credentials.username && p === credentials.password) { setIsAuthenticated(true); setLoginError(''); } else { setLoginError('Credenciais invÃ¡lidas. Tente novamente.'); } };
             const handleLogout = () => { setIsAuthenticated(false); setView('analytics'); };
             const handleUpdateCredentials = (u, p) => { setCredentials({ username: u, password: p }); };
             const handleAcknowledgeLead = () => { setNewLeadAlert(false); setView('leads'); };
@@ -1383,20 +1821,43 @@
                         toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     />
                     <main className={`flex-1 p-8 overflow-y-auto h-screen relative transition-all duration-300 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
-                        {/* Botão de Emergência para Restaurar Dados se estiver vazio */}
+                        {/* BotÃ£o de EmergÃªncia para Restaurar Dados se estiver vazio */}
                         {sales.length === 0 && ads.length === 0 && leads.length === 0 && (
                             <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/50 rounded-lg flex items-center justify-between animate-fadeIn">
-                                <div className="text-amber-500 flex items-center gap-2"><DatabaseIcon size={20}/> <span>Banco de dados vazio? O carregamento automático deve iniciar em breve...</span></div>
-                                <button onClick={importInitialData} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded font-bold text-sm shadow-lg transition-transform hover:scale-105">Forçar Restauração</button>
+                                <div className="text-amber-500 flex items-center gap-2"><DatabaseIcon size={20}/> <span>Banco de dados vazio? O carregamento automÃ¡tico deve iniciar em breve...</span></div>
+                                <button onClick={importInitialData} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded font-bold text-sm shadow-lg transition-transform hover:scale-105">ForÃ§ar RestauraÃ§Ã£o</button>
                             </div>
                         )}
 
                         {view === 'analytics' && <AnalyticsView sales={sales} ads={ads} />}
                         {view === 'lead-analytics' && <LeadAnalyticsView sales={sales} leads={leads} ads={ads} />}
                         {view === 'leads' && <LeadsView leads={leads} addItem={addLead} updateItem={updateLead} onConvertToSale={handleConvertToSale} clearNotification={() => setNewLeadAlert(false)} onSync={syncFromApi} apiUrl={leadsApiUrl} />}
-                        {view === 'retailers' && <RetailersView sales={sales} addItem={addSale} updateItem={updateSale} deleteItem={deleteSale} prefillData={prefillData} setPrefillData={setPrefillData} />}
+                        {view === 'crm' && <CRMView leads={leads} sales={sales} updateItem={updateLead} onConvertToSale={handleConvertToSale} />}
+                        {view === 'retailers' && <RetailersView sales={sales} addItem={addSale} updateItem={updateSale} deleteItem={deleteSale} prefillData={prefillData} setPrefillData={setPrefillData} updateLead={updateLead} leads={leads} />}
                         {view === 'ads' && <AdsView ads={ads} addItem={addAd} updateItem={updateAd} deleteItem={deleteAd} />}
-                        {view === 'settings' && <SettingsView credentials={credentials} onUpdateCredentials={handleUpdateCredentials} apiUrl={leadsApiUrl} onUpdateApiUrl={setLeadsApiUrl} importData={importInitialData} />}
+                        {view === 'settings' && <SettingsView credentials={credentials} onUpdateCredentials={handleUpdateCredentials} apiUrl={leadsApiUrl} onUpdateApiUrl={setLeadsApiUrl} importData={importInitialData} onCleanTags={() => {
+                            if (!window.db || !leads.length) return;
+                            const { writeBatch, doc } = window.firebaseStore;
+                            const batch = writeBatch(window.db);
+                            let count = 0;
+
+                            leads.forEach(l => {
+                                // Limpar TUDO que nÃ£o for negociaÃ§Ã£o ativa ou venda confirmada
+                                if (['new', 'read', 'contacted'].includes(l.status) || l.isNew) {
+                                    const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(l.id));
+                                    batch.update(docRef, { isNew: false, status: 'read' });
+                                    count++;
+                                }
+                            });
+
+                            if (count > 0) {
+                                batch.commit()
+                                    .then(() => alert(`Limpeza concluÃ­da! ${count} leads movidos para LIDO.`))
+                                    .catch(err => alert("Erro na limpeza: " + err.message));
+                            } else {
+                                alert('Nenhum lead pendente para limpeza.');
+                            }
+                        }} />}
                     </main>
                 </div>
             );
