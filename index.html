@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RICO MILITAR - Sistema de GestÃ£o</title>
+    <title>RICO MILITAR - Sistema de Gestão</title>
     
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -22,8 +22,8 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- SEU CÃ“DIGO DO FIREBASE AQUI ---
-        // ConfiguraÃ§Ã£o segura
+        // --- SEU CÁ“DIGO DO FIREBASE AQUI ---
+        // ConfiguraçÁo segura
         const firebaseConfig = {
             apiKey: "AIzaSyD-8HjnC7fOS98WmqkKCJv___1A7f20oJ0",
             authDomain: "rico-lojistas.firebaseapp.com",
@@ -127,7 +127,7 @@
     <script type="text/babel">
         const { useState, useMemo, useEffect, useRef } = React;
 
-        // --- ÃCONES SVG ---
+        // --- ÁCONES SVG ---
         const IconBase = ({ children, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
@@ -172,7 +172,7 @@
             'RIO GRANDE DO SUL': 'RS', 'RONDONIA': 'RO', 'RORAIMA': 'RR', 'SANTA CATARINA': 'SC',
             'SAO PAULO': 'SP', 'SERGIPE': 'SE', 'TOCANTINS': 'TO',
             'BRASILIA': 'DF', 'BRASILIA DF': 'DF', 'SAO PAULI': 'SP', 'RIO DE HANEIRO': 'RJ', 'SAO PAULO SP': 'SP',
-            'SÃƒO PAULO': 'SP', 'SANTA CATERINA': 'SC', 'RIO DE JANIERO': 'RJ', 'MARANHAO MS': 'MA'
+            'SÁƒO PAULO': 'SP', 'SANTA CATERINA': 'SC', 'RIO DE JANIERO': 'RJ', 'MARANHAO MS': 'MA'
         };
 
         const normalizeUF = (uf) => {
@@ -182,13 +182,13 @@
             if (BRAZIL_STATES.includes(clean)) return clean;
             if (UF_MAP[clean]) return UF_MAP[clean];
             
-            // Busca sigla solta no texto (ex: "SÃƒO PAULO - SP")
+            // Busca sigla solta no texto (ex: "SÁƒO PAULO - SP")
             const words = clean.split(/[\s-]+/);
             for (const word of words) {
                 if (BRAZIL_STATES.includes(word)) return word;
             }
 
-            return null; // Se nÃ£o for um estado conhecido, ignora
+            return null; // Se nÁo for um estado conhecido, ignora
         };
 
         const INITIAL_SALES = [
@@ -201,14 +201,14 @@
             { date: '2025-06-10', company: 'Lojista TO', city: 'Consolidado', state: 'TO', pairs: 30, value: 4842.00, leadDate: '2025-06-01' },
             { date: '2025-06-16', company: 'Lojista Curitiba', city: 'Curitiba', state: 'PR', pairs: 36, value: 7920.00, leadDate: '2025-06-10' },
             { date: '2025-06-18', company: 'Lojista Campo Grande', city: 'Campo Grande', state: 'MS', pairs: 24, value: 4026.00, leadDate: '2025-06-12' },
-            { date: '2025-06-24', company: 'Lojista Santa InÃªs', city: 'Santa InÃªs', state: 'MA', pairs: 24, value: 3876.00, leadDate: '2025-06-18' },
+            { date: '2025-06-24', company: 'Lojista Santa Inês', city: 'Santa Inês', state: 'MA', pairs: 24, value: 3876.00, leadDate: '2025-06-18' },
             { date: '2025-07-01', company: 'Lojista Tupancireta', city: 'Tupancireta', state: 'RS', pairs: 24, value: 5280.00, leadDate: '2025-06-25' },
             { date: '2025-07-22', company: 'Alfa Stillus', city: 'Boa Vista', state: 'RR', pairs: 48, value: 8592.00, leadDate: '2025-07-17' },
             { date: '2025-07-25', company: 'Velho Curteiro', city: 'Governador Valadares', state: 'MG', pairs: 24, value: 4116.00, leadDate: '2025-07-20' },
-            { date: '2025-08-05', company: 'Lojista VÃ¡rzea', city: 'VÃ¡rzea Grande', state: 'MT', pairs: 12, value: 1982.00, leadDate: '2025-08-01' },
+            { date: '2025-08-05', company: 'Lojista Várzea', city: 'Várzea Grande', state: 'MT', pairs: 12, value: 1982.00, leadDate: '2025-08-01' },
             { date: '2025-08-05', company: 'Lojista Navegantes', city: 'Navegantes', state: 'SC', pairs: 26, value: 4524.00, leadDate: '2025-08-01' },
             { date: '2025-08-18', company: 'Lojista Palmas', city: 'Palmas', state: 'PR', pairs: 12, value: 2592.00, leadDate: '2025-08-10' },
-            { date: '2025-08-18', company: 'Lojista GuarÃ¡', city: 'GuaratinguetÃ¡', state: 'SP', pairs: 24, value: 3936.00, leadDate: '2025-08-12' },
+            { date: '2025-08-18', company: 'Lojista Guará', city: 'Guaratinguetá', state: 'SP', pairs: 24, value: 3936.00, leadDate: '2025-08-12' },
             { date: '2025-08-22', company: 'Lojista Bom Despacho', city: 'Bom Despacho', state: 'MG', pairs: 24, value: 3887.00, leadDate: '2025-08-15' },
             { date: '2025-09-03', company: 'Lojista Erechim', city: 'Erechim', state: 'RS', pairs: 12, value: 2028.00, leadDate: '2025-08-28' }
         ];
@@ -234,16 +234,16 @@
         // --- HELPERS ---
         const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
         const fmtDate = (d) => new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-        const fullMonthNames = ['Janeiro', 'Fevereiro', 'MarÃ§o', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        const fullMonthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-       // --- HOOK DE DADOS FIREBASE (CORRIGIDO PARA PERSISTÃŠNCIA) ---
+       // --- HOOK DE DADOS FIREBASE (CORRIGIDO PARA PERSISTÁŠNCIA) ---
         const useFirebaseData = (collectionName, initialData = [], user) => {
             const [data, setData] = useState(initialData);
             const [loading, setLoading] = useState(true);
             
-            // Caminho FIXO para os dados nÃ£o sumirem
+            // Caminho FIXO para os dados nÁo sumirem
             // Antes era: ... 'users', user.uid, collectionName
-            // Agora Ã©:   ... 'public', 'data', collectionName
+            // Agora é:   ... 'public', 'data', collectionName
             
             useEffect(() => {
                 if (!window.db || !window.firebaseStore || !window.appId || !user) {
@@ -251,7 +251,7 @@
                 }
                 
                 const { collection, onSnapshot } = window.firebaseStore;
-                // MUDANÃ‡A AQUI:
+                // MUDANÁ‡A AQUI:
                 const colRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', collectionName);
                 
                 const unsubscribe = onSnapshot(colRef, (snapshot) => {
@@ -267,7 +267,7 @@
                 if (!window.db || !user) { setData(prev => [...prev, { ...item, id: Date.now() }]); return; }
                 const { collection, addDoc } = window.firebaseStore;
                 const { id, ...dataToSave } = item;
-                // MUDANÃ‡A AQUI:
+                // MUDANÁ‡A AQUI:
                 await addDoc(collection(window.db, 'artifacts', window.appId, 'public', 'data', collectionName), dataToSave);
             };
 
@@ -275,7 +275,7 @@
                 if (!window.db || !user) { setData(prev => prev.map(i => i.id === item.id ? item : i)); return; }
                 const { doc, updateDoc } = window.firebaseStore;
                 const { id, ...dataToSave } = item;
-                // MUDANÃ‡A AQUI:
+                // MUDANÁ‡A AQUI:
                 const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', collectionName, String(id));
                 await updateDoc(docRef, dataToSave);
             };
@@ -283,7 +283,7 @@
             const deleteItem = async (id) => {
                 if (!window.db || !user) { setData(prev => prev.filter(i => i.id !== id)); return; }
                 const { doc, deleteDoc } = window.firebaseStore;
-                // MUDANÃ‡A AQUI:
+                // MUDANÁ‡A AQUI:
                 const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', collectionName, String(id));
                 await deleteDoc(docRef);
             };
@@ -380,16 +380,16 @@
 
         const Sidebar = ({ view, setView, onLogout, notificationCount, isCollapsed, toggleSidebar }) => {
             const items = [
-                { id: 'analytics', label: 'AnÃ¡lises', icon: BarChart3 },
-                { id: 'lead-analytics', label: 'AnÃ¡lise de Leads', icon: PieChart },
-                { id: 'leads', label: `Leads (Funil) ${notificationCount > 0 ? 'ðŸ”´ ' + notificationCount : ''}`, icon: Filter },
-                { id: 'crm', label: 'CRM (NegociaÃ§Ãµes)', icon: Target },
+                { id: 'analytics', label: 'Análises', icon: BarChart3 },
+                { id: 'lead-analytics', label: 'Análise de Leads', icon: PieChart },
+                { id: 'leads', label: `Leads (Funil) ${notificationCount > 0 ? '🔴 ' + notificationCount : ''}`, icon: Filter },
+                { id: 'crm', label: 'CRM (Negociações)', icon: Target },
                 { id: 'retailers', label: 'Lojistas (CRM)', icon: Users },
-                { id: 'ads', label: 'AnÃºncios (Ads)', icon: DollarSign },
-                { id: 'settings', label: 'ConfiguraÃ§Ãµes', icon: Settings },
+                { id: 'ads', label: 'Anúncios (Ads)', icon: DollarSign },
+                { id: 'settings', label: 'Configurações', icon: Settings },
             ];
             
-            // Largura dinÃ¢mica baseada no estado collapsed
+            // Largura dinâmica baseada no estado collapsed
             const sidebarClass = isCollapsed ? 'w-20' : 'w-64';
 
             return (
@@ -528,13 +528,13 @@
                     leadsByDay[l.date] = (leadsByDay[l.date] || 0) + 1;
                 });
 
-                // OrdenaÃ§Ã£o por Estado (Pareto)
+                // OrdenaçÁo por Estado (Pareto)
                 const sortedStates = Object.entries(leadsByState).sort((a, b) => b[1] - a[1]);
                 const sortedStateLabels = sortedStates.map(s => s[0]);
                 const sortedStateValues = sortedStates.map(s => s[1]);
 
-                // OrdenaÃ§Ã£o por Data (Ãšltimos 30 dias se muitos)
-                const sortedDays = Object.keys(leadsByDay).sort().slice(-30); // Ãšltimos 30 dias registrados
+                // OrdenaçÁo por Data (Ášltimos 30 dias se muitos)
+                const sortedDays = Object.keys(leadsByDay).sort().slice(-30); // Ášltimos 30 dias registrados
                 const trendData = sortedDays.map(d => leadsByDay[d]);
                 const trendLabels = sortedDays.map(d => {
                     const parts = d.split('-');
@@ -588,42 +588,42 @@
                 <div className="animate-fadeIn">
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                         <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2">
-                            <PieChart className="text-blue-500" /> InteligÃªncia de Leads (BI)
+                            <PieChart className="text-blue-500" /> Inteligência de Leads (BI)
                         </h2>
                         <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-700">
-                            <span className="text-slate-400 text-xs font-bold uppercase px-3">PerÃ­odo:</span>
+                            <span className="text-slate-400 text-xs font-bold uppercase px-3">Período:</span>
                             <select 
                                 className="bg-slate-800 text-white text-sm border-none rounded py-1 px-3 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
                                 value={filterDate}
                                 onChange={(e) => setFilterDate(e.target.value)}
                             >
-                                <option value="all">VisÃ£o Consolidada (Todos)</option>
+                                <option value="all">Visão Consolidada (Todos)</option>
                                 {availableMonths.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-                        <KpiCard title="Total de Leads" value={data.kpis.totalLeads} subtext="No perÃ­odo selecionado" icon={Filter} colorClass="border-blue-500" />
+                        <KpiCard title="Total de Leads" value={data.kpis.totalLeads} subtext="No período selecionado" icon={Filter} colorClass="border-blue-500" />
                         <KpiCard title="Custo por Lead (CPL)" value={fmtMoney(data.kpis.cpl)} subtext="Investimento / Leads" icon={DollarSign} colorClass="border-amber-500" />
-                        <KpiCard title="Taxa de ConversÃ£o" value={data.kpis.conversionRate.toFixed(1) + '%'} subtext={`1 venda a cada ${data.kpis.conversionRatio} leads`} icon={Target} colorClass="border-emerald-500" />
-                        <KpiCard title="Investimento Total" value={fmtMoney(data.kpis.totalAds)} subtext="Gasto em AnÃºncios" icon={Wallet} colorClass="border-slate-500" />
-                        <KpiCard title="MÃ©dia Leads/MÃªs" value={data.kpis.avgLeadsPerMonth.toFixed(1)} subtext="MÃ©dia do perÃ­odo" icon={Activity} colorClass="border-cyan-500" />
+                        <KpiCard title="Taxa de Conversão" value={data.kpis.conversionRate.toFixed(1) + '%'} subtext={`1 venda a cada ${data.kpis.conversionRatio} leads`} icon={Target} colorClass="border-emerald-500" />
+                        <KpiCard title="Investimento Total" value={fmtMoney(data.kpis.totalAds)} subtext="Gasto em Anúncios" icon={Wallet} colorClass="border-slate-500" />
+                        <KpiCard title="Média Leads/Mês" value={data.kpis.avgLeadsPerMonth.toFixed(1)} subtext="Média do período" icon={Activity} colorClass="border-cyan-500" />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Linha 1: EvoluÃ§Ã£o e Custo */}
+                        {/* Linha 1: EvoluçÁo e Custo */}
                         <div className="lg:col-span-2">
-                            <ChartContainer title="EvoluÃ§Ã£o Mensal (Funil Macro)" subtitle="Comparativo Leads vs Vendas">
+                            <ChartContainer title="EvoluçÁo Mensal (Funil Macro)" subtitle="Comparativo Leads vs Vendas">
                                 <ChartComponent type="bar" data={cLeadsMonth} options={{ scales: { y: {display: false}, y1: { type: 'linear', display: false, position: 'right', grid: {drawOnChartArea: false} } } }} />
                             </ChartContainer>
                         </div>
-                        <ChartContainer title="Custo por Lead (CPL)" subtitle="EficiÃªncia do investimento (R$)">
+                        <ChartContainer title="Custo por Lead (CPL)" subtitle="Eficiência do investimento (R$)">
                              <ChartComponent type="bar" data={cCplMonth} labelType="money" />
                         </ChartContainer>
 
                         {/* Linha 3: Geo Detalhado */}
-                        <ChartContainer title="DistribuiÃ§Ã£o Regional" subtitle="Leads por RegiÃ£o">
+                        <ChartContainer title="DistribuiçÁo Regional" subtitle="Leads por RegiÁo">
                             <div className="flex justify-center h-48">
                                 <ChartComponent type="doughnut" data={cLeadsRegion} labelType="percent" />
                             </div>
@@ -694,7 +694,7 @@
                             <div className="flex items-center gap-2 mt-1">
                                 <p className="text-slate-400 text-sm flex items-center gap-2">
                                     <span className={`w-2 h-2 rounded-full ${apiUrl ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`}></span>
-                                    {apiUrl ? 'Conectado Ã  API Google Sheets' : 'Modo SimulaÃ§Ã£o (Demo)'}
+                                    {apiUrl ? 'Conectado Á  API Google Sheets' : 'Modo Simulação (Demo)'}
                                 </p>
                             </div>
                         </div>
@@ -734,9 +734,9 @@
                                         <th className="px-3 py-3 sortable w-[120px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('state')}>Local <SortIcon column="state"/></th>
                                         <th className="px-3 py-3 w-[150px] text-center sticky top-0 bg-slate-800">Lojista/CNPJ</th>
                                         <th className="px-3 py-3 w-[160px] text-center sticky top-0 bg-slate-800">E-mail</th>
-                                        <th className="px-3 py-3 w-[180px] text-center sticky top-0 bg-slate-800">EndereÃ§o/Instagram</th>
-                                        <th className="px-3 py-3 text-center sticky top-0 bg-slate-800">ObservaÃ§Ãµes</th>
-                                        <th className="px-3 py-3 text-center w-[120px] sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">AÃ§Ã£o</th>
+                                        <th className="px-3 py-3 w-[180px] text-center sticky top-0 bg-slate-800">Endereço/Instagram</th>
+                                        <th className="px-3 py-3 text-center sticky top-0 bg-slate-800">Observações</th>
+                                        <th className="px-3 py-3 text-center w-[120px] sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">AçÁo</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700/50">
@@ -821,7 +821,7 @@
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2 text-xs text-slate-400">
-                                        <label>Leads por pÃ¡gina:</label>
+                                        <label>Leads por página:</label>
                                         <select 
                                             value={itemsPerPage} 
                                             onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
@@ -842,14 +842,14 @@
                                         Anterior
                                     </button>
                                     <span className="px-2 py-1 text-xs text-slate-300 flex items-center">
-                                        PÃ¡g {currentPage} de {totalPages}
+                                        Pág {currentPage} de {totalPages}
                                     </span>
                                     <button 
                                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                         disabled={currentPage === totalPages}
                                         className="px-3 py-1 rounded bg-slate-700 text-white disabled:opacity-50 hover:bg-slate-600 transition-colors text-xs"
                                     >
-                                        PrÃ³xima
+                                        Próxima
                                     </button>
                                 </div>
                             </div>
@@ -922,7 +922,7 @@
                         ...prefillData,
                         leadDate: prefillData.date || '',
                         date: new Date().toISOString().split('T')[0],
-                        id: undefined // NÃ£o usar ID do lead como ID da venda
+                        id: undefined // Não usar ID do lead como ID da venda
                     });
                     setPrefillData(null);
                 }
@@ -958,7 +958,7 @@
             return (
                 <div className="animate-fadeIn">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-white">GestÃ£o de Lojistas</h2>
+                        <h2 className="text-2xl font-bold text-white">Gestão de Lojistas</h2>
                         <button onClick={() => openModal()} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-amber-900/20"><Plus size={18} /> Novo Lojista</button>
                     </div>
                     <div className="glass-panel rounded-lg overflow-hidden">
@@ -971,7 +971,7 @@
                                         <th className="px-6 py-4 sortable" onClick={() => handleSort('state')}>Local <SortIcon column="state"/></th>
                                         <th className="px-6 py-4 text-center sortable" onClick={() => handleSort('pairs')}>Pares <SortIcon column="pairs"/></th>
                                         <th className="px-6 py-4 text-right sortable" onClick={() => handleSort('value')}>Valor <SortIcon column="value"/></th>
-                                        <th className="px-6 py-4 text-right">AÃ§Ãµes</th>
+                                        <th className="px-6 py-4 text-right">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700/50">
@@ -1003,13 +1003,13 @@
                             </div>
                             
                             <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Dados do Cliente</h4>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">RazÃ£o Social (Loja)</label><input type="text" required className="input-dark" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} /></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Razão Social (Loja)</label><input type="text" required className="input-dark" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} /></div>
                              <div className="grid grid-cols-2 gap-4">
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">CNPJ</label><input type="text" className="input-dark" value={formData.cnpj || ''} onChange={e => setFormData({...formData, cnpj: e.target.value})} /></div>
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Insc. Estadual</label><input type="text" className="input-dark" value={formData.ie || ''} onChange={e => setFormData({...formData, ie: e.target.value})} /></div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">ResponsÃ¡vel (Nome)</label><input type="text" className="input-dark" value={formData.contact || ''} onChange={e => setFormData({...formData, contact: e.target.value})} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Responsável (Nome)</label><input type="text" className="input-dark" value={formData.contact || ''} onChange={e => setFormData({...formData, contact: e.target.value})} /></div>
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Email</label><input type="email" className="input-dark" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} /></div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -1017,7 +1017,7 @@
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Instagram</label><input type="text" className="input-dark" value={formData.instagram || ''} onChange={e => setFormData({...formData, instagram: e.target.value})} /></div>
                             </div>
                             
-                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">LocalizaÃ§Ã£o</h4>
+                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Localização</h4>
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="col-span-2"><label className="block text-xs uppercase mb-1 text-slate-400">Cidade</label><input type="text" required className="input-dark" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} /></div>
                                 <div>
@@ -1028,19 +1028,19 @@
                                     </select>
                                 </div>
                             </div>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">EndereÃ§o Completo</label><input type="text" className="input-dark" value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} /></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Endereço Completo</label><input type="text" className="input-dark" value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} /></div>
                             
                             <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Pedido</h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Qtd Pares</label><input type="number" required className="input-dark" value={formData.pairs} onChange={e => setFormData({...formData, pairs: e.target.value})} /></div>
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Total (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} /></div>
                             </div>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">ObservaÃ§Ãµes</label><textarea className="input-dark h-20" value={formData.obs || ''} onChange={e => setFormData({...formData, obs: e.target.value})}></textarea></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Observações</label><textarea className="input-dark h-20" value={formData.obs || ''} onChange={e => setFormData({...formData, obs: e.target.value})}></textarea></div>
                             
                             <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded mt-4">Salvar Dados</button>
                         </form>
                     </Modal>
-                    <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar ExclusÃ£o"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este registro?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
+                    <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar Exclusão"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este registro?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
                 </div>
             );
         };
@@ -1070,7 +1070,7 @@
                 return sortableItems;
             }, [ads, sortConfig]);
 
-            // CÃ¡lculos para o rodapÃ©
+            // Cálculos para o rodapé
             const totalInvestment = sortedAds.reduce((acc, ad) => acc + ad.value, 0);
             const avgInvestment = sortedAds.length > 0 ? totalInvestment / sortedAds.length : 0;
 
@@ -1082,16 +1082,16 @@
             return (
                 <div className="animate-fadeIn">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-white">Investimento em AnÃºncios</h2>
-                        <button onClick={() => openModal()} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-emerald-900/20"><Plus size={18} /> Novo MÃªs</button>
+                        <h2 className="text-2xl font-bold text-white">Investimento em Anúncios</h2>
+                        <button onClick={() => openModal()} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-emerald-900/20"><Plus size={18} /> Novo Mês</button>
                     </div>
                     <div className="glass-panel rounded-lg overflow-hidden w-full">
                         <table className="w-full text-sm text-left text-slate-400">
                             <thead className="text-xs text-slate-200 uppercase bg-slate-800/50">
                                 <tr>
-                                    <th className="px-6 py-4 sortable" onClick={() => handleSort('month')}>MÃªs ReferÃªncia <SortIcon column="month"/></th>
+                                    <th className="px-6 py-4 sortable" onClick={() => handleSort('month')}>Mês Referência <SortIcon column="month"/></th>
                                     <th className="px-6 py-4 text-right sortable" onClick={() => handleSort('value')}>Investimento (Ads) <SortIcon column="value"/></th>
-                                    <th className="px-6 py-4 text-right">AÃ§Ãµes</th>
+                                    <th className="px-6 py-4 text-right">Ações</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-700/50">
@@ -1110,15 +1110,15 @@
                             </tbody>
                             <tfoot className="bg-slate-800/80 text-slate-200 font-bold border-t border-slate-700">
                                 <tr>
-                                    <td className="px-6 py-4 text-right uppercase text-xs text-slate-400">MÃ©dia Mensal: <span className="text-white ml-1 text-sm">{fmtMoney(avgInvestment)}</span></td>
+                                    <td className="px-6 py-4 text-right uppercase text-xs text-slate-400">Média Mensal: <span className="text-white ml-1 text-sm">{fmtMoney(avgInvestment)}</span></td>
                                     <td className="px-6 py-4 text-right uppercase text-xs text-slate-400">Total Investido: <span className="text-emerald-400 ml-1 text-lg">{fmtMoney(totalInvestment)}</span></td>
                                     <td></td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
-                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? "Editar Custo" : "Novo Investimento"}><form onSubmit={handleSubmit} className="space-y-4"><div><label className="block text-xs uppercase mb-1 text-slate-400">MÃªs (YYYY-MM)</label><input type="month" required className="input-dark" value={formData.month} onChange={e => setFormData({...formData, month: e.target.value})} /></div><div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Investido (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} /></div><button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded mt-4">Salvar</button></form></Modal>
-                    <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar ExclusÃ£o"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este custo?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
+                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? "Editar Custo" : "Novo Investimento"}><form onSubmit={handleSubmit} className="space-y-4"><div><label className="block text-xs uppercase mb-1 text-slate-400">Mês (YYYY-MM)</label><input type="month" required className="input-dark" value={formData.month} onChange={e => setFormData({...formData, month: e.target.value})} /></div><div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Investido (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} /></div><button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded mt-4">Salvar</button></form></Modal>
+                    <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar Exclusão"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este custo?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
                 </div>
             );
         };
@@ -1132,7 +1132,7 @@
                     <div className="glass-panel w-full max-w-md p-8 rounded-xl shadow-2xl animate-fadeIn border-t-4 border-amber-500">
                         <div className="text-center mb-8"><div className="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-full mb-4"><Shield className="text-amber-500" size={32} /></div><h2 className="text-2xl font-bold text-white">Rico Militar</h2><p className="text-slate-400 text-sm">Painel Administrativo Rico Lojistas</p></div>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">UsuÃ¡rio</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><User size={18} /></div><input type="text" className="input-dark pl-10" value={username} onChange={e=>setUsername(e.target.value)} required /></div></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Usuário</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><User size={18} /></div><input type="text" className="input-dark pl-10" value={username} onChange={e=>setUsername(e.target.value)} required /></div></div>
                             <div><label className="block text-xs uppercase mb-1 text-slate-400">Senha</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><Lock size={18} /></div><input type="password" className="input-dark pl-10" value={password} onChange={e=>setPassword(e.target.value)} required /></div></div>
                             {loginError && <p className="text-red-400 text-xs text-center">{loginError}</p>}
                             <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded mt-4 transition-colors">Entrar</button>
@@ -1147,16 +1147,16 @@
             const [password, setPassword] = useState(credentials.password);
             const [url, setUrl] = useState(apiUrl);
             const [msg, setMsg] = useState('');
-            const handleSave = (e) => { e.preventDefault(); onUpdateCredentials(username, password); onUpdateApiUrl(url); setMsg('ConfiguraÃ§Ãµes atualizadas com sucesso!'); setTimeout(() => setMsg(''), 3000); };
+            const handleSave = (e) => { e.preventDefault(); onUpdateCredentials(username, password); onUpdateApiUrl(url); setMsg('Configurações atualizadas com sucesso!'); setTimeout(() => setMsg(''), 3000); };
 
-            const handleClean = () => { if(confirm('Isso irÃ¡ remover a etiqueta NOVO de todos os leads de hoje para trÃ¡s. Deseja continuar?')) onCleanTags(); };
+            const handleClean = () => { if(confirm('Isso irá remover a etiqueta NOVO de todos os leads de hoje para trás. Deseja continuar?')) onCleanTags(); };
             return (
                 <div className="animate-fadeIn max-w-2xl mx-auto">
-                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2"><Settings className="text-slate-400" /> ConfiguraÃ§Ãµes de Dashboard</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2"><Settings className="text-slate-400" /> Configurações de Dashboard</h2>
                     <div className="glass-panel p-8 rounded-lg">
                         <form onSubmit={handleSave} className="space-y-6">
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-sm font-bold mb-2 text-white">UsuÃ¡rio</label><input type="text" className="input-dark p-3" value={username} onChange={e=>setUsername(e.target.value)} required /></div>
+                                <div><label className="block text-sm font-bold mb-2 text-white">Usuário</label><input type="text" className="input-dark p-3" value={username} onChange={e=>setUsername(e.target.value)} required /></div>
                                 <div><label className="block text-sm font-bold mb-2 text-white">Senha</label><input type="text" className="input-dark p-3" value={password} onChange={e=>setPassword(e.target.value)} required /></div>
                             </div>
                             
@@ -1169,17 +1169,17 @@
                             </div>
 
                             {msg && <div className="bg-emerald-500/20 text-emerald-400 p-3 rounded text-sm text-center">{msg}</div>}
-                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition-colors shadow-lg shadow-blue-900/20">Salvar AlteraÃ§Ãµes</button>
+                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition-colors shadow-lg shadow-blue-900/20">Salvar Alterações</button>
                         </form>
                         
                         <div className="mt-12 pt-8 border-t border-slate-700">
-                             <h3 className="text-white font-bold mb-4 flex items-center gap-2"><DatabaseIcon size={18} className="text-slate-500"/> ManutenÃ§Ã£o de Dados</h3>
+                             <h3 className="text-white font-bold mb-4 flex items-center gap-2"><DatabaseIcon size={18} className="text-slate-500"/> Manutenção de Dados</h3>
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <button onClick={handleClean} className="bg-amber-600/20 text-amber-500 border border-amber-500/30 hover:bg-amber-600 hover:text-white px-4 py-3 rounded text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-sm">
                                     <Trash2 size={16} /> Limpar Etiquetas Antigas
                                 </button>
                              </div>
-                             <p className="text-slate-500 text-[10px] mt-4 text-center italic">Use "Limpar Etiquetas Antigas" para marcar todos os leads de hoje ou anteriores como jÃ¡ visualizados.</p>
+                             <p className="text-slate-500 text-[10px] mt-4 text-center italic">Use "Limpar Etiquetas Antigas" para marcar todos os leads de hoje ou anteriores como já visualizados.</p>
                         </div>
                     </div>
                 </div>
@@ -1192,7 +1192,7 @@
 
             const stages = [
                 { id: 'contacted', label: 'Iniciado', color: 'bg-blue-500/20 text-blue-400 border-blue-500/50' },
-                { id: 'negotiating', label: 'NegociaÃ§Ã£o', color: 'bg-amber-500/20 text-amber-400 border-amber-500/50' },
+                { id: 'negotiating', label: 'Negociação', color: 'bg-amber-500/20 text-amber-400 border-amber-500/50' },
                 { id: 'qualified', label: 'Proposta', color: 'bg-purple-500/20 text-purple-400 border-purple-500/50' },
                 { id: 'converted', label: 'Fechado', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50' }
             ];
@@ -1280,7 +1280,7 @@
                 if (selectedLead) {
                     if (String(selectedLead.id).startsWith('sale_')) {
                         if (selectedLead.isSaleOnly) {
-                            alert("Esta Ã© uma venda cadastrada manualmente. As notas sÃ£o automÃ¡ticas. Ã‰ necessÃ¡rio um Lead para registrar notas.");
+                            alert("Esta é uma venda cadastrada manualmente. As notas são automáticas. É necessário um Lead para registrar notas.");
                             return;
                         }
                         const origLead = leads.find(l => String(l.id) === String(selectedLead.origLeadId));
@@ -1297,7 +1297,7 @@
                     <div className="flex justify-between items-center mb-8">
                         <div>
                             <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2">
-                                <Target className="text-amber-500" /> CRM de NegociaÃ§Ãµes
+                                <Target className="text-amber-500" /> CRM de Negociações
                             </h2>
                             <p className="text-slate-400 text-sm mt-1">Arraste os leads para mudar o status ou clique para ver detalhes</p>
                         </div>
@@ -1385,7 +1385,7 @@
 
                     {/* Modal de Detalhes do Lead */}
                     {selectedLead && (
-                        <Modal isOpen={!!selectedLead} onClose={() => setSelectedLead(null)} title="Ficha do Lead / NegociaÃ§Ã£o">
+                        <Modal isOpen={!!selectedLead} onClose={() => setSelectedLead(null)} title="Ficha do Lead / Negociação">
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4 bg-slate-800/50 p-4 rounded-lg border border-slate-700/50">
                                     <div>
@@ -1409,16 +1409,15 @@
                                         <p className="text-slate-400 text-xs">{selectedLead.email || '-'}</p>
                                     </div>
                                     <div className="col-span-2">
-                                        <label className="block text-[10px] uppercase text-slate-500 font-bold mb-1">LocalizaÃ§Ã£o</label>
                                         <p className="text-slate-300">{selectedLead.address}, {selectedLead.city} - {selectedLead.state}</p>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] uppercase text-amber-500 font-bold mb-2">AnotaÃ§Ãµes da NegociaÃ§Ã£o</label>
+                                    <label className="block text-[10px] uppercase text-amber-500 font-bold mb-2">Anotações da Negociação</label>
                                     <textarea 
                                         className="input-dark w-full h-40 text-sm p-3 focus:ring-1 focus:ring-amber-500"
-                                        placeholder="Escreva aqui o histÃ³rico da negociaÃ§Ã£o, condiÃ§Ãµes especiais, prÃ³ximos passos..."
+                                        placeholder="Escreva aqui o histórico da negociação, condições especiais, próximos passos..."
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
                                     ></textarea>
@@ -1435,7 +1434,7 @@
                                         onClick={saveNotes}
                                         className="flex-1 px-4 py-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition-all shadow-lg shadow-amber-900/20"
                                     >
-                                        Salvar AnotaÃ§Ãµes
+                                        Salvar Anotações
                                     </button>
                                 </div>
                             </div>
@@ -1493,7 +1492,7 @@
                     regionStats[reg] += s.value;
                 });
 
-                const ops = { week: ['Dom','Seg','Ter','Qua','Qui','Sex','SÃ¡b'].map(d => ({name:d, count:0, rev:0})), monthDay: Array.from({length:31}, (_,i)=>({day:i+1, count:0})), buckets: {'1-12':0, '13-24':0, '25-48':0, '49+':0} };
+                const ops = { week: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d => ({name:d, count:0, rev:0})), monthDay: Array.from({length:31}, (_,i)=>({day:i+1, count:0})), buckets: {'1-12':0, '13-24':0, '25-48':0, '49+':0} };
                 filteredSales.forEach(s => { const d = new Date(s.date); ops.week[d.getDay()].count++; ops.week[d.getDay()].rev += s.value; ops.monthDay[d.getDate()-1].count++; if(s.pairs<=12) ops.buckets['1-12']++; else if(s.pairs<=24) ops.buckets['13-24']++; else if(s.pairs<=48) ops.buckets['25-48']++; else ops.buckets['49+']++; });
 
                 return { kpis: { rev, roi, pairs, ticket, netResult, adCost, avgPairsPerDeal, uniqueRetailers }, monthly: monthlyChartData, geo: { state: stateStats, region: regionStats }, ops };
@@ -1503,21 +1502,21 @@
             const cRoi = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'ROI (x)', data: data.monthly.map(d=>d.roi.toFixed(1)), backgroundColor: '#8b5cf6', borderRadius:4 }] };
             const cPairs = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Pares', data: data.monthly.map(d=>d.pairs), backgroundColor: '#3b82f6', borderRadius:4 }] };
             const cRevVsAds = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Retorno', data: data.monthly.map(d=>d.revenue), backgroundColor: '#10b981', borderRadius:3 }, { label: 'Ads', data: data.monthly.map(d=>d.cost), backgroundColor: '#64748b', borderRadius:3 }] };
-            const cTicketM = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Ticket MÃ©dio', data: data.monthly.map(d=>d.ticket), backgroundColor: '#6366f1', borderRadius:4 }] };
+            const cTicketM = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Ticket Médio', data: data.monthly.map(d=>d.ticket), backgroundColor: '#6366f1', borderRadius:4 }] };
             const cNew = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Novos Lojistas', data: data.monthly.map(d=>d.newRetailers), backgroundColor: '#ec4899', borderRadius:4 }] };
             const sortedStates = Object.entries(data.geo.state).sort((a,b)=>b[1].rev - a[1].rev);
             
-            // Novos ordenadores para os grÃ¡ficos especÃ­ficos
+            // Novos ordenadores para os gráficos específicos
             const sortedStatesByCount = Object.entries(data.geo.state).sort((a,b)=>b[1].count - a[1].count);
             const sortedStatesByTicket = Object.entries(data.geo.state).sort((a,b)=>(b[1].rev/b[1].count) - (a[1].rev/a[1].count));
 
             const cGeoRev = { labels: sortedStates.map(s=>s[0]), datasets:[{label:'Receita', data: sortedStates.map(s=>s[1].rev), backgroundColor:'#f59e0b', borderRadius:4, indexAxis:'y'}] };
             
-            // Usando os ordenadores especÃ­ficos
+            // Usando os ordenadores específicos
             const cGeoCount = { labels: sortedStatesByCount.map(s=>s[0]), datasets:[{label:'Pedidos', data: sortedStatesByCount.map(s=>s[1].count), backgroundColor:'#3b82f6', borderRadius:4}] };
-            const cGeoTicket = { labels: sortedStatesByTicket.map(s=>s[0]), datasets:[{label:'Ticket MÃ©dio', data: sortedStatesByTicket.map(s=>s[1].rev/s[1].count), backgroundColor:'#8b5cf6', borderRadius:4}] };
+            const cGeoTicket = { labels: sortedStatesByTicket.map(s=>s[0]), datasets:[{label:'Ticket Médio', data: sortedStatesByTicket.map(s=>s[1].rev/s[1].count), backgroundColor:'#8b5cf6', borderRadius:4}] };
             
-            // OrdenaÃ§Ã£o da RegiÃ£o (Maior para menor)
+            // OrdenaçÁo da RegiÁo (Maior para menor)
             const sortedRegions = Object.entries(data.geo.region).sort((a, b) => b[1] - a[1]);
             const cReg = { 
                 labels: sortedRegions.map(r => r[0]), 
@@ -1533,19 +1532,19 @@
             return (
                 <div className="animate-fadeIn">
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                        <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2"><TrendingUp className="text-amber-500" /> Dashboard AnalÃ­tico</h2>
+                        <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2"><TrendingUp className="text-amber-500" /> Dashboard Analítico</h2>
                         <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-700">
-                            <span className="text-slate-400 text-xs font-bold uppercase px-3">PerÃ­odo:</span>
+                            <span className="text-slate-400 text-xs font-bold uppercase px-3">Período:</span>
                             <select className="bg-slate-800 text-white text-sm border-none rounded py-1 px-3 focus:ring-1 focus:ring-amber-500 outline-none cursor-pointer" value={filterDate} onChange={(e) => setFilterDate(e.target.value)}>
-                                <option value="all">VisÃ£o Consolidada (Todos)</option>
+                                <option value="all">Visão Consolidada (Todos)</option>
                                 {availableMonths.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <KpiCard title="Faturamento Total" value={fmtMoney(data.kpis.rev)} subtext={filterDate === 'all' ? 'Total Acumulado' : 'Neste MÃªs'} icon={DollarSign} colorClass="border-amber-500" />
-                        <KpiCard title="Retorno LÃ­quido" value={fmtMoney(data.kpis.netResult)} subtext="Lucro Operacional" icon={TrendingUp} colorClass="border-emerald-600" />
-                        <KpiCard title="Lojistas Fechados" value={data.kpis.uniqueRetailers} subtext="Clientes Ãšnicos" icon={Users} colorClass="border-purple-500" />
+                        <KpiCard title="Faturamento Total" value={fmtMoney(data.kpis.rev)} subtext={filterDate === 'all' ? 'Total Acumulado' : 'Neste Mês'} icon={DollarSign} colorClass="border-amber-500" />
+                        <KpiCard title="Retorno Líquido" value={fmtMoney(data.kpis.netResult)} subtext="Lucro Operacional" icon={TrendingUp} colorClass="border-emerald-600" />
+                        <KpiCard title="Lojistas Fechados" value={data.kpis.uniqueRetailers} subtext="Clientes Únicos" icon={Users} colorClass="border-purple-500" />
                         <KpiCard title="Volume Vendas" value={data.kpis.pairs} subtext="Pares Vendidos" icon={Target} colorClass="border-blue-500" />
                         <KpiCard title="ROI Marketing" value={`${data.kpis.roi.toFixed(2)}x`} subtext="Retorno sobre Ads" icon={Activity} colorClass="border-indigo-500" />
                         <KpiCard title="Valor Investimento" value={fmtMoney(data.kpis.adCost)} subtext="Custo Ads" icon={DollarSign} colorClass="border-slate-500" />
@@ -1553,30 +1552,30 @@
                     <SectionHeader title="Financeiro" icon={BarChart3} color="bg-amber-500" isOpen={sections.financial} onToggle={() => toggle('financial')} />
                     {sections.financial && (
                         <div className="space-y-6">
-                            <ChartContainer title="Receita MÃªs a MÃªs"><ChartComponent type="bar" data={cRev} labelType="money"/></ChartContainer>
+                            <ChartContainer title="Receita Mês a Mês"><ChartComponent type="bar" data={cRev} labelType="money"/></ChartContainer>
                             <ChartContainer title="Retorno vs Investimento"><ChartComponent type="bar" data={cRevVsAds} labelType="money"/></ChartContainer>
-                            <ChartContainer title="ROI por MÃªs"><ChartComponent type="bar" data={cRoi} labelType="roi"/></ChartContainer>
-                            <ChartContainer title="Ticket MÃ©dio por MÃªs"><ChartComponent type="bar" data={cTicketM} labelType="money"/></ChartContainer>
+                            <ChartContainer title="ROI por Mês"><ChartComponent type="bar" data={cRoi} labelType="roi"/></ChartContainer>
+                            <ChartContainer title="Ticket Médio por Mês"><ChartComponent type="bar" data={cTicketM} labelType="money"/></ChartContainer>
                             <ChartContainer title="Receita por Dia da Semana"><ChartComponent type="bar" data={cWeekRev} labelType="money"/></ChartContainer>
                         </div>
                     )}
-                    <SectionHeader title="GeogrÃ¡fico" icon={Globe} color="bg-blue-500" isOpen={sections.geo} onToggle={() => toggle('geo')} />
+                    <SectionHeader title="Geográfico" icon={Globe} color="bg-blue-500" isOpen={sections.geo} onToggle={() => toggle('geo')} />
                     {sections.geo && (
                         <div className="space-y-6">
                             <ChartContainer title="Receita por Estado"><ChartComponent type="bar" data={cGeoRev} options={{indexAxis:'y', scales: {x: {display: false}, y: {display: true, grid: {display: false}, ticks: {color: '#e2e8f0', font: {size: 12, weight: 'bold'}}}}}} height={400} labelType="money"/></ChartContainer>
-                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Receita por RegiÃ£o"><ChartComponent type="doughnut" data={cReg} labelType="money"/></ChartContainer></div></div>
+                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Receita por RegiÁo"><ChartComponent type="doughnut" data={cReg} labelType="money"/></ChartContainer></div></div>
                             <ChartContainer title="Pedidos por Estado"><ChartComponent type="bar" data={cGeoCount}/></ChartContainer>
-                            <ChartContainer title="Ticket MÃ©dio por Estado"><ChartComponent type="bar" data={cGeoTicket} labelType="money"/></ChartContainer>
+                            <ChartContainer title="Ticket Médio por Estado"><ChartComponent type="bar" data={cGeoTicket} labelType="money"/></ChartContainer>
                         </div>
                     )}
                     <SectionHeader title="Operacional" icon={Layers} color="bg-emerald-500" isOpen={sections.ops} onToggle={() => toggle('ops')} />
                     {sections.ops && (
                         <div className="space-y-6">
-                            <ChartContainer title="Novos Lojistas por MÃªs"><ChartComponent type="bar" data={cNew}/></ChartContainer>
-                            <ChartContainer title="Pares Vendidos por MÃªs"><ChartComponent type="bar" data={cPairs}/></ChartContainer>
-                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="DistribuiÃ§Ã£o de Pares por Pedido"><ChartComponent type="pie" data={cBuckets}/></ChartContainer></div></div>
+                            <ChartContainer title="Novos Lojistas por Mês"><ChartComponent type="bar" data={cNew}/></ChartContainer>
+                            <ChartContainer title="Pares Vendidos por Mês"><ChartComponent type="bar" data={cPairs}/></ChartContainer>
+                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="DistribuiçÁo de Pares por Pedido"><ChartComponent type="pie" data={cBuckets}/></ChartContainer></div></div>
                             <ChartContainer title="Pedidos por Dia da Semana"><ChartComponent type="bar" data={cWeekCount}/></ChartContainer>
-                            <ChartContainer title="Pedidos por Dia do MÃªs"><ChartComponent type="bar" data={cMonthDay}/></ChartContainer>
+                            <ChartContainer title="Pedidos por Dia do Mês"><ChartComponent type="bar" data={cMonthDay}/></ChartContainer>
                         </div>
                     )}
                 </div>
@@ -1588,7 +1587,7 @@
             const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
             const [firebaseUser, setFirebaseUser] = useState(null);
 
-            // Auth Effect for Firebase - ConexÃ£o
+            // Auth Effect for Firebase - ConexÁo
             useEffect(() => {
                 if (window.firebaseAuth && window.auth) {
                     const { signInAnonymously, onAuthStateChanged } = window.firebaseAuth;
@@ -1608,11 +1607,11 @@
             const { data: ads, loading: loadingAds, addItem: addAd, updateItem: updateAd, deleteItem: deleteAd } = useFirebaseData('ads', [], firebaseUser);
             const { data: leads, loading: loadingLeads, addItem: addLead, updateItem: updateLead } = useFirebaseData('leads', [], firebaseUser);
             
-            // SincronizaÃ§Ã£o automÃ¡tica de Leads com Lojistas (Vendas) e MigraÃ§Ã£o
+            // SincronizaçÁo automática de Leads com Lojistas (Vendas) e Migração
             useEffect(() => {
                 if (loadingLeads || loadingSales || !leads.length || !window.db) return;
                 
-                // MIGRATION_KEY garante que a limpeza pesada dos "contacted" bugados aconteÃ§a sÃ³ UMA VEZ
+                // MIGRATION_KEY garante que a limpeza pesada dos "contacted" bugados aconteça só UMA VEZ
                 const MIGRATION_KEY = 'crm_migration_v8';
                 const hasMigrated = localStorage.getItem(MIGRATION_KEY);
                 
@@ -1640,13 +1639,13 @@
                         return matchCnpj || matchPhone || matchComp || matchCont;
                     });
                     
-                    // 1. ForÃ§ar para VENDIDO se bateu com alguma venda na Lojistas
+                    // 1. Forçar para VENDIDO se bateu com alguma venda na Lojistas
                     if (hasSale && lead.status !== 'converted') {
                         const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(lead.id));
                         batch.update(docRef, { status: 'converted', isNew: false });
                         count++;
                     } 
-                    // 2. MIGRAÃ‡ÃƒO: Limpar leads antigos "contacted" que estÃ£o inundando o quadro CRM
+                    // 2. MIGRAÁ‡ÁƒO: Limpar leads antigos "contacted" que estÁo inundando o quadro CRM
                     else if (!hasMigrated && !hasSale && ['contacted', 'negotiating', 'qualified'].includes(lead.status)) {
                         const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(lead.id));
                         batch.update(docRef, { status: 'read', isNew: false });
@@ -1655,7 +1654,7 @@
                 });
 
                 if (count > 0) {
-                    console.log(`MigraÃ§Ã£o Batch: resolvendo ${count} leads pendentes...`);
+                    console.log(`Migração Batch: resolvendo ${count} leads pendentes...`);
                     batch.commit()
                         .then(() => {
                             localStorage.setItem(MIGRATION_KEY, 'true');
@@ -1663,7 +1662,7 @@
                             if (!hasMigrated) window.location.reload(); 
                         })
                         .catch(err => {
-                            console.error("Erro na migraÃ§Ã£o batch:", err);
+                            console.error("Erro na migraçÁo batch:", err);
                             localStorage.setItem(MIGRATION_KEY, 'true');
                             setHasAutoSynced(true);
                         });
@@ -1681,7 +1680,7 @@
             const [leadsApiUrl, setLeadsApiUrl] = useState('https://script.google.com/macros/s/AKfycbx-Vr1TbLdJoXM7Y1pusPzQau7eJFhfqVDsjhCEissJ3-JFJPJ1mSweoKrpiRMp0geznQ/exec');
             const [hasAutoSynced, setHasAutoSynced] = useState(false);
 
-            // FunÃ§Ã£o para Restaurar os Dados Originais no Firebase (se estiver vazio)
+            // FunçÁo para Restaurar os Dados Originais no Firebase (se estiver vazio)
             const importInitialData = async () => {
                 if (window.db && firebaseUser) {
                    const batchPromises = [];
@@ -1691,15 +1690,15 @@
                    
                    await Promise.all(batchPromises);
                    // Leads vazios inicialmente, mas se tiver na lista, adicionaria aqui
-                   // alert("Dados restaurados com sucesso! Os grÃ¡ficos devem aparecer agora."); // Comentado para ser silencioso
+                   // alert("Dados restaurados com sucesso! Os gráficos devem aparecer agora."); // Comentado para ser silencioso
                 }
             };
 
-            // AUTO-SEED: Verifica se o banco estÃ¡ vazio e popula automaticamente
+            // AUTO-SEED: Verifica se o banco está vazio e popula automaticamente
             useEffect(() => {
-                // SÃ³ executa se o usuÃ¡rio estiver logado e o carregamento tiver terminado
+                // Só executa se o usuário estiver logado e o carregamento tiver terminado
                 if (firebaseUser && !loadingSales && !loadingAds) {
-                    // Se nÃ£o houver vendas nem anÃºncios, assume banco vazio e carrega os dados iniciais
+                    // Se nÁo houver vendas nem anúncios, assume banco vazio e carrega os dados iniciais
                     if (sales.length === 0 && ads.length === 0) {
                         console.log("Banco vazio detectado. Carregando dados iniciais automaticamente...");
                         importInitialData();
@@ -1709,8 +1708,8 @@
 
             const syncFromApi = async () => {
                 if (!leadsApiUrl) {
-                    // Modo simulaÃ§Ã£o se nÃ£o houver URL
-                    const incomingLead = { id: Date.now(), date: new Date().toISOString().split('T')[0], name: 'Novo Cliente Simulado', contact: 'Lead Demo', city: 'Belo Horizonte', state: 'MG', source: 'SimulaÃ§Ã£o Demo', status: 'new', isNew: true };
+                    // Modo simulaçÁo se nÁo houver URL
+                    const incomingLead = { id: Date.now(), date: new Date().toISOString().split('T')[0], name: 'Novo Cliente Simulado', contact: 'Lead Demo', city: 'Belo Horizonte', state: 'MG', source: 'Simulação Demo', status: 'new', isNew: true };
                     await addLead(incomingLead);
                     setNewLeadAlert(true);
                     return;
@@ -1735,17 +1734,17 @@
 
                         return {
                             date: leadDate,
-                            company: getVal('RazÃ£o Social'), 
+                            company: getVal('Razão Social'), 
                             contact: getVal('Nome'), 
                             phone: getVal('whatsapp'), 
                             email: getVal('mail'), 
                             city: getVal('Cidade'), 
                             state: normalizeUF(getVal('Estado')), 
                             cnpj: getVal('CNPJ'), 
-                            ie: getVal('InscriÃ§Ã£o'), 
-                            address: getVal('EndereÃ§o'), 
+                            ie: getVal('Inscrição'), 
+                            address: getVal('Endereço'), 
                             instagram: getVal('Instagram'), 
-                            obs: getVal('ObservaÃ§Ãµes'), 
+                            obs: getVal('Observações'), 
                             source: 'Google Forms', 
                             status: isHistoricallyOld ? 'read' : 'new', 
                             isNew: !isHistoricallyOld
@@ -1753,7 +1752,7 @@
                     });
                     
                     // Verifica duplicatas simples pelo nome+data antes de adicionar
-                    // (Em produÃ§Ã£o idealmente verificaria ID no banco, mas aqui simplificamos para o demo)
+                    // (Em produçÁo idealmente verificaria ID no banco, mas aqui simplificamos para o demo)
                     let count = 0;
                     const existingSignatures = new Set(leads.map(l => (l.contact || l.name) + l.date));
                     
@@ -1773,11 +1772,11 @@
                     
                 } catch (error) {
                     console.error("Erro ao buscar leads:", error);
-                    // NÃ£o alertar erro silenciosamente no auto-sync
+                    // NÁo alertar erro silenciosamente no auto-sync
                 }
             };
 
-            // AUTO-SYNC LEADS: Sincroniza automaticamente quando o usuÃ¡rio loga e os leads carregam
+            // AUTO-SYNC LEADS: Sincroniza automaticamente quando o usuário loga e os leads carregam
             useEffect(() => {
                 if (firebaseUser && !loadingLeads && !hasAutoSynced && leadsApiUrl) {
                     syncFromApi();
@@ -1790,14 +1789,14 @@
                 if (!isAuthenticated || !leadsApiUrl) return;
 
                 const interval = setInterval(() => {
-                    console.log("VerificaÃ§Ã£o automÃ¡tica de leads (5min)...");
+                    console.log("VerificaçÁo automática de leads (5min)...");
                     syncFromApi();
                 }, 5 * 60 * 1000);
 
                 return () => clearInterval(interval);
-            }, [isAuthenticated, leadsApiUrl, leads]); // DependÃªncia 'leads' recria o intervalo quando leads mudam, garantindo closure atualizado
+            }, [isAuthenticated, leadsApiUrl, leads]); // Dependência 'leads' recria o intervalo quando leads mudam, garantindo closure atualizado
 
-            const handleLogin = (u, p) => { if (u === credentials.username && p === credentials.password) { setIsAuthenticated(true); setLoginError(''); } else { setLoginError('Credenciais invÃ¡lidas. Tente novamente.'); } };
+            const handleLogin = (u, p) => { if (u === credentials.username && p === credentials.password) { setIsAuthenticated(true); setLoginError(''); } else { setLoginError('Credenciais inválidas. Tente novamente.'); } };
             const handleLogout = () => { setIsAuthenticated(false); setView('analytics'); };
             const handleUpdateCredentials = (u, p) => { setCredentials({ username: u, password: p }); };
             const handleAcknowledgeLead = () => { setNewLeadAlert(false); setView('leads'); };
@@ -1821,11 +1820,11 @@
                         toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     />
                     <main className={`flex-1 p-8 overflow-y-auto h-screen relative transition-all duration-300 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
-                        {/* BotÃ£o de EmergÃªncia para Restaurar Dados se estiver vazio */}
+                        {/* BotÁo de Emergência para Restaurar Dados se estiver vazio */}
                         {sales.length === 0 && ads.length === 0 && leads.length === 0 && (
                             <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/50 rounded-lg flex items-center justify-between animate-fadeIn">
-                                <div className="text-amber-500 flex items-center gap-2"><DatabaseIcon size={20}/> <span>Banco de dados vazio? O carregamento automÃ¡tico deve iniciar em breve...</span></div>
-                                <button onClick={importInitialData} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded font-bold text-sm shadow-lg transition-transform hover:scale-105">ForÃ§ar RestauraÃ§Ã£o</button>
+                                <div className="text-amber-500 flex items-center gap-2"><DatabaseIcon size={20}/> <span>Banco de dados vazio? O carregamento automático deve iniciar em breve...</span></div>
+                                <button onClick={importInitialData} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded font-bold text-sm shadow-lg transition-transform hover:scale-105">Forçar RestauraçÁo</button>
                             </div>
                         )}
 
@@ -1842,7 +1841,7 @@
                             let count = 0;
 
                             leads.forEach(l => {
-                                // Limpar TUDO que nÃ£o for negociaÃ§Ã£o ativa ou venda confirmada
+                                // Limpar TUDO que nÁo for negociaçÁo ativa ou venda confirmada
                                 if (['new', 'read', 'contacted'].includes(l.status) || l.isNew) {
                                     const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(l.id));
                                     batch.update(docRef, { isNew: false, status: 'read' });
@@ -1852,7 +1851,7 @@
 
                             if (count > 0) {
                                 batch.commit()
-                                    .then(() => alert(`Limpeza concluÃ­da! ${count} leads movidos para LIDO.`))
+                                    .then(() => alert(`Limpeza concluída! ${count} leads movidos para LIDO.`))
                                     .catch(err => alert("Erro na limpeza: " + err.message));
                             } else {
                                 alert('Nenhum lead pendente para limpeza.');
