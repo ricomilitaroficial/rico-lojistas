@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RICO MILITAR - Sistema de Gestão</title>
-    
+
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -15,7 +16,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    
+
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -32,37 +33,40 @@
             messagingSenderId: "207345876980",
             appId: "1:207345876980:web:fd6d3f7b1c632951c883a1"
         };
-        
+
         if (firebaseConfig) {
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
             const db = getFirestore(app);
-            
+
             window.db = db;
             window.auth = auth;
             window.firebaseAuth = { signInAnonymously, onAuthStateChanged };
             window.firebaseStore = { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, writeBatch };
-            window.appId = 'rico-lojistas-app-id'; 
+            window.appId = 'rico-lojistas-app-id';
         }
     </script>
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap"
+        rel="stylesheet">
+
     <style>
-        body { 
-            font-family: 'Red Hat Display', sans-serif; 
-            background-color: #0f172a; 
-            color: #e2e8f0; 
+        body {
+            font-family: 'Red Hat Display', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
             font-size: 13px;
         }
-        .glass-panel { 
-            background: rgba(30, 41, 59, 0.4); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255, 255, 255, 0.05); 
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
+
         .input-dark {
             background-color: #1e293b;
             border: 1px solid #334155;
@@ -73,21 +77,25 @@
             outline: none;
             transition: border-color 0.2s;
         }
-        .input-dark:focus { border-color: #f59e0b; }
-        
+
+        .input-dark:focus {
+            border-color: #f59e0b;
+        }
+
         .nav-item.active {
             background-color: rgba(245, 158, 11, 0.1);
             border-right: 3px solid #f59e0b;
             color: #fbbf24;
         }
-        
+
         th.sortable {
             cursor: pointer;
             user-select: none;
             transition: color 0.2s;
         }
+
         th.sortable:hover {
-            color: #fbbf24; 
+            color: #fbbf24;
         }
 
         .badge {
@@ -97,23 +105,49 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-        
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
         .animate-fadeIn {
             animation: fadeIn 0.3s ease-in-out;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-        
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
+        }
+
         .break-word-cell {
             word-wrap: break-word;
             white-space: normal;
@@ -121,6 +155,7 @@
         }
     </style>
 </head>
+
 <body>
     <div id="root"></div>
 
@@ -131,26 +166,26 @@
         const IconBase = ({ children, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
-        const Shield = (p) => <IconBase {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></IconBase>;
-        const DollarSign = (p) => <IconBase {...p}><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></IconBase>;
-        const TrendingUp = (p) => <IconBase {...p}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></IconBase>;
-        const Target = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconBase>;
-        const Users = (p) => <IconBase {...p}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconBase>;
-        const Activity = (p) => <IconBase {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></IconBase>;
-        const Layers = (p) => <IconBase {...p}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></IconBase>;
-        const Globe = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></IconBase>;
-        const BarChart3 = (p) => <IconBase {...p}><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></IconBase>;
+        const Shield = (p) => <IconBase {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></IconBase>;
+        const DollarSign = (p) => <IconBase {...p}><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></IconBase>;
+        const TrendingUp = (p) => <IconBase {...p}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></IconBase>;
+        const Target = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></IconBase>;
+        const Users = (p) => <IconBase {...p}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></IconBase>;
+        const Activity = (p) => <IconBase {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></IconBase>;
+        const Layers = (p) => <IconBase {...p}><polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" /></IconBase>;
+        const Globe = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></IconBase>;
+        const BarChart3 = (p) => <IconBase {...p}><path d="M3 3v18h18" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></IconBase>;
         const Plus = (p) => <IconBase {...p}><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></IconBase>;
         const Edit2 = (p) => <IconBase {...p}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></IconBase>;
         const Trash2 = (p) => <IconBase {...p}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></IconBase>;
         const X = (p) => <IconBase {...p}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></IconBase>;
-        const ChevronDown = (p) => <IconBase {...p}><polyline points="6 9 12 15 18 9"/></IconBase>;
-        const ChevronUp = (p) => <IconBase {...p}><polyline points="18 15 12 9 6 15"/></IconBase>;
+        const ChevronDown = (p) => <IconBase {...p}><polyline points="6 9 12 15 18 9" /></IconBase>;
+        const ChevronUp = (p) => <IconBase {...p}><polyline points="18 15 12 9 6 15" /></IconBase>;
         const ChevronLeft = (p) => <IconBase {...p}><polyline points="15 18 9 12 15 6"></polyline></IconBase>;
         const ChevronRight = (p) => <IconBase {...p}><polyline points="9 18 15 12 9 6"></polyline></IconBase>;
         const Wallet = (p) => <IconBase {...p}><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" /><path d="M4 6v12c0 1.1.9 2 2 2h14v-4" /><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" /></IconBase>;
         const Lock = (p) => <IconBase {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></IconBase>;
-        const Settings = (p) => <IconBase {...p}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>;
+        const Settings = (p) => <IconBase {...p}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></IconBase>;
         const LogOut = (p) => <IconBase {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></IconBase>;
         const User = (p) => <IconBase {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></IconBase>;
         const Filter = (p) => <IconBase {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></IconBase>;
@@ -178,10 +213,10 @@
         const normalizeUF = (uf) => {
             if (!uf || typeof uf !== 'string') return null;
             let clean = uf.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            
+
             if (BRAZIL_STATES.includes(clean)) return clean;
             if (UF_MAP[clean]) return UF_MAP[clean];
-            
+
             // Busca sigla solta no texto (ex: "SÁƒO PAULO - SP")
             const words = clean.split(/[\s-]+/);
             for (const word of words) {
@@ -236,30 +271,30 @@
         const fmtDate = (d) => new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
         const fullMonthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-       // --- HOOK DE DADOS FIREBASE (CORRIGIDO PARA PERSISTÁŠNCIA) ---
+        // --- HOOK DE DADOS FIREBASE (CORRIGIDO PARA PERSISTÁŠNCIA) ---
         const useFirebaseData = (collectionName, initialData = [], user) => {
             const [data, setData] = useState(initialData);
             const [loading, setLoading] = useState(true);
-            
+
             // Caminho FIXO para os dados nÁo sumirem
             // Antes era: ... 'users', user.uid, collectionName
             // Agora é:   ... 'public', 'data', collectionName
-            
+
             useEffect(() => {
                 if (!window.db || !window.firebaseStore || !window.appId || !user) {
                     return;
                 }
-                
+
                 const { collection, onSnapshot } = window.firebaseStore;
                 // MUDANÁ‡A AQUI:
                 const colRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', collectionName);
-                
+
                 const unsubscribe = onSnapshot(colRef, (snapshot) => {
                     const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     setData(items);
                     setLoading(false);
                 });
-                
+
                 return () => unsubscribe();
             }, [collectionName, user]);
 
@@ -303,7 +338,7 @@
                 Chart.defaults.color = '#94a3b8';
                 Chart.defaults.borderColor = '#334155';
                 Chart.defaults.font.family = "'Red Hat Display', sans-serif";
-                Chart.defaults.datasets.bar.barPercentage = 0.6; 
+                Chart.defaults.datasets.bar.barPercentage = 0.6;
                 Chart.register(ChartDataLabels);
 
                 chartRef.current = new Chart(canvasRef.current.getContext('2d'), {
@@ -314,13 +349,13 @@
                         plugins: {
                             legend: { labels: { color: '#e2e8f0', usePointStyle: true, boxWidth: 8 } },
                             datalabels: {
-                                color: '#fff', anchor: type==='pie'||type==='doughnut'?'center':'end', align: type==='pie'||type==='doughnut'?'center':'top', offset: 4,
+                                color: '#fff', anchor: type === 'pie' || type === 'doughnut' ? 'center' : 'end', align: type === 'pie' || type === 'doughnut' ? 'center' : 'top', offset: 4,
                                 font: { weight: 'bold', size: 11 },
                                 formatter: (val, ctx) => {
                                     let label = val;
-                                    if(labelType==='money') label = val >= 1000 ? 'R$ '+(val/1000).toFixed(1)+'k' : 'R$ '+val;
-                                    if(labelType==='roi') label = val+'x';
-                                    if(labelType==='percent') label = val+'%';
+                                    if (labelType === 'money') label = val >= 1000 ? 'R$ ' + (val / 1000).toFixed(1) + 'k' : 'R$ ' + val;
+                                    if (labelType === 'roi') label = val + 'x';
+                                    if (labelType === 'percent') label = val + '%';
                                     if (type === 'pie' || type === 'doughnut') {
                                         const dataset = ctx.chart.data.datasets[0];
                                         const total = dataset.data.reduce((acc, curr) => acc + curr, 0);
@@ -332,11 +367,11 @@
                                 display: 'auto'
                             }
                         },
-                        scales: (type!=='pie' && type!=='doughnut') ? { x: {grid:{display:false}}, y:{display:false, beginAtZero:true} } : {x:{display:false},y:{display:false}},
+                        scales: (type !== 'pie' && type !== 'doughnut') ? { x: { grid: { display: false } }, y: { display: false, beginAtZero: true } } : { x: { display: false }, y: { display: false } },
                         ...options
                     }
                 });
-                return () => { if(chartRef.current) chartRef.current.destroy(); };
+                return () => { if (chartRef.current) chartRef.current.destroy(); };
             }, [type, data, options]);
 
             return <div style={{ height, width: '100%' }}><canvas ref={canvasRef}></canvas></div>;
@@ -358,7 +393,7 @@
             <div className="glass-panel p-6 rounded-lg w-full mb-6 animate-fadeIn">
                 <div className="mb-4 border-b border-slate-700/50 pb-2 flex justify-between items-center">
                     <div>
-                        <h3 className="font-bold text-white text-lg flex items-center gap-2"><Activity size={16} className="text-amber-500"/> {title}</h3>
+                        <h3 className="font-bold text-white text-lg flex items-center gap-2"><Activity size={16} className="text-amber-500" /> {title}</h3>
                         {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
                     </div>
                 </div>
@@ -371,7 +406,7 @@
                 <div className="flex items-center gap-3">
                     <div className={`w-1.5 h-8 ${color} rounded-sm`}></div>
                     <h2 className="text-xl font-bold text-white uppercase tracking-tight flex items-center gap-2 group-hover:text-slate-200 transition-colors">
-                        {Icon && <Icon className="text-slate-400 group-hover:text-slate-300" size={24}/>} {title}
+                        {Icon && <Icon className="text-slate-400 group-hover:text-slate-300" size={24} />} {title}
                     </h2>
                 </div>
                 <div className="text-slate-400">{isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}</div>
@@ -388,7 +423,7 @@
                 { id: 'ads', label: 'Anúncios (Ads)', icon: DollarSign },
                 { id: 'settings', label: 'Configurações', icon: Settings },
             ];
-            
+
             // Largura dinâmica baseada no estado collapsed
             const sidebarClass = isCollapsed ? 'w-20' : 'w-64';
 
@@ -402,35 +437,35 @@
                                 <p className="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Militar</p>
                             </div>
                         )}
-                        <button 
-                            onClick={toggleSidebar} 
+                        <button
+                            onClick={toggleSidebar}
                             className="absolute -right-3 top-8 bg-slate-800 border border-slate-600 rounded-full p-1 text-slate-300 hover:text-white shadow-lg z-50"
                         >
                             {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
                         </button>
                     </div>
-                    
+
                     <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
                         {items.map(item => (
-                            <button 
-                                key={item.id} 
-                                onClick={() => setView(item.id)} 
+                            <button
+                                key={item.id}
+                                onClick={() => setView(item.id)}
                                 title={isCollapsed ? item.label : ''}
                                 className={`nav-item w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-3 rounded-lg text-sm font-medium transition-all ${view === item.id ? 'active' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
                             >
-                                <item.icon size={20} className="shrink-0" /> 
+                                <item.icon size={20} className="shrink-0" />
                                 {!isCollapsed && <span className="whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>}
                             </button>
                         ))}
                     </nav>
-                    
+
                     <div className="p-4 border-t border-slate-700 space-y-2">
-                        <button 
-                            onClick={onLogout} 
+                        <button
+                            onClick={onLogout}
                             title={isCollapsed ? 'Sair' : ''}
                             className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-2 text-slate-400 hover:text-red-400 text-sm font-medium hover:bg-slate-800/50 rounded-lg transition-colors`}
                         >
-                            <LogOut size={18} className="shrink-0" /> 
+                            <LogOut size={18} className="shrink-0" />
                             {!isCollapsed && <span className="whitespace-nowrap">Sair</span>}
                         </button>
                     </div>
@@ -456,11 +491,11 @@
         const LeadAnalyticsView = ({ sales, leads, ads }) => {
             const [filterDate, setFilterDate] = useState('all');
 
-             const availableMonths = useMemo(() => {
+            const availableMonths = useMemo(() => {
                 const months = new Set([
                     ...sales.map(s => s.date.slice(0, 7)),
                     ...ads.map(a => a.month),
-                     ...leads.map(l => l.date.slice(0, 7))
+                    ...leads.map(l => l.date.slice(0, 7))
                 ]);
                 return Array.from(months).sort();
             }, [sales, ads, leads]);
@@ -469,7 +504,7 @@
                 let filteredSales = sales;
                 let filteredAds = ads;
                 let filteredLeads = leads;
-                
+
                 if (filterDate !== 'all') {
                     filteredSales = sales.filter(s => s.date.startsWith(filterDate));
                     filteredAds = ads.filter(a => a.month === filterDate);
@@ -479,11 +514,11 @@
                 const totalLeads = filteredLeads.length;
                 const totalSales = filteredSales.length;
                 const totalAds = filteredAds.reduce((acc, a) => acc + a.value, 0);
-                
+
                 const cpl = totalLeads > 0 ? totalAds / totalLeads : 0;
                 const conversionRate = totalLeads > 0 ? (totalSales / totalLeads) * 100 : 0;
                 const conversionRatio = totalSales > 0 ? Math.round(totalLeads / totalSales) : 0;
-                
+
                 const monthsCount = filterDate === 'all' ? availableMonths.length : 1;
                 const avgLeadsPerMonth = monthsCount > 0 ? totalLeads / monthsCount : 0;
 
@@ -496,8 +531,8 @@
                     const mRate = mLeads > 0 ? (mSales / mLeads) * 100 : 0;
 
                     const [y, mn] = m.split('-');
-                    const label = `${fullMonthNames[parseInt(mn)-1].substring(0,3)}/${y.substring(2)}`;
-                    
+                    const label = `${fullMonthNames[parseInt(mn) - 1].substring(0, 3)}/${y.substring(2)}`;
+
                     return { label, leads: mLeads, sales: mSales, cpl: mCpl, rate: mRate };
                 });
 
@@ -506,7 +541,7 @@
                 const leadsBySource = {};
                 const leadsByStatus = { 'new': 0, 'contacted': 0, 'qualified': 0, 'converted': 0, 'lost': 0 };
                 const leadsByDay = {};
-                
+
                 filteredLeads.forEach(l => {
                     // Geo
                     const st = normalizeUF(l.state);
@@ -520,9 +555,9 @@
                     // Source
                     const src = l.source || 'Desconhecido';
                     leadsBySource[src] = (leadsBySource[src] || 0) + 1;
-                    
+
                     // Status
-                    if(l.status) leadsByStatus[l.status] = (leadsByStatus[l.status] || 0) + 1;
+                    if (l.status) leadsByStatus[l.status] = (leadsByStatus[l.status] || 0) + 1;
 
                     // Day Trend
                     leadsByDay[l.date] = (leadsByDay[l.date] || 0) + 1;
@@ -592,7 +627,7 @@
                         </h2>
                         <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-700">
                             <span className="text-slate-400 text-xs font-bold uppercase px-3">Período:</span>
-                            <select 
+                            <select
                                 className="bg-slate-800 text-white text-sm border-none rounded py-1 px-3 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
                                 value={filterDate}
                                 onChange={(e) => setFilterDate(e.target.value)}
@@ -612,26 +647,26 @@
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Linha 1: EvoluçÁo e Custo */}
+                        {/* Linha 1: Evolução e Custo */}
                         <div className="lg:col-span-2">
-                            <ChartContainer title="EvoluçÁo Mensal (Funil Macro)" subtitle="Comparativo Leads vs Vendas">
-                                <ChartComponent type="bar" data={cLeadsMonth} options={{ scales: { y: {display: false}, y1: { type: 'linear', display: false, position: 'right', grid: {drawOnChartArea: false} } } }} />
+                            <ChartContainer title="Evolução Mensal (Funil Macro)" subtitle="Comparativo Leads vs Vendas">
+                                <ChartComponent type="bar" data={cLeadsMonth} options={{ scales: { y: { display: false }, y1: { type: 'linear', display: false, position: 'right', grid: { drawOnChartArea: false } } } }} />
                             </ChartContainer>
                         </div>
                         <ChartContainer title="Custo por Lead (CPL)" subtitle="Eficiência do investimento (R$)">
-                             <ChartComponent type="bar" data={cCplMonth} labelType="money" />
+                            <ChartComponent type="bar" data={cCplMonth} labelType="money" />
                         </ChartContainer>
 
                         {/* Linha 3: Geo Detalhado */}
-                        <ChartContainer title="DistribuiçÁo Regional" subtitle="Leads por RegiÁo">
+                        <ChartContainer title="Distribuição Regional" subtitle="Leads por Região">
                             <div className="flex justify-center h-48">
                                 <ChartComponent type="doughnut" data={cLeadsRegion} labelType="percent" />
                             </div>
                         </ChartContainer>
-                        
-                         <div className="lg:col-span-2">
-                             <ChartContainer title="Ranking de Estados" subtitle="Leads por UF (Maior para Menor)">
-                                 <ChartComponent type="bar" data={cLeadsState} />
+
+                        <div className="lg:col-span-2">
+                            <ChartContainer title="Ranking de Estados" subtitle="Leads por UF (Maior para Menor)">
+                                <ChartComponent type="bar" data={cLeadsState} />
                             </ChartContainer>
                         </div>
                     </div>
@@ -642,7 +677,7 @@
         const LeadsView = ({ leads, addItem, updateItem, onConvertToSale, clearNotification, onSync, apiUrl }) => {
             const [syncing, setSyncing] = useState(false);
             const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
-            
+
             // Pagination state
             const [currentPage, setCurrentPage] = useState(1);
             const [itemsPerPage, setItemsPerPage] = useState(50);
@@ -701,8 +736,8 @@
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded border border-slate-700">
                                 <label>Exibir:</label>
-                                <select 
-                                    value={itemsPerPage} 
+                                <select
+                                    value={itemsPerPage}
                                     onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
                                     className="bg-transparent text-white font-bold outline-none drop-shadow focus:ring-0"
                                 >
@@ -712,12 +747,12 @@
                                     <option value={100000} className="bg-slate-800">Todos</option>
                                 </select>
                             </div>
-                            <button 
-                                onClick={handleSyncClick} 
-                                disabled={syncing} 
+                            <button
+                                onClick={handleSyncClick}
+                                disabled={syncing}
                                 className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2 text-sm font-bold shadow-lg shadow-blue-900/20 disabled:opacity-50 transition-all"
                             >
-                                <RefreshCw size={18} className={syncing ? "animate-spin" : ""} /> 
+                                <RefreshCw size={18} className={syncing ? "animate-spin" : ""} />
                                 {syncing ? 'Sincronizando...' : 'Sincronizar Agora'}
                             </button>
                         </div>
@@ -728,10 +763,10 @@
                             <table className="w-full min-w-[1200px] table-fixed text-[13px] text-left text-slate-400">
                                 <thead className="text-[11px] text-slate-200 uppercase bg-slate-800/95 sticky top-0 z-20 backdrop-blur-sm border-b border-slate-700 shadow-md">
                                     <tr>
-                                        <th className="px-3 py-3 sortable w-[80px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('date')}>Data <SortIcon column="date"/></th>
-                                        <th className="px-3 py-3 sortable w-[150px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact"/></th>
+                                        <th className="px-3 py-3 sortable w-[80px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('date')}>Data <SortIcon column="date" /></th>
+                                        <th className="px-3 py-3 sortable w-[150px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact" /></th>
                                         <th className="px-3 py-3 w-[110px] text-center sticky top-0 bg-slate-800">WhatsApp</th>
-                                        <th className="px-3 py-3 sortable w-[120px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('state')}>Local <SortIcon column="state"/></th>
+                                        <th className="px-3 py-3 sortable w-[120px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('state')}>Local <SortIcon column="state" /></th>
                                         <th className="px-3 py-3 w-[150px] text-center sticky top-0 bg-slate-800">Lojista/CNPJ</th>
                                         <th className="px-3 py-3 w-[160px] text-center sticky top-0 bg-slate-800">E-mail</th>
                                         <th className="px-3 py-3 w-[180px] text-center sticky top-0 bg-slate-800">Endereço/Instagram</th>
@@ -754,9 +789,9 @@
                                             </td>
                                             <td className="px-3 py-4 align-top text-center whitespace-normal">
                                                 {lead.phone ? (
-                                                    <a 
-                                                        href={`https://wa.me/${String(lead.phone).replace(/\D/g,'')}`} 
-                                                        target="_blank" 
+                                                    <a
+                                                        href={`https://wa.me/${String(lead.phone).replace(/\D/g, '')}`}
+                                                        target="_blank"
                                                         onClick={() => {
                                                             if (['new', 'read'].includes(lead.status) || lead.isNew) {
                                                                 updateItem({ ...lead, isNew: false, status: 'contacted' });
@@ -788,8 +823,8 @@
                                                 {lead.status === 'converted' ? (
                                                     <div className="flex flex-col gap-1 items-center">
                                                         <span className="text-[11px] text-emerald-500 font-medium bg-emerald-500/10 px-2 py-1 rounded">Feito</span>
-                                                        <button 
-                                                            onClick={() => updateItem({ ...lead, status: 'contacted' })} 
+                                                        <button
+                                                            onClick={() => updateItem({ ...lead, status: 'contacted' })}
                                                             className="text-[9px] text-slate-500 hover:text-slate-300 underline mt-1"
                                                         >
                                                             Desfazer
@@ -810,32 +845,32 @@
                             </table>
                         </div>
                     </div>
-                        
-                        {/* Pagination Controls */}
-                        {totalPages > 0 && (
-                            <div className="flex justify-between items-center p-4 border-t border-slate-700 bg-slate-800/50 sticky bottom-0 z-20">
-                                <div className="flex items-center gap-4 text-xs text-slate-400">
-                                    <span>
-                                        Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, leads.length)} de {leads.length} leads
-                                    </span>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 0 && (
+                        <div className="flex justify-between items-center p-4 border-t border-slate-700 bg-slate-800/50 sticky bottom-0 z-20">
+                            <div className="flex items-center gap-4 text-xs text-slate-400">
+                                <span>
+                                    Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, leads.length)} de {leads.length} leads
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 text-xs text-slate-400">
+                                    <label>Leads por página:</label>
+                                    <select
+                                        value={itemsPerPage}
+                                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                                        className="bg-slate-900 border border-slate-600 text-white rounded px-2 py-1 outline-none relative z-50 text-[11px]"
+                                    >
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                        <option value={200}>200</option>
+                                        <option value={100000}>Todos</option>
+                                    </select>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-2 text-xs text-slate-400">
-                                        <label>Leads por página:</label>
-                                        <select 
-                                            value={itemsPerPage} 
-                                            onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                                            className="bg-slate-900 border border-slate-600 text-white rounded px-2 py-1 outline-none relative z-50 text-[11px]"
-                                        >
-                                            <option value={50}>50</option>
-                                            <option value={100}>100</option>
-                                            <option value={200}>200</option>
-                                            <option value={100000}>Todos</option>
-                                        </select>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button 
-                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                         disabled={currentPage === 1}
                                         className="px-3 py-1 rounded bg-slate-700 text-white disabled:opacity-50 hover:bg-slate-600 transition-colors text-xs"
                                     >
@@ -844,7 +879,7 @@
                                     <span className="px-2 py-1 text-xs text-slate-300 flex items-center">
                                         Pág {currentPage} de {totalPages}
                                     </span>
-                                    <button 
+                                    <button
                                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                         disabled={currentPage === totalPages}
                                         className="px-3 py-1 rounded bg-slate-700 text-white disabled:opacity-50 hover:bg-slate-600 transition-colors text-xs"
@@ -854,8 +889,8 @@
                                 </div>
                             </div>
                         </div>
-                        )}
-                    </div>
+                    )}
+                </div>
             );
         };
 
@@ -871,8 +906,8 @@
                     setFormData({
                         date: new Date().toISOString().split('T')[0],
                         leadDate: prefillData.date,
-                        company: prefillData.company, 
-                        contact: prefillData.contact, 
+                        company: prefillData.company,
+                        contact: prefillData.contact,
                         phone: prefillData.phone,
                         email: prefillData.email,
                         city: prefillData.city,
@@ -949,7 +984,7 @@
             const confirmDelete = () => {
                 if (deleteConfirmId) { deleteItem(deleteConfirmId); setDeleteConfirmId(null); }
             };
-            
+
             const SortIcon = ({ column }) => {
                 if (sortConfig.key !== column) return null;
                 return sortConfig.direction === 'asc' ? <ChevronUp size={14} className="ml-1 inline" /> : <ChevronDown size={14} className="ml-1 inline" />;
@@ -966,11 +1001,11 @@
                             <table className="w-full text-sm text-left text-slate-400">
                                 <thead className="text-xs text-slate-200 uppercase bg-slate-800/50">
                                     <tr>
-                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('date')}>Data Venda <SortIcon column="date"/></th>
-                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('company')}>Lojista <SortIcon column="company"/></th>
-                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('state')}>Local <SortIcon column="state"/></th>
-                                        <th className="px-6 py-4 text-center sortable" onClick={() => handleSort('pairs')}>Pares <SortIcon column="pairs"/></th>
-                                        <th className="px-6 py-4 text-right sortable" onClick={() => handleSort('value')}>Valor <SortIcon column="value"/></th>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('date')}>Data Venda <SortIcon column="date" /></th>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('company')}>Lojista <SortIcon column="company" /></th>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('state')}>Local <SortIcon column="state" /></th>
+                                        <th className="px-6 py-4 text-center sortable" onClick={() => handleSort('pairs')}>Pares <SortIcon column="pairs" /></th>
+                                        <th className="px-6 py-4 text-right sortable" onClick={() => handleSort('value')}>Valor <SortIcon column="value" /></th>
                                         <th className="px-6 py-4 text-right">Ações</th>
                                     </tr>
                                 </thead>
@@ -998,45 +1033,45 @@
                         <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-1 custom-scrollbar">
                             <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3">Dados da Venda</h4>
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Data Lead</label><input type="date" required className="input-dark" value={formData.leadDate} onChange={e => setFormData({...formData, leadDate: e.target.value})} /></div>
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Data Fechamento</label><input type="date" required className="input-dark" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Data Lead</label><input type="date" required className="input-dark" value={formData.leadDate} onChange={e => setFormData({ ...formData, leadDate: e.target.value })} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Data Fechamento</label><input type="date" required className="input-dark" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} /></div>
                             </div>
-                            
+
                             <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Dados do Cliente</h4>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Razão Social (Loja)</label><input type="text" required className="input-dark" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} /></div>
-                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">CNPJ</label><input type="text" className="input-dark" value={formData.cnpj || ''} onChange={e => setFormData({...formData, cnpj: e.target.value})} /></div>
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Insc. Estadual</label><input type="text" className="input-dark" value={formData.ie || ''} onChange={e => setFormData({...formData, ie: e.target.value})} /></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Razão Social (Loja)</label><input type="text" required className="input-dark" value={formData.company} onChange={e => setFormData({ ...formData, company: e.target.value })} /></div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">CNPJ</label><input type="text" className="input-dark" value={formData.cnpj || ''} onChange={e => setFormData({ ...formData, cnpj: e.target.value })} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Insc. Estadual</label><input type="text" className="input-dark" value={formData.ie || ''} onChange={e => setFormData({ ...formData, ie: e.target.value })} /></div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Responsável (Nome)</label><input type="text" className="input-dark" value={formData.contact || ''} onChange={e => setFormData({...formData, contact: e.target.value})} /></div>
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Email</label><input type="email" className="input-dark" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Responsável (Nome)</label><input type="text" className="input-dark" value={formData.contact || ''} onChange={e => setFormData({ ...formData, contact: e.target.value })} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Email</label><input type="email" className="input-dark" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} /></div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">WhatsApp</label><input type="text" className="input-dark" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Instagram</label><input type="text" className="input-dark" value={formData.instagram || ''} onChange={e => setFormData({...formData, instagram: e.target.value})} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">WhatsApp</label><input type="text" className="input-dark" value={formData.phone || ''} onChange={e => setFormData({ ...formData, phone: e.target.value })} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Instagram</label><input type="text" className="input-dark" value={formData.instagram || ''} onChange={e => setFormData({ ...formData, instagram: e.target.value })} /></div>
                             </div>
-                            
+
                             <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Localização</h4>
                             <div className="grid grid-cols-3 gap-4">
-                                <div className="col-span-2"><label className="block text-xs uppercase mb-1 text-slate-400">Cidade</label><input type="text" required className="input-dark" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} /></div>
+                                <div className="col-span-2"><label className="block text-xs uppercase mb-1 text-slate-400">Cidade</label><input type="text" required className="input-dark" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} /></div>
                                 <div>
                                     <label className="block text-xs uppercase mb-1 text-slate-400">UF</label>
-                                    <select required className="input-dark" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})}>
+                                    <select required className="input-dark" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })}>
                                         <option value="" disabled>Selecione</option>
                                         {BRAZIL_STATES.map(uf => <option key={uf} value={uf}>{uf}</option>)}
                                     </select>
                                 </div>
                             </div>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Endereço Completo</label><input type="text" className="input-dark" value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} /></div>
-                            
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Endereço Completo</label><input type="text" className="input-dark" value={formData.address || ''} onChange={e => setFormData({ ...formData, address: e.target.value })} /></div>
+
                             <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Pedido</h4>
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Qtd Pares</label><input type="number" required className="input-dark" value={formData.pairs} onChange={e => setFormData({...formData, pairs: e.target.value})} /></div>
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Total (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Qtd Pares</label><input type="number" required className="input-dark" value={formData.pairs} onChange={e => setFormData({ ...formData, pairs: e.target.value })} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Total (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({ ...formData, value: e.target.value })} /></div>
                             </div>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Observações</label><textarea className="input-dark h-20" value={formData.obs || ''} onChange={e => setFormData({...formData, obs: e.target.value})}></textarea></div>
-                            
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Observações</label><textarea className="input-dark h-20" value={formData.obs || ''} onChange={e => setFormData({ ...formData, obs: e.target.value })}></textarea></div>
+
                             <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded mt-4">Salvar Dados</button>
                         </form>
                     </Modal>
@@ -1076,7 +1111,7 @@
 
             const openModal = (item = null) => { setEditingItem(item); setFormData(item || { month: new Date().toISOString().slice(0, 7), value: '' }); setIsModalOpen(true); };
             const handleSubmit = (e) => { e.preventDefault(); const newItem = { ...formData, value: Number(formData.value) }; if (editingItem) updateItem({ ...newItem, id: editingItem.id }); else addItem(newItem); setIsModalOpen(false); };
-            const confirmDelete = () => { if(deleteConfirmId) { deleteItem(deleteConfirmId); setDeleteConfirmId(null); } };
+            const confirmDelete = () => { if (deleteConfirmId) { deleteItem(deleteConfirmId); setDeleteConfirmId(null); } };
             const SortIcon = ({ column }) => { if (sortConfig.key !== column) return null; return sortConfig.direction === 'asc' ? <ChevronUp size={14} className="ml-1 inline" /> : <ChevronDown size={14} className="ml-1 inline" />; };
 
             return (
@@ -1089,8 +1124,8 @@
                         <table className="w-full text-sm text-left text-slate-400">
                             <thead className="text-xs text-slate-200 uppercase bg-slate-800/50">
                                 <tr>
-                                    <th className="px-6 py-4 sortable" onClick={() => handleSort('month')}>Mês Referência <SortIcon column="month"/></th>
-                                    <th className="px-6 py-4 text-right sortable" onClick={() => handleSort('value')}>Investimento (Ads) <SortIcon column="value"/></th>
+                                    <th className="px-6 py-4 sortable" onClick={() => handleSort('month')}>Mês Referência <SortIcon column="month" /></th>
+                                    <th className="px-6 py-4 text-right sortable" onClick={() => handleSort('value')}>Investimento (Ads) <SortIcon column="value" /></th>
                                     <th className="px-6 py-4 text-right">Ações</th>
                                 </tr>
                             </thead>
@@ -1117,7 +1152,7 @@
                             </tfoot>
                         </table>
                     </div>
-                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? "Editar Custo" : "Novo Investimento"}><form onSubmit={handleSubmit} className="space-y-4"><div><label className="block text-xs uppercase mb-1 text-slate-400">Mês (YYYY-MM)</label><input type="month" required className="input-dark" value={formData.month} onChange={e => setFormData({...formData, month: e.target.value})} /></div><div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Investido (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} /></div><button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded mt-4">Salvar</button></form></Modal>
+                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? "Editar Custo" : "Novo Investimento"}><form onSubmit={handleSubmit} className="space-y-4"><div><label className="block text-xs uppercase mb-1 text-slate-400">Mês (YYYY-MM)</label><input type="month" required className="input-dark" value={formData.month} onChange={e => setFormData({ ...formData, month: e.target.value })} /></div><div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Investido (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({ ...formData, value: e.target.value })} /></div><button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded mt-4">Salvar</button></form></Modal>
                     <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar Exclusão"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este custo?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
                 </div>
             );
@@ -1132,8 +1167,8 @@
                     <div className="glass-panel w-full max-w-md p-8 rounded-xl shadow-2xl animate-fadeIn border-t-4 border-amber-500">
                         <div className="text-center mb-8"><div className="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-full mb-4"><Shield className="text-amber-500" size={32} /></div><h2 className="text-2xl font-bold text-white">Rico Militar</h2><p className="text-slate-400 text-sm">Painel Administrativo Rico Lojistas</p></div>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Usuário</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><User size={18} /></div><input type="text" className="input-dark pl-10" value={username} onChange={e=>setUsername(e.target.value)} required /></div></div>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Senha</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><Lock size={18} /></div><input type="password" className="input-dark pl-10" value={password} onChange={e=>setPassword(e.target.value)} required /></div></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Usuário</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><User size={18} /></div><input type="text" className="input-dark pl-10" value={username} onChange={e => setUsername(e.target.value)} required /></div></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Senha</label><div className="relative"><div className="absolute left-3 top-2.5 text-slate-500"><Lock size={18} /></div><input type="password" className="input-dark pl-10" value={password} onChange={e => setPassword(e.target.value)} required /></div></div>
                             {loginError && <p className="text-red-400 text-xs text-center">{loginError}</p>}
                             <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded mt-4 transition-colors">Entrar</button>
                         </form>
@@ -1149,37 +1184,37 @@
             const [msg, setMsg] = useState('');
             const handleSave = (e) => { e.preventDefault(); onUpdateCredentials(username, password); onUpdateApiUrl(url); setMsg('Configurações atualizadas com sucesso!'); setTimeout(() => setMsg(''), 3000); };
 
-            const handleClean = () => { if(confirm('Isso irá remover a etiqueta NOVO de todos os leads de hoje para trás. Deseja continuar?')) onCleanTags(); };
+            const handleClean = () => { if (confirm('Isso irá remover a etiqueta NOVO de todos os leads de hoje para trás. Deseja continuar?')) onCleanTags(); };
             return (
                 <div className="animate-fadeIn max-w-2xl mx-auto">
                     <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2"><Settings className="text-slate-400" /> Configurações de Dashboard</h2>
                     <div className="glass-panel p-8 rounded-lg">
                         <form onSubmit={handleSave} className="space-y-6">
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-sm font-bold mb-2 text-white">Usuário</label><input type="text" className="input-dark p-3" value={username} onChange={e=>setUsername(e.target.value)} required /></div>
-                                <div><label className="block text-sm font-bold mb-2 text-white">Senha</label><input type="text" className="input-dark p-3" value={password} onChange={e=>setPassword(e.target.value)} required /></div>
+                                <div><label className="block text-sm font-bold mb-2 text-white">Usuário</label><input type="text" className="input-dark p-3" value={username} onChange={e => setUsername(e.target.value)} required /></div>
+                                <div><label className="block text-sm font-bold mb-2 text-white">Senha</label><input type="text" className="input-dark p-3" value={password} onChange={e => setPassword(e.target.value)} required /></div>
                             </div>
-                            
+
                             <hr className="border-slate-700 my-6" />
-                            
+
                             <div>
-                                <label className="block text-sm font-bold mb-2 text-white flex items-center gap-2">Link da API (Script Google Sheets) <LinkIcon size={16}/></label>
+                                <label className="block text-sm font-bold mb-2 text-white flex items-center gap-2">Link da API (Script Google Sheets) <LinkIcon size={16} /></label>
                                 <p className="text-xs text-slate-400 mb-2">Cole aqui o link do seu Web App do Google Apps Script para puxar leads reais.</p>
-                                <input type="url" className="input-dark p-3" placeholder="https://script.google.com/macros/s/..." value={url} onChange={e=>setUrl(e.target.value)} />
+                                <input type="url" className="input-dark p-3" placeholder="https://script.google.com/macros/s/..." value={url} onChange={e => setUrl(e.target.value)} />
                             </div>
 
                             {msg && <div className="bg-emerald-500/20 text-emerald-400 p-3 rounded text-sm text-center">{msg}</div>}
                             <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition-colors shadow-lg shadow-blue-900/20">Salvar Alterações</button>
                         </form>
-                        
+
                         <div className="mt-12 pt-8 border-t border-slate-700">
-                             <h3 className="text-white font-bold mb-4 flex items-center gap-2"><DatabaseIcon size={18} className="text-slate-500"/> Manutenção de Dados</h3>
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <h3 className="text-white font-bold mb-4 flex items-center gap-2"><DatabaseIcon size={18} className="text-slate-500" /> Manutenção de Dados</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <button onClick={handleClean} className="bg-amber-600/20 text-amber-500 border border-amber-500/30 hover:bg-amber-600 hover:text-white px-4 py-3 rounded text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-sm">
                                     <Trash2 size={16} /> Limpar Etiquetas Antigas
                                 </button>
-                             </div>
-                             <p className="text-slate-500 text-[10px] mt-4 text-center italic">Use "Limpar Etiquetas Antigas" para marcar todos os leads de hoje ou anteriores como já visualizados.</p>
+                            </div>
+                            <p className="text-slate-500 text-[10px] mt-4 text-center italic">Use "Limpar Etiquetas Antigas" para marcar todos os leads de hoje ou anteriores como já visualizados.</p>
                         </div>
                     </div>
                 </div>
@@ -1199,7 +1234,7 @@
 
             const crmLeads = useMemo(() => {
                 const activeLeads = leads.filter(l => ['contacted', 'negotiating', 'qualified'].includes(l.status));
-                const cleanNum = (str) => str ? String(str).replace(/\D/g,'') : '';
+                const cleanNum = (str) => str ? String(str).replace(/\D/g, '') : '';
                 const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
 
                 const closedDeals = sales.map(s => {
@@ -1225,7 +1260,7 @@
                         origLeadId: origLead?.id
                     };
                 });
-                return [...activeLeads, ...closedDeals].sort((a,b) => new Date(b.date) - new Date(a.date));
+                return [...activeLeads, ...closedDeals].sort((a, b) => new Date(b.date) - new Date(a.date));
             }, [leads, sales]);
 
             const moveStage = (leadId, newStatus) => {
@@ -1257,7 +1292,7 @@
                 e.currentTarget.classList.remove('bg-slate-800/80');
                 const leadId = e.dataTransfer.getData('leadId');
                 if (String(leadId).startsWith('sale_')) return;
-                
+
                 if (status === 'converted') {
                     const lead = leads.find(l => String(l.id) === String(leadId));
                     if (lead) onConvertToSale(lead);
@@ -1311,8 +1346,8 @@
                         {stages.map(stage => {
                             const stageLeads = crmLeads.filter(l => l.status === stage.id);
                             return (
-                                <div 
-                                    key={stage.id} 
+                                <div
+                                    key={stage.id}
                                     className="flex flex-col bg-slate-900/50 border border-slate-700/50 rounded-xl overflow-hidden glass-panel transition-colors duration-200"
                                     onDragOver={handleDragOver}
                                     onDragLeave={handleDragLeave}
@@ -1324,14 +1359,14 @@
                                         </h3>
                                         <span className="bg-slate-800/80 text-[10px] px-2 py-0.5 rounded-full text-slate-300 font-bold border border-slate-600">{stageLeads.length}</span>
                                     </div>
-                                    
+
                                     <div className="flex-1 p-2 overflow-y-auto custom-scrollbar space-y-3 bg-slate-900/30">
                                         {stageLeads.length === 0 && (
                                             <div className="text-center py-10 text-slate-600 italic text-[10px]">Arraste um lead para aqui</div>
                                         )}
                                         {stageLeads.map(lead => (
-                                            <div 
-                                                key={lead.id} 
+                                            <div
+                                                key={lead.id}
                                                 draggable="true"
                                                 onDragStart={(e) => handleDragStart(e, lead.id)}
                                                 onDragEnd={handleDragEnd}
@@ -1345,7 +1380,7 @@
                                                 <p className="text-[10px] text-slate-400 mb-2 flex items-center gap-1">
                                                     <Globe size={10} className="text-blue-500" /> {lead.city} - {lead.state}
                                                 </p>
-                                                
+
                                                 {lead.crmNotes && (
                                                     <div className="bg-amber-500/5 p-1.5 rounded text-[9px] text-amber-200/60 italic mb-2 border border-amber-500/10 line-clamp-2">
                                                         {lead.crmNotes}
@@ -1353,17 +1388,17 @@
                                                 )}
 
                                                 <div className="flex items-center justify-between gap-1 pt-2 border-t border-slate-700/50">
-                                                    <a 
-                                                        href={`https://wa.me/${String(lead.phone).replace(/\D/g,'')}`} 
-                                                        target="_blank" 
+                                                    <a
+                                                        href={`https://wa.me/${String(lead.phone).replace(/\D/g, '')}`}
+                                                        target="_blank"
                                                         onClick={(e) => e.stopPropagation()}
                                                         className="p-1.5 bg-emerald-600/20 text-emerald-500 hover:bg-emerald-600 hover:text-white rounded-md transition-all"
                                                     >
                                                         <Phone size={12} />
                                                     </a>
-                                                    
+
                                                     {stage.id !== 'converted' ? (
-                                                        <button 
+                                                        <button
                                                             onClick={(e) => { e.stopPropagation(); onConvertToSale(lead); }}
                                                             className="px-2 py-1 bg-amber-600/20 text-amber-500 hover:bg-amber-600 hover:text-white text-[9px] font-bold rounded-md transition-all flex items-center gap-1"
                                                         >
@@ -1415,7 +1450,7 @@
 
                                 <div>
                                     <label className="block text-[10px] uppercase text-amber-500 font-bold mb-2">Anotações da Negociação</label>
-                                    <textarea 
+                                    <textarea
                                         className="input-dark w-full h-40 text-sm p-3 focus:ring-1 focus:ring-amber-500"
                                         placeholder="Escreva aqui o histórico da negociação, condições especiais, próximos passos..."
                                         value={notes}
@@ -1424,13 +1459,13 @@
                                 </div>
 
                                 <div className="flex gap-3 pt-4 border-t border-slate-700">
-                                    <button 
+                                    <button
                                         onClick={() => setSelectedLead(null)}
                                         className="flex-1 px-4 py-3 rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800 font-bold text-sm transition-all"
                                     >
                                         Cancelar
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={saveNotes}
                                         className="flex-1 px-4 py-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition-all shadow-lg shadow-amber-900/20"
                                     >
@@ -1445,9 +1480,9 @@
         };
 
         const AnalyticsView = ({ sales, ads }) => {
-            const [filterDate, setFilterDate] = useState('all'); 
+            const [filterDate, setFilterDate] = useState('all');
             const [sections, setSections] = useState({ financial: true, geo: true, ops: true });
-            const availableMonths = useMemo(() => { const months = new Set([ ...sales.map(s => s.date.slice(0, 7)), ...ads.map(a => a.month) ]); return Array.from(months).sort(); }, [sales, ads]);
+            const availableMonths = useMemo(() => { const months = new Set([...sales.map(s => s.date.slice(0, 7)), ...ads.map(a => a.month)]); return Array.from(months).sort(); }, [sales, ads]);
 
             const data = useMemo(() => {
                 let filteredSales = sales;
@@ -1467,13 +1502,13 @@
                 const monthlyChartData = monthsList.map(m => {
                     const mSales = sales.filter(s => s.date.startsWith(m));
                     const mCost = ads.find(a => a.month === m)?.value || 0;
-                    const mRev = mSales.reduce((acc,c) => acc + c.value, 0);
-                    const mPairs = mSales.reduce((acc,c) => acc + c.pairs, 0);
+                    const mRev = mSales.reduce((acc, c) => acc + c.value, 0);
+                    const mPairs = mSales.reduce((acc, c) => acc + c.pairs, 0);
                     const mTicket = mSales.length > 0 ? mRev / mSales.length : 0;
                     const mRoi = mCost > 0 ? mRev / mCost : 0;
                     let newRetailers = new Set(mSales.map(s => s.company)).size;
                     const [y, mn] = m.split('-');
-                    const label = `${fullMonthNames[parseInt(mn)-1].substring(0,3)}/${y.substring(2)}`;
+                    const label = `${fullMonthNames[parseInt(mn) - 1].substring(0, 3)}/${y.substring(2)}`;
                     return { rawMonth: m, label, revenue: mRev, cost: mCost, roi: mRoi, pairs: mPairs, ticket: mTicket, newRetailers };
                 });
 
@@ -1482,52 +1517,52 @@
                 filteredSales.forEach(s => {
                     const st = normalizeUF(s.state);
                     if (!st) return; // Ignora "gata" e outros lixos
-                    if(!stateStats[st]) stateStats[st] = { rev:0, count:0, receita: 0, pedidos: 0 };
+                    if (!stateStats[st]) stateStats[st] = { rev: 0, count: 0, receita: 0, pedidos: 0 };
                     stateStats[st].rev += s.value;
                     stateStats[st].count++;
                     stateStats[st].receita += s.value;
                     stateStats[st].pedidos++;
                     const reg = Object.keys(REGIONS).find(r => REGIONS[r].includes(st)) || 'Outro';
-                    if(!regionStats[reg]) regionStats[reg] = 0;
+                    if (!regionStats[reg]) regionStats[reg] = 0;
                     regionStats[reg] += s.value;
                 });
 
-                const ops = { week: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d => ({name:d, count:0, rev:0})), monthDay: Array.from({length:31}, (_,i)=>({day:i+1, count:0})), buckets: {'1-12':0, '13-24':0, '25-48':0, '49+':0} };
-                filteredSales.forEach(s => { const d = new Date(s.date); ops.week[d.getDay()].count++; ops.week[d.getDay()].rev += s.value; ops.monthDay[d.getDate()-1].count++; if(s.pairs<=12) ops.buckets['1-12']++; else if(s.pairs<=24) ops.buckets['13-24']++; else if(s.pairs<=48) ops.buckets['25-48']++; else ops.buckets['49+']++; });
+                const ops = { week: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => ({ name: d, count: 0, rev: 0 })), monthDay: Array.from({ length: 31 }, (_, i) => ({ day: i + 1, count: 0 })), buckets: { '1-12': 0, '13-24': 0, '25-48': 0, '49+': 0 } };
+                filteredSales.forEach(s => { const d = new Date(s.date); ops.week[d.getDay()].count++; ops.week[d.getDay()].rev += s.value; ops.monthDay[d.getDate() - 1].count++; if (s.pairs <= 12) ops.buckets['1-12']++; else if (s.pairs <= 24) ops.buckets['13-24']++; else if (s.pairs <= 48) ops.buckets['25-48']++; else ops.buckets['49+']++; });
 
                 return { kpis: { rev, roi, pairs, ticket, netResult, adCost, avgPairsPerDeal, uniqueRetailers }, monthly: monthlyChartData, geo: { state: stateStats, region: regionStats }, ops };
             }, [sales, ads, filterDate, availableMonths]);
 
-            const cRev = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Faturamento', data: data.monthly.map(d=>d.revenue), backgroundColor: '#f59e0b', borderRadius:4 }] };
-            const cRoi = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'ROI (x)', data: data.monthly.map(d=>d.roi.toFixed(1)), backgroundColor: '#8b5cf6', borderRadius:4 }] };
-            const cPairs = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Pares', data: data.monthly.map(d=>d.pairs), backgroundColor: '#3b82f6', borderRadius:4 }] };
-            const cRevVsAds = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Retorno', data: data.monthly.map(d=>d.revenue), backgroundColor: '#10b981', borderRadius:3 }, { label: 'Ads', data: data.monthly.map(d=>d.cost), backgroundColor: '#64748b', borderRadius:3 }] };
-            const cTicketM = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Ticket Médio', data: data.monthly.map(d=>d.ticket), backgroundColor: '#6366f1', borderRadius:4 }] };
-            const cNew = { labels: data.monthly.map(d=>d.label), datasets: [{ label: 'Novos Lojistas', data: data.monthly.map(d=>d.newRetailers), backgroundColor: '#ec4899', borderRadius:4 }] };
-            const sortedStates = Object.entries(data.geo.state).sort((a,b)=>b[1].rev - a[1].rev);
-            
-            // Novos ordenadores para os gráficos específicos
-            const sortedStatesByCount = Object.entries(data.geo.state).sort((a,b)=>b[1].count - a[1].count);
-            const sortedStatesByTicket = Object.entries(data.geo.state).sort((a,b)=>(b[1].rev/b[1].count) - (a[1].rev/a[1].count));
+            const cRev = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'Faturamento', data: data.monthly.map(d => d.revenue), backgroundColor: '#f59e0b', borderRadius: 4 }] };
+            const cRoi = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'ROI (x)', data: data.monthly.map(d => d.roi.toFixed(1)), backgroundColor: '#8b5cf6', borderRadius: 4 }] };
+            const cPairs = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'Pares', data: data.monthly.map(d => d.pairs), backgroundColor: '#3b82f6', borderRadius: 4 }] };
+            const cRevVsAds = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'Retorno', data: data.monthly.map(d => d.revenue), backgroundColor: '#10b981', borderRadius: 3 }, { label: 'Ads', data: data.monthly.map(d => d.cost), backgroundColor: '#64748b', borderRadius: 3 }] };
+            const cTicketM = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'Ticket Médio', data: data.monthly.map(d => d.ticket), backgroundColor: '#6366f1', borderRadius: 4 }] };
+            const cNew = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'Novos Lojistas', data: data.monthly.map(d => d.newRetailers), backgroundColor: '#ec4899', borderRadius: 4 }] };
+            const sortedStates = Object.entries(data.geo.state).sort((a, b) => b[1].rev - a[1].rev);
 
-            const cGeoRev = { labels: sortedStates.map(s=>s[0]), datasets:[{label:'Receita', data: sortedStates.map(s=>s[1].rev), backgroundColor:'#f59e0b', borderRadius:4, indexAxis:'y'}] };
-            
+            // Novos ordenadores para os gráficos específicos
+            const sortedStatesByCount = Object.entries(data.geo.state).sort((a, b) => b[1].count - a[1].count);
+            const sortedStatesByTicket = Object.entries(data.geo.state).sort((a, b) => (b[1].rev / b[1].count) - (a[1].rev / a[1].count));
+
+            const cGeoRev = { labels: sortedStates.map(s => s[0]), datasets: [{ label: 'Receita', data: sortedStates.map(s => s[1].rev), backgroundColor: '#f59e0b', borderRadius: 4, indexAxis: 'y' }] };
+
             // Usando os ordenadores específicos
-            const cGeoCount = { labels: sortedStatesByCount.map(s=>s[0]), datasets:[{label:'Pedidos', data: sortedStatesByCount.map(s=>s[1].count), backgroundColor:'#3b82f6', borderRadius:4}] };
-            const cGeoTicket = { labels: sortedStatesByTicket.map(s=>s[0]), datasets:[{label:'Ticket Médio', data: sortedStatesByTicket.map(s=>s[1].rev/s[1].count), backgroundColor:'#8b5cf6', borderRadius:4}] };
-            
+            const cGeoCount = { labels: sortedStatesByCount.map(s => s[0]), datasets: [{ label: 'Pedidos', data: sortedStatesByCount.map(s => s[1].count), backgroundColor: '#3b82f6', borderRadius: 4 }] };
+            const cGeoTicket = { labels: sortedStatesByTicket.map(s => s[0]), datasets: [{ label: 'Ticket Médio', data: sortedStatesByTicket.map(s => s[1].rev / s[1].count), backgroundColor: '#8b5cf6', borderRadius: 4 }] };
+
             // OrdenaçÁo da RegiÁo (Maior para menor)
             const sortedRegions = Object.entries(data.geo.region).sort((a, b) => b[1] - a[1]);
-            const cReg = { 
-                labels: sortedRegions.map(r => r[0]), 
-                datasets:[{ data: sortedRegions.map(r => r[1]), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'], borderWidth:0 }] 
+            const cReg = {
+                labels: sortedRegions.map(r => r[0]),
+                datasets: [{ data: sortedRegions.map(r => r[1]), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'], borderWidth: 0 }]
             };
-            
-            const cBuckets = { labels:Object.keys(data.ops.buckets), datasets:[{data:Object.values(data.ops.buckets), backgroundColor: ['#64748b', '#3b82f6', '#8b5cf6', '#f59e0b'], borderWidth:0}] };
-            const cWeekCount = { labels: data.ops.week.map(w=>w.name), datasets:[{label:'Pedidos', data: data.ops.week.map(w=>w.count), backgroundColor:'#06b6d4', borderRadius:4}] };
-            const cWeekRev = { labels: data.ops.week.map(w=>w.name), datasets:[{label:'Receita', data: data.ops.week.map(w=>w.rev), backgroundColor:'#10b981', borderRadius:4}] };
-            const cMonthDay = { labels: data.ops.monthDay.map(d=>d.day), datasets:[{label:'Pedidos', data: data.ops.monthDay.map(d=>d.count), backgroundColor:'#ec4899', borderRadius:4}] };
-            const toggle = (k) => setSections(p => ({...p, [k]: !p[k]}));
+
+            const cBuckets = { labels: Object.keys(data.ops.buckets), datasets: [{ data: Object.values(data.ops.buckets), backgroundColor: ['#64748b', '#3b82f6', '#8b5cf6', '#f59e0b'], borderWidth: 0 }] };
+            const cWeekCount = { labels: data.ops.week.map(w => w.name), datasets: [{ label: 'Pedidos', data: data.ops.week.map(w => w.count), backgroundColor: '#06b6d4', borderRadius: 4 }] };
+            const cWeekRev = { labels: data.ops.week.map(w => w.name), datasets: [{ label: 'Receita', data: data.ops.week.map(w => w.rev), backgroundColor: '#10b981', borderRadius: 4 }] };
+            const cMonthDay = { labels: data.ops.monthDay.map(d => d.day), datasets: [{ label: 'Pedidos', data: data.ops.monthDay.map(d => d.count), backgroundColor: '#ec4899', borderRadius: 4 }] };
+            const toggle = (k) => setSections(p => ({ ...p, [k]: !p[k] }));
 
             return (
                 <div className="animate-fadeIn">
@@ -1552,30 +1587,30 @@
                     <SectionHeader title="Financeiro" icon={BarChart3} color="bg-amber-500" isOpen={sections.financial} onToggle={() => toggle('financial')} />
                     {sections.financial && (
                         <div className="space-y-6">
-                            <ChartContainer title="Receita Mês a Mês"><ChartComponent type="bar" data={cRev} labelType="money"/></ChartContainer>
-                            <ChartContainer title="Retorno vs Investimento"><ChartComponent type="bar" data={cRevVsAds} labelType="money"/></ChartContainer>
-                            <ChartContainer title="ROI por Mês"><ChartComponent type="bar" data={cRoi} labelType="roi"/></ChartContainer>
-                            <ChartContainer title="Ticket Médio por Mês"><ChartComponent type="bar" data={cTicketM} labelType="money"/></ChartContainer>
-                            <ChartContainer title="Receita por Dia da Semana"><ChartComponent type="bar" data={cWeekRev} labelType="money"/></ChartContainer>
+                            <ChartContainer title="Receita Mês a Mês"><ChartComponent type="bar" data={cRev} labelType="money" /></ChartContainer>
+                            <ChartContainer title="Retorno vs Investimento"><ChartComponent type="bar" data={cRevVsAds} labelType="money" /></ChartContainer>
+                            <ChartContainer title="ROI por Mês"><ChartComponent type="bar" data={cRoi} labelType="roi" /></ChartContainer>
+                            <ChartContainer title="Ticket Médio por Mês"><ChartComponent type="bar" data={cTicketM} labelType="money" /></ChartContainer>
+                            <ChartContainer title="Receita por Dia da Semana"><ChartComponent type="bar" data={cWeekRev} labelType="money" /></ChartContainer>
                         </div>
                     )}
                     <SectionHeader title="Geográfico" icon={Globe} color="bg-blue-500" isOpen={sections.geo} onToggle={() => toggle('geo')} />
                     {sections.geo && (
                         <div className="space-y-6">
-                            <ChartContainer title="Receita por Estado"><ChartComponent type="bar" data={cGeoRev} options={{indexAxis:'y', scales: {x: {display: false}, y: {display: true, grid: {display: false}, ticks: {color: '#e2e8f0', font: {size: 12, weight: 'bold'}}}}}} height={400} labelType="money"/></ChartContainer>
-                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Receita por RegiÁo"><ChartComponent type="doughnut" data={cReg} labelType="money"/></ChartContainer></div></div>
-                            <ChartContainer title="Pedidos por Estado"><ChartComponent type="bar" data={cGeoCount}/></ChartContainer>
-                            <ChartContainer title="Ticket Médio por Estado"><ChartComponent type="bar" data={cGeoTicket} labelType="money"/></ChartContainer>
+                            <ChartContainer title="Receita por Estado"><ChartComponent type="bar" data={cGeoRev} options={{ indexAxis: 'y', scales: { x: { display: false }, y: { display: true, grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 12, weight: 'bold' } } } } }} height={400} labelType="money" /></ChartContainer>
+                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Receita por RegiÁo"><ChartComponent type="doughnut" data={cReg} labelType="money" /></ChartContainer></div></div>
+                            <ChartContainer title="Pedidos por Estado"><ChartComponent type="bar" data={cGeoCount} /></ChartContainer>
+                            <ChartContainer title="Ticket Médio por Estado"><ChartComponent type="bar" data={cGeoTicket} labelType="money" /></ChartContainer>
                         </div>
                     )}
                     <SectionHeader title="Operacional" icon={Layers} color="bg-emerald-500" isOpen={sections.ops} onToggle={() => toggle('ops')} />
                     {sections.ops && (
                         <div className="space-y-6">
-                            <ChartContainer title="Novos Lojistas por Mês"><ChartComponent type="bar" data={cNew}/></ChartContainer>
-                            <ChartContainer title="Pares Vendidos por Mês"><ChartComponent type="bar" data={cPairs}/></ChartContainer>
-                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="DistribuiçÁo de Pares por Pedido"><ChartComponent type="pie" data={cBuckets}/></ChartContainer></div></div>
-                            <ChartContainer title="Pedidos por Dia da Semana"><ChartComponent type="bar" data={cWeekCount}/></ChartContainer>
-                            <ChartContainer title="Pedidos por Dia do Mês"><ChartComponent type="bar" data={cMonthDay}/></ChartContainer>
+                            <ChartContainer title="Novos Lojistas por Mês"><ChartComponent type="bar" data={cNew} /></ChartContainer>
+                            <ChartContainer title="Pares Vendidos por Mês"><ChartComponent type="bar" data={cPairs} /></ChartContainer>
+                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Distribuição de Pares por Pedido"><ChartComponent type="pie" data={cBuckets} /></ChartContainer></div></div>
+                            <ChartContainer title="Pedidos por Dia da Semana"><ChartComponent type="bar" data={cWeekCount} /></ChartContainer>
+                            <ChartContainer title="Pedidos por Dia do Mês"><ChartComponent type="bar" data={cMonthDay} /></ChartContainer>
                         </div>
                     )}
                 </div>
@@ -1606,29 +1641,29 @@
             const { data: sales, loading: loadingSales, addItem: addSale, updateItem: updateSale, deleteItem: deleteSale } = useFirebaseData('sales', [], firebaseUser);
             const { data: ads, loading: loadingAds, addItem: addAd, updateItem: updateAd, deleteItem: deleteAd } = useFirebaseData('ads', [], firebaseUser);
             const { data: leads, loading: loadingLeads, addItem: addLead, updateItem: updateLead } = useFirebaseData('leads', [], firebaseUser);
-            
+
             // SincronizaçÁo automática de Leads com Lojistas (Vendas) e Migração
             useEffect(() => {
                 if (loadingLeads || loadingSales || !leads.length || !window.db) return;
-                
+
                 // MIGRATION_KEY garante que a limpeza pesada dos "contacted" bugados aconteça só UMA VEZ
                 const MIGRATION_KEY = 'crm_migration_v8';
                 const hasMigrated = localStorage.getItem(MIGRATION_KEY);
-                
+
                 if (hasAutoSynced && hasMigrated) return;
-                
+
                 const { writeBatch, doc } = window.firebaseStore;
                 const batch = writeBatch(window.db);
                 let count = 0;
 
                 const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
-                const cleanNum = (str) => str ? String(str).replace(/\D/g,'') : '';
+                const cleanNum = (str) => str ? String(str).replace(/\D/g, '') : '';
 
                 leads.forEach(lead => {
                     const hasSale = sales.some(s => {
                         const matchCnpj = cleanNum(s.cnpj) && cleanNum(lead.cnpj) && cleanNum(s.cnpj) === cleanNum(lead.cnpj);
                         const matchPhone = cleanNum(s.phone) && cleanNum(lead.phone) && cleanNum(s.phone) === cleanNum(lead.phone);
-                        
+
                         const sComp = normalize(s.company);
                         const lComp = normalize(lead.company);
                         const lCont = normalize(lead.contact);
@@ -1638,13 +1673,13 @@
 
                         return matchCnpj || matchPhone || matchComp || matchCont;
                     });
-                    
+
                     // 1. Forçar para VENDIDO se bateu com alguma venda na Lojistas
                     if (hasSale && lead.status !== 'converted') {
                         const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(lead.id));
                         batch.update(docRef, { status: 'converted', isNew: false });
                         count++;
-                    } 
+                    }
                     // 2. MIGRAÁ‡ÁƒO: Limpar leads antigos "contacted" que estÁo inundando o quadro CRM
                     else if (!hasMigrated && !hasSale && ['contacted', 'negotiating', 'qualified'].includes(lead.status)) {
                         const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(lead.id));
@@ -1659,7 +1694,7 @@
                         .then(() => {
                             localStorage.setItem(MIGRATION_KEY, 'true');
                             setHasAutoSynced(true);
-                            if (!hasMigrated) window.location.reload(); 
+                            if (!hasMigrated) window.location.reload();
                         })
                         .catch(err => {
                             console.error("Erro na migraçÁo batch:", err);
@@ -1670,7 +1705,7 @@
                     localStorage.setItem(MIGRATION_KEY, 'true');
                     setHasAutoSynced(true);
                 }
-            }, [sales, leads.length, hasAutoSynced, loadingLeads, loadingSales]); 
+            }, [sales, leads.length, hasAutoSynced, loadingLeads, loadingSales]);
 
             const [prefillData, setPrefillData] = useState(null);
             const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -1683,14 +1718,14 @@
             // FunçÁo para Restaurar os Dados Originais no Firebase (se estiver vazio)
             const importInitialData = async () => {
                 if (window.db && firebaseUser) {
-                   const batchPromises = [];
-                   // Loop simples para inserir os dados iniciais um por um
-                   for (const s of INITIAL_SALES) { batchPromises.push(addSale(s)); }
-                   for (const a of INITIAL_ADS) { batchPromises.push(addAd(a)); }
-                   
-                   await Promise.all(batchPromises);
-                   // Leads vazios inicialmente, mas se tiver na lista, adicionaria aqui
-                   // alert("Dados restaurados com sucesso! Os gráficos devem aparecer agora."); // Comentado para ser silencioso
+                    const batchPromises = [];
+                    // Loop simples para inserir os dados iniciais um por um
+                    for (const s of INITIAL_SALES) { batchPromises.push(addSale(s)); }
+                    for (const a of INITIAL_ADS) { batchPromises.push(addAd(a)); }
+
+                    await Promise.all(batchPromises);
+                    // Leads vazios inicialmente, mas se tiver na lista, adicionaria aqui
+                    // alert("Dados restaurados com sucesso! Os gráficos devem aparecer agora."); // Comentado para ser silencioso
                 }
             };
 
@@ -1717,7 +1752,7 @@
                 try {
                     const response = await fetch(leadsApiUrl);
                     const data = await response.json();
-                    
+
                     const newLeads = data.map((item, index) => {
                         const getVal = (key) => {
                             if (item[key] !== undefined) return item[key];
@@ -1728,34 +1763,34 @@
                         const dateObj = dateRaw ? new Date(dateRaw) : new Date();
                         const today = new Date().toISOString().split('T')[0];
                         const leadDate = dateObj.toISOString().split('T')[0];
-                        
+
                         // Considerar NOVO apenas se for de HOJE em diante
                         const isHistoricallyOld = leadDate < today;
 
                         return {
                             date: leadDate,
-                            company: getVal('Razão Social'), 
-                            contact: getVal('Nome'), 
-                            phone: getVal('whatsapp'), 
-                            email: getVal('mail'), 
-                            city: getVal('Cidade'), 
-                            state: normalizeUF(getVal('Estado')), 
-                            cnpj: getVal('CNPJ'), 
-                            ie: getVal('Inscrição'), 
-                            address: getVal('Endereço'), 
-                            instagram: getVal('Instagram'), 
-                            obs: getVal('Observações'), 
-                            source: 'Google Forms', 
-                            status: isHistoricallyOld ? 'read' : 'new', 
+                            company: getVal('Razão Social'),
+                            contact: getVal('Nome'),
+                            phone: getVal('whatsapp'),
+                            email: getVal('mail'),
+                            city: getVal('Cidade'),
+                            state: normalizeUF(getVal('Estado')),
+                            cnpj: getVal('CNPJ'),
+                            ie: getVal('Inscrição'),
+                            address: getVal('Endereço'),
+                            instagram: getVal('Instagram'),
+                            obs: getVal('Observações'),
+                            source: 'Google Forms',
+                            status: isHistoricallyOld ? 'read' : 'new',
                             isNew: !isHistoricallyOld
                         };
                     });
-                    
+
                     // Verifica duplicatas simples pelo nome+data antes de adicionar
                     // (Em produçÁo idealmente verificaria ID no banco, mas aqui simplificamos para o demo)
                     let count = 0;
                     const existingSignatures = new Set(leads.map(l => (l.contact || l.name) + l.date));
-                    
+
                     const leadsToAdd = [];
                     for (const l of newLeads) {
                         const sig = (l.contact || l.name) + l.date;
@@ -1764,12 +1799,12 @@
                             count++;
                         }
                     }
-                    
+
                     if (leadsToAdd.length > 0) {
                         await Promise.all(leadsToAdd);
                         setNewLeadAlert(true);
                     }
-                    
+
                 } catch (error) {
                     console.error("Erro ao buscar leads:", error);
                     // NÁo alertar erro silenciosamente no auto-sync
@@ -1811,11 +1846,11 @@
             if (!isAuthenticated) return <LoginView onLogin={handleLogin} loginError={loginError} />;
             return (
                 <div className="flex bg-[#0f172a] min-h-screen text-slate-200">
-                    <Sidebar 
-                        view={view} 
-                        setView={setView} 
-                        onLogout={handleLogout} 
-                        notificationCount={newLeadsCount} 
+                    <Sidebar
+                        view={view}
+                        setView={setView}
+                        onLogout={handleLogout}
+                        notificationCount={newLeadsCount}
                         isCollapsed={isSidebarCollapsed}
                         toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     />
@@ -1823,7 +1858,7 @@
                         {/* BotÁo de Emergência para Restaurar Dados se estiver vazio */}
                         {sales.length === 0 && ads.length === 0 && leads.length === 0 && (
                             <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/50 rounded-lg flex items-center justify-between animate-fadeIn">
-                                <div className="text-amber-500 flex items-center gap-2"><DatabaseIcon size={20}/> <span>Banco de dados vazio? O carregamento automático deve iniciar em breve...</span></div>
+                                <div className="text-amber-500 flex items-center gap-2"><DatabaseIcon size={20} /> <span>Banco de dados vazio? O carregamento automático deve iniciar em breve...</span></div>
                                 <button onClick={importInitialData} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded font-bold text-sm shadow-lg transition-transform hover:scale-105">Forçar RestauraçÁo</button>
                             </div>
                         )}
@@ -1866,4 +1901,5 @@
         root.render(<App />);
     </script>
 </body>
+
 </html>
