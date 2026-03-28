@@ -23,8 +23,8 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- SEU CÁ“DIGO DO FIREBASE AQUI ---
-        // ConfiguraçÁo segura
+        // --- SEU CÓDIGO DO FIREBASE AQUI ---
+        // Configuração segura
         const firebaseConfig = {
             apiKey: "AIzaSyD-8HjnC7fOS98WmqkKCJv___1A7f20oJ0",
             authDomain: "rico-lojistas.firebaseapp.com",
@@ -223,7 +223,7 @@
                 if (BRAZIL_STATES.includes(word)) return word;
             }
 
-            return null; // Se nÁo for um estado conhecido, ignora
+            return null; // Se não for um estado conhecido, ignora
         };
 
         const INITIAL_SALES = [
@@ -276,7 +276,7 @@
             const [data, setData] = useState(initialData);
             const [loading, setLoading] = useState(true);
 
-            // Caminho FIXO para os dados nÁo sumirem
+            // Caminho FIXO para os dados não sumirem
             // Antes era: ... 'users', user.uid, collectionName
             // Agora é:   ... 'public', 'data', collectionName
 
@@ -563,13 +563,13 @@
                     leadsByDay[l.date] = (leadsByDay[l.date] || 0) + 1;
                 });
 
-                // OrdenaçÁo por Estado (Pareto)
+                // Ordenação por Estado (Pareto)
                 const sortedStates = Object.entries(leadsByState).sort((a, b) => b[1] - a[1]);
                 const sortedStateLabels = sortedStates.map(s => s[0]);
                 const sortedStateValues = sortedStates.map(s => s[1]);
 
-                // OrdenaçÁo por Data (Ášltimos 30 dias se muitos)
-                const sortedDays = Object.keys(leadsByDay).sort().slice(-30); // Ášltimos 30 dias registrados
+                // Ordenação por Data (Últimos 30 dias se muitos)
+                const sortedDays = Object.keys(leadsByDay).sort().slice(-30); // Últimos 30 dias registrados
                 const trendData = sortedDays.map(d => leadsByDay[d]);
                 const trendLabels = sortedDays.map(d => {
                     const parts = d.split('-');
@@ -771,7 +771,7 @@
                                         <th className="px-3 py-3 w-[160px] text-center sticky top-0 bg-slate-800">E-mail</th>
                                         <th className="px-3 py-3 w-[180px] text-center sticky top-0 bg-slate-800">Endereço/Instagram</th>
                                         <th className="px-3 py-3 text-center sticky top-0 bg-slate-800">Observações</th>
-                                        <th className="px-3 py-3 text-center w-[120px] sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">AçÁo</th>
+                                        <th className="px-3 py-3 text-center w-[120px] sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700/50">
@@ -1551,7 +1551,7 @@
             const cGeoCount = { labels: sortedStatesByCount.map(s => s[0]), datasets: [{ label: 'Pedidos', data: sortedStatesByCount.map(s => s[1].count), backgroundColor: '#3b82f6', borderRadius: 4 }] };
             const cGeoTicket = { labels: sortedStatesByTicket.map(s => s[0]), datasets: [{ label: 'Ticket Médio', data: sortedStatesByTicket.map(s => s[1].rev / s[1].count), backgroundColor: '#8b5cf6', borderRadius: 4 }] };
 
-            // OrdenaçÁo da RegiÁo (Maior para menor)
+            // Ordenação da Região (Maior para menor)
             const sortedRegions = Object.entries(data.geo.region).sort((a, b) => b[1] - a[1]);
             const cReg = {
                 labels: sortedRegions.map(r => r[0]),
@@ -1598,7 +1598,7 @@
                     {sections.geo && (
                         <div className="space-y-6">
                             <ChartContainer title="Receita por Estado"><ChartComponent type="bar" data={cGeoRev} options={{ indexAxis: 'y', scales: { x: { display: false }, y: { display: true, grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 12, weight: 'bold' } } } } }} height={400} labelType="money" /></ChartContainer>
-                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Receita por RegiÁo"><ChartComponent type="doughnut" data={cReg} labelType="money" /></ChartContainer></div></div>
+                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Receita por Região"><ChartComponent type="doughnut" data={cReg} labelType="money" /></ChartContainer></div></div>
                             <ChartContainer title="Pedidos por Estado"><ChartComponent type="bar" data={cGeoCount} /></ChartContainer>
                             <ChartContainer title="Ticket Médio por Estado"><ChartComponent type="bar" data={cGeoTicket} labelType="money" /></ChartContainer>
                         </div>
@@ -1622,7 +1622,7 @@
             const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
             const [firebaseUser, setFirebaseUser] = useState(null);
 
-            // Auth Effect for Firebase - ConexÁo
+            // Auth Effect for Firebase - Conexão
             useEffect(() => {
                 if (window.firebaseAuth && window.auth) {
                     const { signInAnonymously, onAuthStateChanged } = window.firebaseAuth;
@@ -1642,7 +1642,7 @@
             const { data: ads, loading: loadingAds, addItem: addAd, updateItem: updateAd, deleteItem: deleteAd } = useFirebaseData('ads', [], firebaseUser);
             const { data: leads, loading: loadingLeads, addItem: addLead, updateItem: updateLead } = useFirebaseData('leads', [], firebaseUser);
 
-            // SincronizaçÁo automática de Leads com Lojistas (Vendas) e Migração
+            // Sincronização automática de Leads com Lojistas (Vendas) e Migração
             useEffect(() => {
                 if (loadingLeads || loadingSales || !leads.length || !window.db) return;
 
@@ -1680,7 +1680,7 @@
                         batch.update(docRef, { status: 'converted', isNew: false });
                         count++;
                     }
-                    // 2. MIGRAÁ‡ÁƒO: Limpar leads antigos "contacted" que estÁo inundando o quadro CRM
+                    // 2. MIGRAÇÃO: Limpar leads antigos "contacted" que estão inundando o quadro CRM
                     else if (!hasMigrated && !hasSale && ['contacted', 'negotiating', 'qualified'].includes(lead.status)) {
                         const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(lead.id));
                         batch.update(docRef, { status: 'read', isNew: false });
@@ -1697,7 +1697,7 @@
                             if (!hasMigrated) window.location.reload();
                         })
                         .catch(err => {
-                            console.error("Erro na migraçÁo batch:", err);
+                            console.error("Erro na migração batch:", err);
                             localStorage.setItem(MIGRATION_KEY, 'true');
                             setHasAutoSynced(true);
                         });
@@ -1715,7 +1715,7 @@
             const [leadsApiUrl, setLeadsApiUrl] = useState('https://script.google.com/macros/s/AKfycbx-Vr1TbLdJoXM7Y1pusPzQau7eJFhfqVDsjhCEissJ3-JFJPJ1mSweoKrpiRMp0geznQ/exec');
             const [hasAutoSynced, setHasAutoSynced] = useState(false);
 
-            // FunçÁo para Restaurar os Dados Originais no Firebase (se estiver vazio)
+            // Função para Restaurar os Dados Originais no Firebase (se estiver vazio)
             const importInitialData = async () => {
                 if (window.db && firebaseUser) {
                     const batchPromises = [];
@@ -1733,7 +1733,7 @@
             useEffect(() => {
                 // Só executa se o usuário estiver logado e o carregamento tiver terminado
                 if (firebaseUser && !loadingSales && !loadingAds) {
-                    // Se nÁo houver vendas nem anúncios, assume banco vazio e carrega os dados iniciais
+                    // Se não houver vendas nem anúncios, assume banco vazio e carrega os dados iniciais
                     if (sales.length === 0 && ads.length === 0) {
                         console.log("Banco vazio detectado. Carregando dados iniciais automaticamente...");
                         importInitialData();
@@ -1743,7 +1743,7 @@
 
             const syncFromApi = async () => {
                 if (!leadsApiUrl) {
-                    // Modo simulaçÁo se nÁo houver URL
+                    // Modo simulação se não houver URL
                     const incomingLead = { id: Date.now(), date: new Date().toISOString().split('T')[0], name: 'Novo Cliente Simulado', contact: 'Lead Demo', city: 'Belo Horizonte', state: 'MG', source: 'Simulação Demo', status: 'new', isNew: true };
                     await addLead(incomingLead);
                     setNewLeadAlert(true);
@@ -1787,7 +1787,7 @@
                     });
 
                     // Verifica duplicatas simples pelo nome+data antes de adicionar
-                    // (Em produçÁo idealmente verificaria ID no banco, mas aqui simplificamos para o demo)
+                    // (Em produção idealmente verificaria ID no banco, mas aqui simplificamos para o demo)
                     let count = 0;
                     const existingSignatures = new Set(leads.map(l => (l.contact || l.name) + l.date));
 
@@ -1807,7 +1807,7 @@
 
                 } catch (error) {
                     console.error("Erro ao buscar leads:", error);
-                    // NÁo alertar erro silenciosamente no auto-sync
+                    // Não alertar erro silenciosamente no auto-sync
                 }
             };
 
@@ -1824,7 +1824,7 @@
                 if (!isAuthenticated || !leadsApiUrl) return;
 
                 const interval = setInterval(() => {
-                    console.log("VerificaçÁo automática de leads (5min)...");
+                    console.log("Verificação automática de leads (5min)...");
                     syncFromApi();
                 }, 5 * 60 * 1000);
 
@@ -1855,11 +1855,11 @@
                         toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     />
                     <main className={`flex-1 p-8 overflow-y-auto h-screen relative transition-all duration-300 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
-                        {/* BotÁo de Emergência para Restaurar Dados se estiver vazio */}
+                        {/* Botão de Emergência para Restaurar Dados se estiver vazio */}
                         {sales.length === 0 && ads.length === 0 && leads.length === 0 && (
                             <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/50 rounded-lg flex items-center justify-between animate-fadeIn">
                                 <div className="text-amber-500 flex items-center gap-2"><DatabaseIcon size={20} /> <span>Banco de dados vazio? O carregamento automático deve iniciar em breve...</span></div>
-                                <button onClick={importInitialData} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded font-bold text-sm shadow-lg transition-transform hover:scale-105">Forçar RestauraçÁo</button>
+                                <button onClick={importInitialData} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded font-bold text-sm shadow-lg transition-transform hover:scale-105">Forçar Restauração</button>
                             </div>
                         )}
 
@@ -1876,7 +1876,7 @@
                             let count = 0;
 
                             leads.forEach(l => {
-                                // Limpar TUDO que nÁo for negociaçÁo ativa ou venda confirmada
+                                // Limpar TUDO que não for negociação ativa ou venda confirmada
                                 if (['new', 'read', 'contacted'].includes(l.status) || l.isNew) {
                                     const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(l.id));
                                     batch.update(docRef, { isNew: false, status: 'read' });
