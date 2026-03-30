@@ -190,6 +190,7 @@
         const User = (p) => <IconBase {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></IconBase>;
         const Filter = (p) => <IconBase {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></IconBase>;
         const RefreshCw = (p) => <IconBase {...p}><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></IconBase>;
+        const AlertCircle = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></IconBase>;
         const ArrowRight = (p) => <IconBase {...p}><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></IconBase>;
         const LinkIcon = (p) => <IconBase {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></IconBase>;
         const Phone = (p) => <IconBase {...p}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></IconBase>;
@@ -224,6 +225,68 @@
             }
 
             return null; // Se não for um estado conhecido, ignora
+        };
+
+        const fetchCnpjData = async (cnpjStr) => {
+            const cnpjNum = String(cnpjStr).replace(/\D/g, '');
+            let err429 = false;
+
+            // 1. Tenta Minhareceita (ótimo limite)
+            try {
+                const res0 = await fetch(`https://minhareceita.org/${cnpjNum}`);
+                if (res0.ok) {
+                    const data = await res0.json();
+                    const cnaeCode = String(data.cnae_fiscal || '');
+                    const nat = String(data.porte || '').toLowerCase();
+                    return {
+                        officialName: data.razao_social || '',
+                        cnae: cnaeCode,
+                        cnaeDesc: data.cnae_fiscal_descricao || '',
+                        type: data.porte || '',
+                        isMei: cnaeCode.startsWith('8699') || nat.includes('micro empresa')
+                    };
+                }
+                if (res0.status === 429) err429 = true;
+            } catch (e) { console.warn("minhareceita fetch erro", e); }
+            
+            // 2. Tenta BrasilAPI
+            try {
+                const res1 = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjNum}`);
+                if (res1.ok) {
+                    const data = await res1.json();
+                    const cnaeCode = String(data.cnae_fiscal || '');
+                    const nat = String(data.natureza_juridica || '').toLowerCase();
+                    return {
+                        officialName: data.razao_social || '',
+                        cnae: cnaeCode,
+                        cnaeDesc: data.cnae_fiscal_descricao || '',
+                        type: data.natureza_juridica || '',
+                        isMei: cnaeCode.startsWith('8699') || nat.includes('individual') || nat.includes('mei')
+                    };
+                }
+                if (res1.status === 429) err429 = true;
+            } catch (e) { console.warn("BrasilAPI fetch erro", e); }
+            
+            // 3. Tenta publica.cnpj.ws (limite mais agressivo)
+            try {
+                const res2 = await fetch(`https://publica.cnpj.ws/cnpj/${cnpjNum}`);
+                if (res2.ok) {
+                    const data = await res2.json();
+                    const cnaeCode = String(data.estabelecimento?.atividade_principal?.id || '');
+                    const nat = String(data.natureza_juridica?.descricao || '').toLowerCase();
+                    return {
+                        officialName: data.razao_social || '',
+                        cnae: cnaeCode,
+                        cnaeDesc: data.estabelecimento?.atividade_principal?.descricao || '',
+                        type: data.natureza_juridica?.descricao || '',
+                        isMei: cnaeCode.startsWith('8699') || nat.includes('individual') || nat.includes('mei')
+                    };
+                }
+                if (res2.status === 429) err429 = true;
+            } catch (e) { console.warn("publica.cnpj.ws fetch erro", e); }
+
+            if (err429) throw new Error("429");
+            throw new Error("NOT_FOUND");
         };
 
         const INITIAL_SALES = [
@@ -270,6 +333,72 @@
         const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
         const fmtDate = (d) => new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
         const fullMonthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+        // --- SCORING ENGINE ---
+        const PROF_KEYWORDS = ['militar', 'aventura', 'tatico', 'tática', 'loja', 'distribuidora', 'caça', 'pesca', 'uniformes', 'equipamentos', 'segurança', 'epis', 'licitação', 'licitacao'];
+        
+        const getIdealProfile = (sales) => {
+            const profile = { states: {}, cities: {}, counts: { total: sales.length } };
+            sales.forEach(s => {
+                const st = normalizeUF(s.state);
+                if (st) profile.states[st] = (profile.states[st] || 0) + 1;
+                const ct = s.city?.trim().toUpperCase();
+                if (ct) profile.cities[ct] = (profile.cities[ct] || 0) + 1;
+            });
+            return profile;
+        };
+
+        const calculateMatchScore = (lead, profile) => {
+            if (!profile || !profile.counts.total) return 50;
+            
+            let score = 10; // Base mínima
+            const cleanId = (val) => String(val || '').replace(/\D/g, '');
+            const taxId = cleanId(lead.cnpj);
+            
+            // 1. PRIORIDADE POR TIPO DE DOCUMENTO (FILTRO B2B)
+            if (taxId.length === 14) {
+               if (lead.isMei) {
+                   score += 20; // MEI é prioridade média-baixa se não for do ramo
+               } else {
+                   score += 50; // Empresa padrão (LTDA, SA) ganha boa base
+               }
+            } else if (taxId.length === 11) {
+               score += 5; // CPF é a menor prioridade
+            }
+
+            // 2. PRIORIDADE POR RAMO (FOCO TOTAL: MILITAR/AVENTURA)
+            const textToSearch = `${lead.company || ''} ${lead.contact || ''} ${lead.obs || ''} ${lead.officialName || ''} ${lead.cnaeDesc || ''}`.toLowerCase();
+            let branchMatch = 0;
+            
+            // Foco Total (+30 cada)
+            ['militar', 'aventura', 'tatico', 'tática', 'especializada', 'airsoft', 'paintball', 'operacional'].forEach(kw => {
+                if (textToSearch.includes(kw)) branchMatch += 30;
+            });
+            
+            // Artigos de Caça/Pesca (+10 cada - Prioridade Menor)
+            ['caça', 'pesca', 'camping', 'pescador', 'anzol', 'iscas'].forEach(kw => {
+                if (textToSearch.includes(kw)) branchMatch += 10;
+            });
+            
+            // Bonus por CNAE Oficial
+            const MILITARY_CNAES = ['4763', '4781', '4782', '1412', '1413'];
+            
+            if (lead.cnae) {
+                if (MILITARY_CNAES.some(c => String(lead.cnae).startsWith(c))) branchMatch += 20;
+                else branchMatch += 5; // outro CNAE (caça/pesca) pontua menos
+            }
+            
+            score += Math.min(60, branchMatch); // O ramo pode dar até 60 pontos no total
+
+            // 3. REGIONALIDADE (ESTADO/CIDADE)
+            const st = normalizeUF(lead.state);
+            if (st && profile.states[st]) {
+                const stateFrequency = profile.states[st] / profile.counts.total;
+                score += Math.min(10, Math.floor(stateFrequency * 40)); 
+            }
+
+            return Math.min(99, Math.max(10, score));
+        };
 
         // --- HOOK DE DADOS FIREBASE (CORRIGIDO PARA PERSISTÁŠNCIA) ---
         const useFirebaseData = (collectionName, initialData = [], user) => {
@@ -488,6 +617,31 @@
             );
         };
 
+        const MatchThermometer = ({ score }) => {
+            const getColor = (s) => {
+                if (s < 30) return 'bg-red-600';
+                if (s < 50) return 'bg-orange-500';
+                if (s < 70) return 'bg-yellow-500';
+                if (s < 85) return 'bg-lime-500';
+                return 'bg-emerald-500';
+            };
+
+            return (
+                <div className="w-full mt-2 animate-fadeIn" title={`Match de Perfil: ${score}%`}>
+                    <div className="flex justify-between items-center mb-1 px-0.5">
+                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Match Ideal</span>
+                        <span className={`text-[10px] font-black ${getColor(score).replace('bg-', 'text-')}`}>{score}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-800/80 rounded-sm overflow-hidden border border-slate-700/30 p-[1px]">
+                        <div 
+                            className={`h-full ${getColor(score)} rounded-sm transition-all duration-1000 ease-out`} 
+                            style={{ width: `${score}%`, boxShadow: '0 0 10px rgba(0,0,0,0.2)' }}
+                        ></div>
+                    </div>
+                </div>
+            );
+        };
+
         const LeadAnalyticsView = ({ sales, leads, ads }) => {
             const [filterDate, setFilterDate] = useState('all');
 
@@ -674,7 +828,7 @@
             );
         };
 
-        const LeadsView = ({ leads, addItem, updateItem, onConvertToSale, clearNotification, onSync, apiUrl }) => {
+        const LeadsView = ({ leads, addItem, updateItem, onConvertToSale, clearNotification, onSync, apiUrl, profile }) => {
             const [syncing, setSyncing] = useState(false);
             const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
@@ -685,6 +839,38 @@
             useEffect(() => {
                 clearNotification();
             }, []);
+
+            const handleManualCnpjLookup = async (e, lead) => {
+                e.stopPropagation();
+                const cnpj = String(lead.cnpj).replace(/\D/g, '');
+                if (cnpj.length !== 14) {
+                    alert('CNPJ inválido ou formato incorreto.');
+                    return;
+                }
+                
+                // Show loading immediately
+                updateItem({ ...lead, isConsulting: true, cnpjError: false, cnpjConsulted: false });
+                
+                try {
+                    const parsedData = await fetchCnpjData(cnpj);
+                    await updateItem({
+                        ...lead,
+                        ...parsedData,
+                        cnpjConsulted: true,
+                        isConsulting: false,
+                        cnpjError: false
+                    });
+                } catch (err) {
+                    console.error('Erro na consulta manual:', err);
+                    if (err.message === "429") {
+                        alert("Servidores do governo sobrecarregados (Erro 429). Tente novamente em 1 minuto.");
+                        await updateItem({ ...lead, isConsulting: false, cnpjError: true });
+                    } else {
+                        alert("CNPJ " + cnpj + " é inválido (não existe na Receita Federal). Edite o lead e corrija.");
+                        await updateItem({ ...lead, cnpjConsulted: true, isConsulting: false, cnpjError: true });
+                    }
+                }
+            };
 
             const handleSyncClick = async () => {
                 setSyncing(true);
@@ -779,13 +965,19 @@
                                         <tr key={lead.id} className="hover:bg-slate-800/30 transition-colors animate-fadeIn group">
                                             <td className="px-3 py-4 font-mono text-[11px] text-slate-400 align-top text-center">{fmtDate(lead.date)}</td>
                                             <td className="px-3 py-4 align-top whitespace-normal break-words">
-                                                <div className="font-bold text-white text-[13px] leading-tight">{lead.contact}</div>
-                                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                                <div className="font-bold text-white text-[13px] leading-tight flex items-center gap-1">
+                                                    {calculateMatchScore(lead, profile) >= 90 && (
+                                                        <span title="Lead de alto potencial! Match acima de 90%" className="text-yellow-400 text-[14px] leading-none" style={{textShadow:'0 0 8px rgba(250,204,21,0.8)'}}>★</span>
+                                                    )}
+                                                    {lead.contact}
+                                                </div>
+                                                <div className="flex flex-wrap gap-1 mt-1.5 line-clamp-1">
                                                     {lead.isNew && <span className="text-[9px] bg-red-600/90 text-white px-1.5 py-0.5 rounded uppercase font-bold tracking-tight animate-pulse">NOVO</span>}
                                                     {lead.status === 'read' && <span className="text-[9px] bg-slate-700/80 text-slate-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-slate-600/30">LIDO</span>}
                                                     {['contacted', 'negotiating', 'qualified'].includes(lead.status) && <span className="text-[9px] bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-amber-500/30">EM CRM</span>}
                                                     {lead.status === 'converted' && <span className="text-[9px] bg-emerald-500/20 text-emerald-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-emerald-500/30">VENDIDO</span>}
                                                 </div>
+                                                <MatchThermometer score={calculateMatchScore(lead, profile)} />
                                             </td>
                                             <td className="px-3 py-4 align-top text-center whitespace-normal">
                                                 {lead.phone ? (
@@ -809,7 +1001,35 @@
                                             </td>
                                             <td className="px-3 py-4 align-top whitespace-normal">
                                                 <div className="text-slate-200 font-medium leading-tight">{lead.company}</div>
-                                                <div className="text-[11px] font-mono text-slate-500 mt-1">{lead.cnpj}</div>
+                                                <div className="text-[11px] font-mono text-slate-500 mt-1 flex flex-col gap-1 items-start">
+                                                    <span>{lead.cnpj}</span>
+                                                    {!lead.officialName && String(lead.cnpj).replace(/\D/g, '').length === 14 && (
+                                                        <button 
+                                                            onClick={(e) => handleManualCnpjLookup(e, lead)}
+                                                            disabled={lead.isConsulting}
+                                                            className={`mt-1 text-[9px] font-bold uppercase tracking-wider px-2 py-1.5 rounded w-full flex items-center justify-center gap-1.5 border transition-all disabled:opacity-50 ${lead.cnpjError ? 'bg-amber-600/20 text-amber-400 border-amber-500/30 hover:bg-amber-600/40' : 'bg-blue-600/20 text-blue-400 border-blue-500/30 hover:bg-blue-600/40'}`}
+                                                        >
+                                                            <RefreshCw size={10} className={lead.isConsulting ? "animate-spin" : ""} />
+                                                            {lead.isConsulting ? "Aguarde..." : lead.cnpjError ? "Tentar Novamente" : "Checar CNPJ"}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                {lead.officialName && (
+                                                    <div className="mt-1.5 p-1.5 bg-slate-800/40 border border-slate-700/30 rounded">
+                                                       <div className="text-[10px] text-slate-400 font-bold uppercase leading-tight leading-none mb-1">DADOS OFICIAIS</div>
+                                                       <div className="text-[11px] text-white font-medium italic line-clamp-2">"{lead.officialName}"</div>
+                                                       <div className="flex gap-1 mt-1">
+                                                           {lead.isMei ? (
+                                                               <span className="text-[8px] bg-blue-500/20 text-blue-400 px-1 rounded font-bold border border-blue-500/30">MEI</span>
+                                                           ) : (
+                                                               <span className="text-[8px] bg-indigo-500/20 text-indigo-400 px-1 rounded font-bold border border-indigo-500/30">EMPRESA</span>
+                                                           )}
+                                                           {lead.cnae && ['4763', '4781', '4782', '1412', '1413'].some(c => String(lead.cnae).startsWith(c)) && (
+                                                               <span className="text-[8px] bg-amber-500/20 text-amber-500 px-1 rounded font-bold border border-amber-500/30">RAMO MILITAR</span>
+                                                           )}
+                                                       </div>
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="px-3 py-4 align-top break-all text-slate-500 text-[11px]">{lead.email}</td>
                                             <td className="px-3 py-4 align-top whitespace-normal overflow-hidden max-w-[180px]">
@@ -1714,6 +1934,9 @@
             const [newLeadAlert, setNewLeadAlert] = useState(false);
             const [leadsApiUrl, setLeadsApiUrl] = useState('https://script.google.com/macros/s/AKfycbx-Vr1TbLdJoXM7Y1pusPzQau7eJFhfqVDsjhCEissJ3-JFJPJ1mSweoKrpiRMp0geznQ/exec');
             const [hasAutoSynced, setHasAutoSynced] = useState(false);
+            const activeLookups = useRef(new Set());
+
+            const idealProfile = useMemo(() => getIdealProfile(sales), [sales]);
 
             // Função para Restaurar os Dados Originais no Firebase (se estiver vazio)
             const importInitialData = async () => {
@@ -1811,13 +2034,90 @@
                 }
             };
 
-            // AUTO-SYNC LEADS: Sincroniza automaticamente quando o usuário loga e os leads carregam
+            // AUTO-SYNC LEADS
             useEffect(() => {
                 if (firebaseUser && !loadingLeads && !hasAutoSynced && leadsApiUrl) {
                     syncFromApi();
                     setHasAutoSynced(true);
                 }
             }, [firebaseUser, loadingLeads, hasAutoSynced, leadsApiUrl]);
+
+            // CORREÇÃO INICIAL: Libera leads presos em isConsulting=true de sessões anteriores
+            // E também libera leads marcados com cnpjError (possível limitação da API 429) para retentativa
+            useEffect(() => {
+                if (!firebaseUser || loadingLeads || !leads.length) return;
+                const stuckOrErrored = leads.filter(l => (l.isConsulting && !l.cnpjConsulted) || (l.cnpjError && l.cnpjConsulted && !l.officialName));
+                if (stuckOrErrored.length > 0) {
+                    stuckOrErrored.forEach(l => updateLead({ ...l, isConsulting: false, cnpjConsulted: false, cnpjError: false }));
+                }
+            }, [firebaseUser, loadingLeads]); // Roda apenas uma vez ao carregar
+
+            // BACKGROUND WORKER: Consulta Automática de CNPJ (publica.cnpj.ws - suporta CORS)
+
+            useEffect(() => {
+                if (!firebaseUser || loadingLeads || !leads.length) return;
+
+                // Consulta apenas os 20 leads mais recentes com CNPJ válido
+                const parseDateBR = (dStr) => {
+                    if (!dStr) return 0;
+                    if (dStr.includes('T') || dStr.includes('-')) return new Date(dStr).getTime();
+                    const parts = dStr.split('/');
+                    if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+                    return 0;
+                };
+
+                const top20RecentIds = [...leads]
+                    .filter(l => String(l.cnpj || '').replace(/\D/g, '').length === 14)
+                    .sort((a, b) => parseDateBR(b.date) - parseDateBR(a.date))
+                    .slice(0, 20)
+                    .map(l => l.id);
+
+                const PENDING_LOOKUP = leads.find(l => {
+                    const cleanCnpj = String(l.cnpj || '').replace(/\D/g, '');
+                    return cleanCnpj.length === 14
+                        && !l.cnpjConsulted
+                        && !l.isConsulting
+                        && !activeLookups.current.has(cleanCnpj)
+                        && top20RecentIds.includes(l.id);
+                });
+
+                if (!PENDING_LOOKUP) return;
+
+                const runLookup = async () => {
+                    const cnpj = String(PENDING_LOOKUP.cnpj).replace(/\D/g, '');
+                    if (activeLookups.current.has(cnpj)) return;
+                    activeLookups.current.add(cnpj);
+
+                    // Atualiza localmente para mostrar ícone de carregamento
+                    updateLead({ ...PENDING_LOOKUP, isConsulting: true });
+
+                    try {
+                        const parsedData = await fetchCnpjData(cnpj);
+                        await updateLead({
+                            ...PENDING_LOOKUP,
+                            ...parsedData,
+                            cnpjConsulted: true,
+                            isConsulting: false,
+                            cnpjError: false
+                        });
+                    } catch (err) {
+                        console.error('Erro no lookup de CNPJ background:', err);
+                        if (err.message === "429") {
+                            // Erro de limite. NÃO marca como consultado, para rodar depois
+                            await updateLead({ ...PENDING_LOOKUP, isConsulting: false, cnpjError: true });
+                        } else {
+                            // Não existe na receita. Marca como definitivo com erro.
+                            await updateLead({ ...PENDING_LOOKUP, cnpjConsulted: true, isConsulting: false, cnpjError: true });
+                        }
+                    } finally {
+                        setTimeout(() => activeLookups.current.delete(cnpj), 5000);
+                    }
+                };
+
+                // 15 segundos entre consultas automáticas - previne ban de IP em APIs gratuitas
+                const timeout = setTimeout(runLookup, 15000); 
+                return () => clearTimeout(timeout);
+            }, [leads, firebaseUser, loadingLeads]);
 
             // AUTO-CHECK: Checa novos leads a cada 5 minutos
             useEffect(() => {
@@ -1831,7 +2131,7 @@
                 return () => clearInterval(interval);
             }, [isAuthenticated, leadsApiUrl, leads]); // Dependência 'leads' recria o intervalo quando leads mudam, garantindo closure atualizado
 
-            const handleLogin = (u, p) => { if (u === credentials.username && p === credentials.password) { setIsAuthenticated(true); setLoginError(''); } else { setLoginError('Credenciais inválidas. Tente novamente.'); } };
+            const handleLogin = (u, p) => { if (u === credentials.username && p === credentials.password) { setIsAuthenticated(true); setView('leads'); setLoginError(''); } else { setLoginError('Credenciais inválidas. Tente novamente.'); } };
             const handleLogout = () => { setIsAuthenticated(false); setView('analytics'); };
             const handleUpdateCredentials = (u, p) => { setCredentials({ username: u, password: p }); };
             const handleAcknowledgeLead = () => { setNewLeadAlert(false); setView('leads'); };
@@ -1865,7 +2165,7 @@
 
                         {view === 'analytics' && <AnalyticsView sales={sales} ads={ads} />}
                         {view === 'lead-analytics' && <LeadAnalyticsView sales={sales} leads={leads} ads={ads} />}
-                        {view === 'leads' && <LeadsView leads={leads} addItem={addLead} updateItem={updateLead} onConvertToSale={handleConvertToSale} clearNotification={() => setNewLeadAlert(false)} onSync={syncFromApi} apiUrl={leadsApiUrl} />}
+                        {view === 'leads' && <LeadsView leads={leads} addItem={addLead} updateItem={updateLead} onConvertToSale={handleConvertToSale} clearNotification={() => setNewLeadAlert(false)} onSync={syncFromApi} apiUrl={leadsApiUrl} profile={idealProfile} />}
                         {view === 'crm' && <CRMView leads={leads} sales={sales} updateItem={updateLead} onConvertToSale={handleConvertToSale} />}
                         {view === 'retailers' && <RetailersView sales={sales} addItem={addSale} updateItem={updateSale} deleteItem={deleteSale} prefillData={prefillData} setPrefillData={setPrefillData} updateLead={updateLead} leads={leads} />}
                         {view === 'ads' && <AdsView ads={ads} addItem={addAd} updateItem={updateAd} deleteItem={deleteAd} />}
