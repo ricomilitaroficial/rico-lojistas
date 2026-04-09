@@ -1170,8 +1170,9 @@
             }, [sales, sortConfig]);
 
             const openModal = (item = null) => {
+                const normalizedState = item ? normalizeUF(item.state) : '';
                 setEditingItem(item);
-                setFormData(item || { date: new Date().toISOString().split('T')[0], leadDate: '', company: '', city: '', state: '', pairs: '', value: '' });
+                setFormData(item ? { ...item, state: normalizedState || item.state } : { date: new Date().toISOString().split('T')[0], leadDate: '', company: '', city: '', state: '', pairs: '', value: '' });
                 setIsModalOpen(true);
             };
 
@@ -1182,6 +1183,7 @@
                         leadId: prefillData.id, // Vínculo essencial para o CRM e Métricas
                         leadDate: prefillData.date || '',
                         date: new Date().toISOString().split('T')[0],
+                        state: normalizeUF(prefillData.state) || prefillData.state,
                         pairs: '',
                         value: '',
                         id: undefined // Garante que o Firebase crie um novo ID para a venda
@@ -1195,7 +1197,12 @@
 
             const handleSubmit = async (e) => {
                 e.preventDefault();
-                const newItem = { ...formData, pairs: Number(formData.pairs), value: Number(formData.value) };
+                const newItem = { 
+                    ...formData, 
+                    state: normalizeUF(formData.state) || formData.state,
+                    pairs: Number(formData.pairs), 
+                    value: Number(formData.value) 
+                };
                 
                 try {
                     if (editingItem) {
