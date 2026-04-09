@@ -431,17 +431,21 @@
                 if (!window.db || !user) { setData(prev => [...prev, { ...item, id: Date.now() }]); return; }
                 const { collection, addDoc } = window.firebaseStore;
                 const { id, ...dataToSave } = item;
+                // Limpeza recursiva de undefined para evitar crash no Firestore
+                const cleanData = JSON.parse(JSON.stringify(dataToSave));
                 // MUDANÁ‡A AQUI:
-                await addDoc(collection(window.db, 'artifacts', window.appId, 'public', 'data', collectionName), dataToSave);
+                await addDoc(collection(window.db, 'artifacts', window.appId, 'public', 'data', collectionName), cleanData);
             };
 
             const updateItem = async (item) => {
                 if (!window.db || !user) { setData(prev => prev.map(i => i.id === item.id ? item : i)); return; }
                 const { doc, updateDoc } = window.firebaseStore;
                 const { id, ...dataToSave } = item;
+                // Limpeza recursiva de undefined para evitar crash no Firestore
+                const cleanData = JSON.parse(JSON.stringify(dataToSave));
                 // MUDANÁ‡A AQUI:
                 const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', collectionName, String(id));
-                await updateDoc(docRef, dataToSave);
+                await updateDoc(docRef, cleanData);
             };
 
             const deleteItem = async (id) => {
@@ -828,7 +832,7 @@
             );
         };
 
-        const LeadsView = ({ leads, addItem, updateItem, onConvertToSale, clearNotification, onSync, apiUrl, profile }) => {
+        const LeadsView = ({ leads, sales, addItem, updateItem, deleteSale, onConvertToSale, clearNotification, onSync, apiUrl, profile }) => {
             const [syncing, setSyncing] = useState(false);
             const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
@@ -839,6 +843,16 @@
             useEffect(() => {
                 clearNotification();
             }, []);
+
+            const handleUndoConvert = async (lead) => {
+                await updateItem({ ...lead, status: 'contacted' });
+                if (sales && deleteSale) {
+                    const saleToRemove = sales.find(s => String(s.leadId) === String(lead.id));
+                    if (saleToRemove) {
+                        await deleteSale(saleToRemove.id);
+                    }
+                }
+            };
 
             const handleManualCnpjLookup = async (e, lead) => {
                 e.stopPropagation();
@@ -946,7 +960,7 @@
 
                     <div className="glass-panel rounded-lg overflow-hidden flex flex-col mb-6">
                         <div className="overflow-x-auto custom-scrollbar transition-all">
-                            <table className="w-full min-w-[1200px] table-fixed text-[13px] text-left text-slate-400">
+                            <table className="w-full min-w-[1400px] table-fixed text-[13px] text-left text-slate-400">
                                 <thead className="text-[11px] text-slate-200 uppercase bg-slate-800/95 sticky top-0 z-20 backdrop-blur-sm border-b border-slate-700 shadow-md">
                                     <tr>
                                         <th className="px-3 py-3 sortable w-[80px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('date')}>Data <SortIcon column="date" /></th>
@@ -956,8 +970,8 @@
                                         <th className="px-3 py-3 w-[150px] text-center sticky top-0 bg-slate-800">Lojista/CNPJ</th>
                                         <th className="px-3 py-3 w-[160px] text-center sticky top-0 bg-slate-800">E-mail</th>
                                         <th className="px-3 py-3 w-[180px] text-center sticky top-0 bg-slate-800">Endereço/Instagram</th>
-                                        <th className="px-3 py-3 text-center sticky top-0 bg-slate-800">Observações</th>
-                                        <th className="px-3 py-3 text-center w-[120px] sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">Ação</th>
+                                        <th className="px-3 py-3 min-w-[200px] text-center sticky top-0 bg-slate-800">Observações</th>
+                                        <th className="px-3 py-3 text-center min-w-[120px] sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700/50">
@@ -974,7 +988,18 @@
                                                 <div className="flex flex-wrap gap-1 mt-1.5 line-clamp-1">
                                                     {lead.isNew && <span className="text-[9px] bg-red-600/90 text-white px-1.5 py-0.5 rounded uppercase font-bold tracking-tight animate-pulse">NOVO</span>}
                                                     {lead.status === 'read' && <span className="text-[9px] bg-slate-700/80 text-slate-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-slate-600/30">LIDO</span>}
-                                                    {['contacted', 'negotiating', 'qualified'].includes(lead.status) && <span className="text-[9px] bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-amber-500/30">EM CRM</span>}
+                                                    {['contacted', 'negotiating', 'qualified'].includes(lead.status) && (
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                updateItem({ ...lead, status: 'new', isNew: true });
+                                                            }}
+                                                            className="text-[9px] bg-amber-500/20 text-amber-500 hover:bg-slate-700/80 hover:text-slate-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-amber-500/30 hover:border-slate-600/30 transition-colors cursor-pointer"
+                                                            title="Clique para remover do CRM (Voltar para NOVO)"
+                                                        >
+                                                            EM CRM
+                                                        </button>
+                                                    )}
                                                     {lead.status === 'converted' && <span className="text-[9px] bg-emerald-500/20 text-emerald-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-emerald-500/30">VENDIDO</span>}
                                                 </div>
                                                 <MatchThermometer score={calculateMatchScore(lead, profile)} />
@@ -1044,7 +1069,7 @@
                                                     <div className="flex flex-col gap-1 items-center">
                                                         <span className="text-[11px] text-emerald-500 font-medium bg-emerald-500/10 px-2 py-1 rounded">Feito</span>
                                                         <button
-                                                            onClick={() => updateItem({ ...lead, status: 'contacted' })}
+                                                            onClick={() => handleUndoConvert(lead)}
                                                             className="text-[9px] text-slate-500 hover:text-slate-300 underline mt-1"
                                                         >
                                                             Desfazer
@@ -1121,29 +1146,8 @@
             const [deleteConfirmId, setDeleteConfirmId] = useState(null);
             const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
-            useEffect(() => {
-                if (prefillData) {
-                    setFormData({
-                        date: new Date().toISOString().split('T')[0],
-                        leadDate: prefillData.date,
-                        company: prefillData.company,
-                        contact: prefillData.contact,
-                        phone: prefillData.phone,
-                        email: prefillData.email,
-                        city: prefillData.city,
-                        state: prefillData.state,
-                        cnpj: prefillData.cnpj,
-                        ie: prefillData.ie,
-                        address: prefillData.address,
-                        instagram: prefillData.instagram,
-                        obs: prefillData.obs,
-                        pairs: '',
-                        value: ''
-                    });
-                    setIsModalOpen(true);
-                    setPrefillData(null);
-                }
-            }, [prefillData, setPrefillData]);
+            // Removido useEffect duplicado que causava inconsistência
+
 
             const handleSort = (key) => {
                 let direction = 'asc';
@@ -1173,36 +1177,60 @@
 
             useEffect(() => {
                 if (prefillData) {
-                    openModal({
+                    const initialFormData = {
                         ...prefillData,
+                        leadId: prefillData.id, // Vínculo essencial para o CRM e Métricas
                         leadDate: prefillData.date || '',
                         date: new Date().toISOString().split('T')[0],
-                        id: undefined // Não usar ID do lead como ID da venda
-                    });
+                        pairs: '',
+                        value: '',
+                        id: undefined // Garante que o Firebase crie um novo ID para a venda
+                    };
+                    setFormData(initialFormData);
+                    setEditingItem(null);
+                    setIsModalOpen(true);
                     setPrefillData(null);
                 }
             }, [prefillData, setPrefillData]);
 
-            const handleSubmit = (e) => {
+            const handleSubmit = async (e) => {
                 e.preventDefault();
                 const newItem = { ...formData, pairs: Number(formData.pairs), value: Number(formData.value) };
-                if (editingItem) {
-                    updateItem({ ...newItem, id: editingItem.id });
-                } else {
-                    addItem(newItem);
-                    // Atualiza o lead original para VENDIDO se vier do CRM/Funil
-                    if (formData.leadId && updateLead && leads) {
-                        const leadToConvert = leads.find(l => String(l.id) === String(formData.leadId));
-                        if (leadToConvert) {
-                            updateLead({ ...leadToConvert, status: 'converted', isNew: false });
+                
+                try {
+                    if (editingItem) {
+                        await updateItem({ ...newItem, id: editingItem.id });
+                    } else {
+                        await addItem(newItem);
+                        // Atualiza o lead original para VENDIDO se vier do CRM/Funil
+                        // O uso de leadId aqui garante que as métricas e o CRM identifiquem o lead fechado
+                        const currentLeadId = formData.leadId || formData.id;
+                        if (currentLeadId && updateLead && leads) {
+                            const leadToConvert = leads.find(l => String(l.id) === String(currentLeadId));
+                            if (leadToConvert) {
+                                await updateLead({ ...leadToConvert, status: 'converted', isNew: false });
+                            }
                         }
                     }
+                    setIsModalOpen(false);
+                } catch (err) {
+                    console.error("Erro ao salvar lojista:", err);
+                    alert("Erro ao salvar dados. Verifique sua conexão.");
                 }
-                setIsModalOpen(false);
             };
 
-            const confirmDelete = () => {
-                if (deleteConfirmId) { deleteItem(deleteConfirmId); setDeleteConfirmId(null); }
+            const confirmDelete = async () => {
+                if (deleteConfirmId) {
+                    const saleToRemove = sales.find(s => s.id === deleteConfirmId);
+                    if (saleToRemove && saleToRemove.leadId && updateLead && leads) {
+                        const leadToRevert = leads.find(l => String(l.id) === String(saleToRemove.leadId));
+                        if (leadToRevert) {
+                            await updateLead({ ...leadToRevert, status: 'contacted' });
+                        }
+                    }
+                    await deleteItem(deleteConfirmId); 
+                    setDeleteConfirmId(null); 
+                }
             };
 
             const SortIcon = ({ column }) => {
@@ -1441,7 +1469,7 @@
             );
         };
 
-        const CRMView = ({ leads, sales, updateItem, onConvertToSale }) => {
+        const CRMView = ({ leads, sales, updateItem, onConvertToSale, deleteSale }) => {
             const [selectedLead, setSelectedLead] = useState(null);
             const [notes, setNotes] = useState('');
 
@@ -1454,16 +1482,20 @@
 
             const crmLeads = useMemo(() => {
                 const activeLeads = leads.filter(l => ['contacted', 'negotiating', 'qualified'].includes(l.status));
-                const cleanNum = (str) => str ? String(str).replace(/\D/g, '') : '';
-                const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
-
                 const closedDeals = sales.map(s => {
-                    const origLead = leads.find(l => l.status === 'converted' && (
-                        (l.cnpj && s.cnpj && cleanNum(l.cnpj) === cleanNum(s.cnpj)) ||
-                        (l.phone && s.phone && cleanNum(l.phone) === cleanNum(s.phone)) ||
-                        (l.company && s.company && normalize(l.company) === normalize(s.company)) ||
-                        (l.contact && s.company && normalize(l.contact) === normalize(s.company))
-                    ));
+                    const cleanNum = (str) => str ? String(str).replace(/\D/g, '') : '';
+                    const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
+
+                    // Busca o lead original priorizando o leadId salvo na venda
+                    const origLead = leads.find(l => 
+                        (s.leadId && String(l.id) === String(s.leadId)) ||
+                        (l.status === 'converted' && (
+                            (l.cnpj && s.cnpj && cleanNum(l.cnpj) === cleanNum(s.cnpj)) ||
+                            (l.phone && s.phone && cleanNum(l.phone) === cleanNum(s.phone)) ||
+                            (l.company && s.company && normalize(l.company) === normalize(s.company)) ||
+                            (l.contact && s.company && normalize(l.contact) === normalize(s.company))
+                        ))
+                    );
 
                     return {
                         id: `sale_${s.id}`,
@@ -1472,7 +1504,7 @@
                         city: s.city || origLead?.city || '',
                         state: s.state || origLead?.state || '',
                         phone: s.phone || origLead?.phone || '',
-                        crmNotes: origLead?.crmNotes ? `${origLead.crmNotes}\n\nFechado: ${s.pairs} pares (${fmtMoney(s.value)})` : `Lojista fechado em ${fmtDate(s.date)}: ${s.pairs} pares (${fmtMoney(s.value)}).\nCadastrado direto via Lojistas.`,
+                        crmNotes: origLead?.crmNotes ? `${origLead.crmNotes}\n\nFechado: ${s.pairs} pares (${fmtMoney(s.value)})` : `Lojista fechado em ${fmtDate(s.date)}: ${s.pairs} pares (${fmtMoney(s.value)}).\nCadastrado via Dashboard.`,
                         status: 'converted',
                         isSaleOnly: !origLead,
                         email: origLead?.email || s.email,
@@ -1507,11 +1539,26 @@
                 e.currentTarget.classList.remove('bg-slate-800/80');
             };
 
-            const handleDrop = (e, status) => {
+            const handleDrop = async (e, status) => {
                 e.preventDefault();
                 e.currentTarget.classList.remove('bg-slate-800/80');
                 const leadId = e.dataTransfer.getData('leadId');
-                if (String(leadId).startsWith('sale_')) return;
+                
+                if (String(leadId).startsWith('sale_')) {
+                    if (status === 'converted') return;
+                    const saleId = String(leadId).replace('sale_', '');
+                    const saleToRemove = sales.find(s => String(s.id) === String(saleId));
+                    if (saleToRemove && deleteSale) {
+                        if (saleToRemove.leadId) {
+                            const origLead = leads.find(l => String(l.id) === String(saleToRemove.leadId));
+                            if (origLead) {
+                                await updateItem({ ...origLead, status: status });
+                            }
+                        }
+                        await deleteSale(saleId);
+                    }
+                    return;
+                }
 
                 if (status === 'converted') {
                     const lead = leads.find(l => String(l.id) === String(leadId));
@@ -2136,7 +2183,6 @@
             const handleUpdateCredentials = (u, p) => { setCredentials({ username: u, password: p }); };
             const handleAcknowledgeLead = () => { setNewLeadAlert(false); setView('leads'); };
             const handleConvertToSale = (lead) => {
-                updateLead({ ...lead, status: 'converted' });
                 setPrefillData(lead);
                 setView('retailers');
             };
@@ -2165,8 +2211,8 @@
 
                         {view === 'analytics' && <AnalyticsView sales={sales} ads={ads} />}
                         {view === 'lead-analytics' && <LeadAnalyticsView sales={sales} leads={leads} ads={ads} />}
-                        {view === 'leads' && <LeadsView leads={leads} addItem={addLead} updateItem={updateLead} onConvertToSale={handleConvertToSale} clearNotification={() => setNewLeadAlert(false)} onSync={syncFromApi} apiUrl={leadsApiUrl} profile={idealProfile} />}
-                        {view === 'crm' && <CRMView leads={leads} sales={sales} updateItem={updateLead} onConvertToSale={handleConvertToSale} />}
+                        {view === 'leads' && <LeadsView leads={leads} sales={sales} deleteSale={deleteSale} addItem={addLead} updateItem={updateLead} onConvertToSale={handleConvertToSale} clearNotification={() => setNewLeadAlert(false)} onSync={syncFromApi} apiUrl={leadsApiUrl} profile={idealProfile} />}
+                        {view === 'crm' && <CRMView leads={leads} sales={sales} updateItem={updateLead} onConvertToSale={handleConvertToSale} deleteSale={deleteSale} />}
                         {view === 'retailers' && <RetailersView sales={sales} addItem={addSale} updateItem={updateSale} deleteItem={deleteSale} prefillData={prefillData} setPrefillData={setPrefillData} updateLead={updateLead} leads={leads} />}
                         {view === 'ads' && <AdsView ads={ads} addItem={addAd} updateItem={updateAd} deleteItem={deleteAd} />}
                         {view === 'settings' && <SettingsView credentials={credentials} onUpdateCredentials={handleUpdateCredentials} apiUrl={leadsApiUrl} onUpdateApiUrl={setLeadsApiUrl} importData={importInitialData} onCleanTags={() => {
