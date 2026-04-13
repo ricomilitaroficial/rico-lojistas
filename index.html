@@ -196,6 +196,7 @@
         const Phone = (p) => <IconBase {...p}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></IconBase>;
         const PieChart = (p) => <IconBase {...p}><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></IconBase>;
         const DatabaseIcon = (p) => <IconBase {...p}><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></IconBase>;
+        const Repeat = (p) => <IconBase {...p}><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></IconBase>;
 
         // --- CONSTANTES ---
         const BRAZIL_STATES = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
@@ -471,37 +472,70 @@
                 Chart.defaults.color = '#94a3b8';
                 Chart.defaults.borderColor = '#334155';
                 Chart.defaults.font.family = "'Red Hat Display', sans-serif";
-                Chart.defaults.datasets.bar.barPercentage = 0.6;
+                Chart.defaults.datasets.bar.barPercentage = 0.85;
+                Chart.defaults.datasets.bar.categoryPercentage = 0.75;
                 Chart.register(ChartDataLabels);
 
                 chartRef.current = new Chart(canvasRef.current.getContext('2d'), {
                     type, data,
                     options: {
                         responsive: true, maintainAspectRatio: false,
-                        layout: { padding: { top: 25, right: 20 } },
+                        layout: { padding: { top: 30, right: 35, left: (options?.indexAxis === 'y' && data.labels?.some(l => l.toString().length > 3)) ? 120 : 45, bottom: 10 } },
+                        scales: (type !== 'pie' && type !== 'doughnut') ? { 
+                            x: { 
+                                grid: { color: 'rgba(255,255,255,0.05)' }, 
+                                ticks: { color: '#94a3b8', font: { size: 10 } },
+                                beginAtZero: true
+                            }, 
+                            y: { 
+                                type: options?.indexAxis === 'y' ? 'category' : undefined,
+                                display: true, 
+                                grid: { display: false }, 
+                                ticks: { 
+                                    color: '#e2e8f0', 
+                                    font: { weight: 'bold', size: 10 },
+                                    padding: 10
+                                } 
+                            } 
+                        } : { x: { display: false }, y: { display: false } },
+                        ...options,
                         plugins: {
-                            legend: { labels: { color: '#e2e8f0', usePointStyle: true, boxWidth: 8 } },
-                            datalabels: {
-                                color: '#fff', anchor: type === 'pie' || type === 'doughnut' ? 'center' : 'end', align: type === 'pie' || type === 'doughnut' ? 'center' : 'top', offset: 4,
-                                font: { weight: 'bold', size: 11 },
-                                formatter: (val, ctx) => {
-                                    let label = val;
-                                    if (labelType === 'money') label = val >= 1000 ? 'R$ ' + (val / 1000).toFixed(1) + 'k' : 'R$ ' + val;
-                                    if (labelType === 'roi') label = val + 'x';
-                                    if (labelType === 'percent') label = val + '%';
-                                    if (type === 'pie' || type === 'doughnut') {
-                                        const dataset = ctx.chart.data.datasets[0];
-                                        const total = dataset.data.reduce((acc, curr) => acc + curr, 0);
-                                        const percent = ((val / total) * 100).toFixed(1) + '%';
-                                        return [label, `(${percent})`];
+                            ...options?.plugins,
+                            legend: { 
+                                display: true, 
+                                position: 'bottom',
+                                labels: { color: '#e2e8f0', usePointStyle: true, boxWidth: 8, padding: 20 } 
+                            },
+                                datalabels: {
+                                    ...options?.plugins?.datalabels,
+                                    color: '#fff', 
+                                    anchor: 'end', 
+                                    align: 'top', 
+                                    offset: 4,
+                                    display: true,
+                                    rotation: 0,
+                                    clip: false,
+                                    font: { weight: 'bold', size: 8 },
+                                    formatter: (val, ctx) => {
+                                        if (val === 0 || val === "0.00") return null;
+                                        let label = val;
+                                        if (labelType === 'money') {
+                                            if (val >= 1000) label = (val / 1000).toFixed(1) + 'k';
+                                            else label = val;
+                                        }
+                                        if (labelType === 'roi') label = val + 'x';
+                                        if (labelType === 'percent') label = val + '%';
+                                        
+                                        if (type === 'pie' || type === 'doughnut') {
+                                            const dataset = ctx.chart.data.datasets[0];
+                                            const total = dataset.data.reduce((acc, curr) => acc + curr, 0);
+                                            const percent = total > 0 ? ((val / total) * 100).toFixed(1) + '%' : '0%';
+                                            return [label, `(${percent})`];
+                                        }
+                                        return label;
                                     }
-                                    return label;
-                                },
-                                display: 'auto'
-                            }
-                        },
-                        scales: (type !== 'pie' && type !== 'doughnut') ? { x: { grid: { display: false } }, y: { display: false, beginAtZero: true } } : { x: { display: false }, y: { display: false } },
-                        ...options
+                                }
+                        }
                     }
                 });
                 return () => { if (chartRef.current) chartRef.current.destroy(); };
@@ -522,15 +556,15 @@
             </div>
         );
 
-        const ChartContainer = ({ title, children, subtitle }) => (
-            <div className="glass-panel p-6 rounded-lg w-full mb-6 animate-fadeIn">
+        const ChartContainer = ({ title, children, subtitle, height }) => (
+            <div className="glass-panel p-6 rounded-lg w-full mb-6 animate-fadeIn" style={height ? { minHeight: height } : {}}>
                 <div className="mb-4 border-b border-slate-700/50 pb-2 flex justify-between items-center">
                     <div>
-                        <h3 className="font-bold text-white text-lg flex items-center gap-2"><Activity size={16} className="text-amber-500" /> {title}</h3>
-                        {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+                        <h3 className="font-bold text-white text-lg flex items-center gap-2"><TrendingUp size={16} className="text-amber-500" /> {title}</h3>
+                        {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
                     </div>
                 </div>
-                <div className="w-full">{children}</div>
+                <div className="w-full h-full">{children}</div>
             </div>
         );
 
@@ -553,6 +587,7 @@
                 { id: 'leads', label: `Leads (Funil) ${notificationCount > 0 ? '🔴 ' + notificationCount : ''}`, icon: Filter },
                 { id: 'crm', label: 'CRM (Negociações)', icon: Target },
                 { id: 'retailers', label: 'Lojistas (CRM)', icon: Users },
+                { id: 'ltv', label: 'LTV (Recompras)', icon: RefreshCw },
                 { id: 'ads', label: 'Anúncios (Ads)', icon: DollarSign },
                 { id: 'settings', label: 'Configurações', icon: Settings },
             ];
@@ -826,6 +861,9 @@
                             <ChartContainer title="Ranking de Estados" subtitle="Leads por UF (Maior para Menor)">
                                 <ChartComponent type="bar" data={cLeadsState} />
                             </ChartContainer>
+                        </div>
+                        <div className="lg:col-span-3">
+                            <LeadEfficiencyChart sales={sales} leads={leads} />
                         </div>
                     </div>
                 </div>
@@ -1753,89 +1791,233 @@
             );
         };
 
-        const AnalyticsView = ({ sales, ads }) => {
+        const AnalyticsView = ({ sales, ads, leads = [], repurchases = [] }) => {
             const [filterDate, setFilterDate] = useState('all');
             const [sections, setSections] = useState({ financial: true, geo: true, ops: true });
-            const availableMonths = useMemo(() => { const months = new Set([...sales.map(s => s.date.slice(0, 7)), ...ads.map(a => a.month)]); return Array.from(months).sort(); }, [sales, ads]);
+            const availableMonths = useMemo(() => { const months = new Set([...sales.map(s => s.date.slice(0, 7)), ...ads.map(a => a.month), ...repurchases.map(r => r.date.slice(0, 7))]); return Array.from(months).sort(); }, [sales, ads, repurchases]);
 
             const data = useMemo(() => {
                 let filteredSales = sales;
                 let filteredAds = ads;
-                if (filterDate !== 'all') { filteredSales = sales.filter(s => s.date.startsWith(filterDate)); filteredAds = ads.filter(a => a.month === filterDate); }
-                const rev = filteredSales.reduce((acc, c) => acc + c.value, 0);
+                let filteredReps = repurchases;
+                if (filterDate !== 'all') { 
+                    filteredSales = sales.filter(s => s.date.startsWith(filterDate)); 
+                    filteredAds = ads.filter(a => a.month === filterDate); 
+                    filteredReps = repurchases.filter(r => r.date.startsWith(filterDate));
+                }
+                
+                const rev1st = filteredSales.reduce((acc, c) => acc + c.value, 0);
+                const revRep = filteredReps.reduce((acc, c) => acc + Number(c.value), 0);
+                const revTotal = rev1st + revRep;
+                
                 const adCost = filteredAds.reduce((acc, c) => acc + c.value, 0);
-                const pairs = filteredSales.reduce((acc, c) => acc + c.pairs, 0);
-                const ticket = filteredSales.length > 0 ? rev / filteredSales.length : 0;
-                const roi = adCost > 0 ? rev / adCost : 0;
-                const netResult = rev - adCost;
-                const totalDeals = filteredSales.length;
-                const avgPairsPerDeal = totalDeals > 0 ? pairs / totalDeals : 0;
+                const pairs1st = filteredSales.reduce((acc, c) => acc + c.pairs, 0);
+                const pairsRep = filteredReps.reduce((acc, c) => acc + Number(c.pairs), 0);
+                
+                const ticket = filteredSales.length > 0 ? rev1st / filteredSales.length : 0;
+                const roi = adCost > 0 ? revTotal / adCost : 0;
+                const netResult = revTotal - adCost;
+                const totalOrders = filteredSales.length + filteredReps.length;
                 const uniqueRetailers = new Set(filteredSales.map(s => s.company)).size;
 
                 const monthsList = filterDate === 'all' ? availableMonths : [filterDate];
                 const monthlyChartData = monthsList.map(m => {
                     const mSales = sales.filter(s => s.date.startsWith(m));
+                    const mReps = repurchases.filter(r => r.date.startsWith(m));
                     const mCost = ads.find(a => a.month === m)?.value || 0;
-                    const mRev = mSales.reduce((acc, c) => acc + c.value, 0);
-                    const mPairs = mSales.reduce((acc, c) => acc + c.pairs, 0);
-                    const mTicket = mSales.length > 0 ? mRev / mSales.length : 0;
-                    const mRoi = mCost > 0 ? mRev / mCost : 0;
-                    let newRetailers = new Set(mSales.map(s => s.company)).size;
+                    
+                    const mRev1st = mSales.reduce((acc, c) => acc + c.value, 0);
+                    const mRevRep = mReps.reduce((acc, c) => acc + Number(c.value), 0);
+                    const mRevTotal = mRev1st + mRevRep;
+                    
+                    const mPairs1st = mSales.reduce((acc, c) => acc + c.pairs, 0);
+                    const mPairsRep = mReps.reduce((acc, c) => acc + Number(c.pairs), 0);
+                    const mPairsTotal = mPairs1st + mPairsRep;
+                    
+                    const mTicketTotal = (mSales.length + mReps.length) > 0 ? mRevTotal / (mSales.length + mReps.length) : 0;
+                    const mTicket1st = mSales.length > 0 ? mRev1st / mSales.length : 0;
+                    const mTicketRep = mReps.length > 0 ? mRevRep / mReps.length : 0;
+
+                    const mRoi = mCost > 0 ? mRevTotal / mCost : 0;
+                    const LojTotal = new Set([...mSales.map(s => s.company), ...mReps.map(r => r.company)]).size;
+                    const Loj1st = new Set(mSales.map(s => s.company)).size;
+                    const LojRep = new Set(mReps.map(r => r.company)).size;
+                    
                     const [y, mn] = m.split('-');
                     const label = `${fullMonthNames[parseInt(mn) - 1].substring(0, 3)}/${y.substring(2)}`;
-                    return { rawMonth: m, label, revenue: mRev, cost: mCost, roi: mRoi, pairs: mPairs, ticket: mTicket, newRetailers };
+                    return { label, revTotal: mRevTotal, rev1st: mRev1st, revRep: mRevRep, pairsTotal: mPairsTotal, pairs1st: mPairs1st, pairsRep: mPairsRep, ticketTotal: mTicketTotal, ticket1st: mTicket1st, ticketRep: mTicketRep, lojTotal: LojTotal, loj1st: Loj1st, lojRep: LojRep, roi: mRoi, cost: mCost };
                 });
 
                 const stateStats = {};
-                const regionStats = {};
                 filteredSales.forEach(s => {
                     const st = normalizeUF(s.state);
-                    if (!st) return; // Ignora "gata" e outros lixos
-                    if (!stateStats[st]) stateStats[st] = { rev: 0, count: 0, receita: 0, pedidos: 0 };
-                    stateStats[st].rev += s.value;
-                    stateStats[st].count++;
-                    stateStats[st].receita += s.value;
-                    stateStats[st].pedidos++;
-                    const reg = Object.keys(REGIONS).find(r => REGIONS[r].includes(st)) || 'Outro';
-                    if (!regionStats[reg]) regionStats[reg] = 0;
-                    regionStats[reg] += s.value;
+                    if (!st) return;
+                    if (!stateStats[st]) stateStats[st] = { rev1st: 0, revRep: 0, count1st: 0, countRep: 0, pairs1st: 0, pairsRep: 0 };
+                    stateStats[st].rev1st += s.value;
+                    stateStats[st].count1st++;
+                    stateStats[st].pairs1st += s.pairs;
+                });
+                filteredReps.forEach(r => {
+                    const baseSale = sales.find(s => s.company === r.company);
+                    const st = baseSale ? normalizeUF(baseSale.state) : null;
+                    if (!st) return;
+                    if (!stateStats[st]) stateStats[st] = { rev1st: 0, revRep: 0, count1st: 0, countRep: 0, pairs1st: 0, pairsRep: 0 };
+                    stateStats[st].revRep += Number(r.value);
+                    stateStats[st].countRep++;
+                    stateStats[st].pairsRep += Number(r.pairs);
                 });
 
-                const ops = { week: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => ({ name: d, count: 0, rev: 0 })), monthDay: Array.from({ length: 31 }, (_, i) => ({ day: i + 1, count: 0 })), buckets: { '1-12': 0, '13-24': 0, '25-48': 0, '49+': 0 } };
-                filteredSales.forEach(s => { const d = new Date(s.date); ops.week[d.getDay()].count++; ops.week[d.getDay()].rev += s.value; ops.monthDay[d.getDate() - 1].count++; if (s.pairs <= 12) ops.buckets['1-12']++; else if (s.pairs <= 24) ops.buckets['13-24']++; else if (s.pairs <= 48) ops.buckets['25-48']++; else ops.buckets['49+']++; });
+                const regionStats = {};
+                Object.entries(stateStats).forEach(([st, stats]) => {
+                    const reg = Object.keys(REGIONS).find(r => REGIONS[r].includes(st)) || 'Outro';
+                    if (!regionStats[reg]) regionStats[reg] = { rev1st: 0, revRep: 0 };
+                    regionStats[reg].rev1st += stats.rev1st;
+                    regionStats[reg].revRep += stats.revRep;
+                });
 
-                return { kpis: { rev, roi, pairs, ticket, netResult, adCost, avgPairsPerDeal, uniqueRetailers }, monthly: monthlyChartData, geo: { state: stateStats, region: regionStats }, ops };
-            }, [sales, ads, filterDate, availableMonths]);
+                const weekTrend = new Array(7).fill(0);
+                const monthTrend = new Array(31).fill(0);
+                const daysOfWeekShort = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+                
+                filteredSales.forEach(s => {
+                    const d = new Date(s.date + 'T12:00:00');
+                    weekTrend[d.getUTCDay()]++;
+                    monthTrend[parseInt(s.date.slice(-2)) - 1]++;
+                });
+                filteredReps.forEach(r => {
+                    const d = new Date(r.date + 'T12:00:00');
+                    weekTrend[d.getUTCDay()]++;
+                    monthTrend[parseInt(r.date.slice(-2)) - 1]++;
+                });
 
-            const cRev = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'Faturamento', data: data.monthly.map(d => d.revenue), backgroundColor: '#f59e0b', borderRadius: 4 }] };
-            const cRoi = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'ROI (x)', data: data.monthly.map(d => d.roi.toFixed(1)), backgroundColor: '#8b5cf6', borderRadius: 4 }] };
-            const cPairs = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'Pares', data: data.monthly.map(d => d.pairs), backgroundColor: '#3b82f6', borderRadius: 4 }] };
-            const cRevVsAds = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'Retorno', data: data.monthly.map(d => d.revenue), backgroundColor: '#10b981', borderRadius: 3 }, { label: 'Ads', data: data.monthly.map(d => d.cost), backgroundColor: '#64748b', borderRadius: 3 }] };
-            const cTicketM = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'Ticket Médio', data: data.monthly.map(d => d.ticket), backgroundColor: '#6366f1', borderRadius: 4 }] };
-            const cNew = { labels: data.monthly.map(d => d.label), datasets: [{ label: 'Novos Lojistas', data: data.monthly.map(d => d.newRetailers), backgroundColor: '#ec4899', borderRadius: 4 }] };
-            const sortedStates = Object.entries(data.geo.state).sort((a, b) => b[1].rev - a[1].rev);
+                const topRepClients = Object.entries(filteredReps.reduce((acc, r) => {
+                    acc[r.company] = (acc[r.company] || 0) + Number(r.value);
+                    return acc;
+                }, {})).sort((a,b) => b[1] - a[1]).slice(0, 5);
 
-            // Novos ordenadores para os gráficos específicos
-            const sortedStatesByCount = Object.entries(data.geo.state).sort((a, b) => b[1].count - a[1].count);
-            const sortedStatesByTicket = Object.entries(data.geo.state).sort((a, b) => (b[1].rev / b[1].count) - (a[1].rev / a[1].count));
+                const maxStateRev = Math.max(0, ...Object.values(stateStats).map(s => s.rev1st + s.revRep));
+                const maxStateOrders = Math.max(0, ...Object.values(stateStats).map(s => s.count1st + s.countRep));
+                const maxStateTicket = Math.max(0, ...Object.values(stateStats).map(s => {
+                    const total = s.count1st + s.countRep;
+                    return total > 0 ? (s.rev1st + s.revRep) / total : 0;
+                }));
 
-            const cGeoRev = { labels: sortedStates.map(s => s[0]), datasets: [{ label: 'Receita', data: sortedStates.map(s => s[1].rev), backgroundColor: '#f59e0b', borderRadius: 4, indexAxis: 'y' }] };
+                return { 
+                    kpis: { revTotal, rev1st, revRep, roi, pairs1st, pairsRep, ticket, netResult, adCost, uniqueRetailers, totalOrders }, 
+                    monthly: monthlyChartData, 
+                    geo: { state: stateStats, region: regionStats },
+                    time: { week: weekTrend, month: monthTrend, weekLabels: daysOfWeekShort },
+                    reps: { topClients: topRepClients },
+                    scales: { maxStateRev, maxStateOrders, maxStateTicket }
+                };
+            }, [sales, ads, repurchases, filterDate, availableMonths]);
 
-            // Usando os ordenadores específicos
-            const cGeoCount = { labels: sortedStatesByCount.map(s => s[0]), datasets: [{ label: 'Pedidos', data: sortedStatesByCount.map(s => s[1].count), backgroundColor: '#3b82f6', borderRadius: 4 }] };
-            const cGeoTicket = { labels: sortedStatesByTicket.map(s => s[0]), datasets: [{ label: 'Ticket Médio', data: sortedStatesByTicket.map(s => s[1].rev / s[1].count), backgroundColor: '#8b5cf6', borderRadius: 4 }] };
-
-            // Ordenação da Região (Maior para menor)
-            const sortedRegions = Object.entries(data.geo.region).sort((a, b) => b[1] - a[1]);
-            const cReg = {
-                labels: sortedRegions.map(r => r[0]),
-                datasets: [{ data: sortedRegions.map(r => r[1]), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'], borderWidth: 0 }]
+            const COLOR_TOTAL = '#8b5cf6'; // Violeta
+            const COLOR_1ST = '#f59e0b';   // Amber
+            const COLOR_REP = '#10b981';   // Emerald
+            
+            const monthsLabels = data.monthly.map(d => d.label);
+            
+            // Faturamento Mensal Grouped
+            const cRevMGrouped = { 
+                labels: monthsLabels, 
+                datasets: [
+                    { label: 'Total', data: data.monthly.map(d => d.revTotal), backgroundColor: COLOR_TOTAL, borderRadius: 4 },
+                    { label: '1ª Compra', data: data.monthly.map(d => d.rev1st), backgroundColor: COLOR_1ST, borderRadius: 4 },
+                    { label: 'Recompras', data: data.monthly.map(d => d.revRep), backgroundColor: COLOR_REP, borderRadius: 4 }
+                ] 
+            };
+            
+            // Pares Mensais Grouped
+            const cPairsMGrouped = { 
+                labels: monthsLabels, 
+                datasets: [
+                    { label: 'Total', data: data.monthly.map(d => d.pairsTotal), backgroundColor: COLOR_TOTAL, borderRadius: 4 },
+                    { label: '1ª Compra', data: data.monthly.map(d => d.pairs1st), backgroundColor: COLOR_1ST, borderRadius: 4 },
+                    { label: 'Recompras', data: data.monthly.map(d => d.pairsRep), backgroundColor: COLOR_REP, borderRadius: 4 }
+                ] 
+            };
+            
+            // Ticket Médio Mensal Grouped
+            const cTicketMGrouped = { 
+                labels: monthsLabels, 
+                datasets: [
+                    { label: 'Total', data: data.monthly.map(d => d.ticketTotal.toFixed(2)), backgroundColor: COLOR_TOTAL, borderRadius: 4 },
+                    { label: '1ª Compra', data: data.monthly.map(d => d.ticket1st.toFixed(2)), backgroundColor: COLOR_1ST, borderRadius: 4 },
+                    { label: 'Recompras', data: data.monthly.map(d => d.ticketRep.toFixed(2)), backgroundColor: COLOR_REP, borderRadius: 4 }
+                ] 
             };
 
-            const cBuckets = { labels: Object.keys(data.ops.buckets), datasets: [{ data: Object.values(data.ops.buckets), backgroundColor: ['#64748b', '#3b82f6', '#8b5cf6', '#f59e0b'], borderWidth: 0 }] };
-            const cWeekCount = { labels: data.ops.week.map(w => w.name), datasets: [{ label: 'Pedidos', data: data.ops.week.map(w => w.count), backgroundColor: '#06b6d4', borderRadius: 4 }] };
-            const cWeekRev = { labels: data.ops.week.map(w => w.name), datasets: [{ label: 'Receita', data: data.ops.week.map(w => w.rev), backgroundColor: '#10b981', borderRadius: 4 }] };
-            const cMonthDay = { labels: data.ops.monthDay.map(d => d.day), datasets: [{ label: 'Pedidos', data: data.ops.monthDay.map(d => d.count), backgroundColor: '#ec4899', borderRadius: 4 }] };
+            // Lojistas Mensais Grouped
+            const cLojMGrouped = { 
+                labels: monthsLabels, 
+                datasets: [
+                    { label: 'Ativos (Total)', data: data.monthly.map(d => d.lojTotal), backgroundColor: COLOR_TOTAL, borderRadius: 4 },
+                    { label: 'Novos (1ª)', data: data.monthly.map(d => d.loj1st), backgroundColor: COLOR_1ST, borderRadius: 4 },
+                    { label: 'Em Recompra', data: data.monthly.map(d => d.lojRep), backgroundColor: COLOR_REP, borderRadius: 4 }
+                ] 
+            };
+            
+            // Geográfico por Estado Grouped (Sorted by Total)
+            const sortedStates = Object.entries(data.geo.state).sort((a,b) => (b[1].rev1st + b[1].revRep) - (a[1].rev1st + a[1].revRep));
+            const stateLabels = sortedStates.map(s => s[0]);
+            
+            const cStateRevGrouped = {
+                labels: stateLabels,
+                datasets: [
+                    { label: 'Total', data: sortedStates.map(s => s[1].rev1st + s[1].revRep), backgroundColor: COLOR_TOTAL, borderRadius: 2 },
+                    { label: '1ª Compra', data: sortedStates.map(s => s[1].rev1st), backgroundColor: COLOR_1ST, borderRadius: 2 },
+                    { label: 'Recompra', data: sortedStates.map(s => s[1].revRep), backgroundColor: COLOR_REP, borderRadius: 2 }
+                ]
+            };
+
+            const sortedStatesOrder = Object.entries(data.geo.state).sort((a,b) => (b[1].count1st + b[1].countRep) - (a[1].count1st + a[1].countRep));
+            const cStateOrderGrouped = {
+                labels: sortedStatesOrder.map(s => s[0]),
+                datasets: [
+                    { label: 'Total', data: sortedStatesOrder.map(s => s[1].count1st + s[1].countRep), backgroundColor: COLOR_TOTAL, borderRadius: 2 },
+                    { label: '1ª Compra', data: sortedStatesOrder.map(s => s[1].count1st), backgroundColor: COLOR_1ST, borderRadius: 2 },
+                    { label: 'Recompra', data: sortedStatesOrder.map(s => s[1].countRep), backgroundColor: COLOR_REP, borderRadius: 2 }
+                ]
+            };
+
+            const sortedStatesTicket = Object.entries(data.geo.state).sort((a,b) => {
+                const tA = a[1].count1st + a[1].countRep;
+                const tB = b[1].count1st + b[1].countRep;
+                const valA = tA > 0 ? (a[1].rev1st + a[1].revRep) / tA : 0;
+                const valB = tB > 0 ? (b[1].rev1st + b[1].revRep) / tB : 0;
+                return valB - valA;
+            });
+            const cStateTicketGrouped = {
+                labels: sortedStatesTicket.map(s => s[0]),
+                datasets: [
+                    { label: 'Total', data: sortedStatesTicket.map(s => { const t = s[1].count1st + s[1].countRep; return t > 0 ? ((s[1].rev1st + s[1].revRep) / t).toFixed(2) : 0; }), backgroundColor: COLOR_TOTAL, borderRadius: 2 },
+                    { label: '1ª Compra', data: sortedStatesTicket.map(s => s[1].count1st > 0 ? (s[1].rev1st / s[1].count1st).toFixed(2) : 0), backgroundColor: COLOR_1ST, borderRadius: 2 },
+                    { label: 'Recompra', data: sortedStatesTicket.map(s => s[1].countRep > 0 ? (s[1].revRep / s[1].countRep).toFixed(2) : 0), backgroundColor: COLOR_REP, borderRadius: 2 }
+                ]
+            };
+
+            // Regional Grouped
+            const sortedRegionsTotal = Object.entries(data.geo.region).sort((a,b) => (b[1].rev1st + b[1].revRep) - (a[1].rev1st + a[1].revRep));
+            const regionLabels = sortedRegionsTotal.map(r => r[0]);
+            const cRegGrouped = {
+                labels: regionLabels,
+                datasets: [
+                    { label: 'Total', data: sortedRegionsTotal.map(r => r[1].rev1st + r[1].revRep), backgroundColor: COLOR_TOTAL, borderRadius: 4 },
+                    { label: '1ª Compra', data: sortedRegionsTotal.map(r => r[1].rev1st), backgroundColor: COLOR_1ST, borderRadius: 4 },
+                    { label: 'Recompra', data: sortedRegionsTotal.map(r => r[1].revRep), backgroundColor: COLOR_REP, borderRadius: 4 }
+                ]
+            };
+
+            const cTopClients = {
+                labels: data.reps.topClients.map(c => c[0]),
+                datasets: [{ label: 'Recompras (R$)', data: data.reps.topClients.map(c => c[1]), backgroundColor: COLOR_REP, borderRadius: 5 }]
+            };
+
+            // Tempo
+            const cWeek = { labels: data.time.weekLabels, datasets: [{ label: 'Pedidos por Dia da Semana', data: data.time.week, backgroundColor: '#3b82f6', borderRadius: 4 }] };
+            const cDayMonth = { labels: Array.from({length:31}, (_,i) => i+1), datasets: [{ label: 'Pedidos por Dia do Mês', data: data.time.month, backgroundColor: '#6366f1', borderRadius: 4 }] };
+
             const toggle = (k) => setSections(p => ({ ...p, [k]: !p[k] }));
 
             return (
@@ -1850,43 +2032,333 @@
                             </select>
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <KpiCard title="Faturamento Total" value={fmtMoney(data.kpis.rev)} subtext={filterDate === 'all' ? 'Total Acumulado' : 'Neste Mês'} icon={DollarSign} colorClass="border-amber-500" />
-                        <KpiCard title="Retorno Líquido" value={fmtMoney(data.kpis.netResult)} subtext="Lucro Operacional" icon={TrendingUp} colorClass="border-emerald-600" />
-                        <KpiCard title="Lojistas Fechados" value={data.kpis.uniqueRetailers} subtext="Clientes Únicos" icon={Users} colorClass="border-purple-500" />
-                        <KpiCard title="Volume Vendas" value={data.kpis.pairs} subtext="Pares Vendidos" icon={Target} colorClass="border-blue-500" />
-                        <KpiCard title="ROI Marketing" value={`${data.kpis.roi.toFixed(2)}x`} subtext="Retorno sobre Ads" icon={Activity} colorClass="border-indigo-500" />
-                        <KpiCard title="Valor Investimento" value={fmtMoney(data.kpis.adCost)} subtext="Custo Ads" icon={DollarSign} colorClass="border-slate-500" />
+
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                        <KpiCard title="Faturamento Global (LTV)" value={fmtMoney(data.kpis.revTotal)} subtext="Total Acumulado" icon={DollarSign} colorClass="border-purple-500" />
+                        <KpiCard title="Retorno Líquido" value={fmtMoney(data.kpis.netResult)} subtext="Lucro Operacional" icon={TrendingUp} colorClass="border-emerald-500" />
+                        <KpiCard title="1ª Compra (Lojistas)" value={fmtMoney(data.kpis.rev1st)} subtext="Vendas Iniciais" icon={DollarSign} colorClass="border-amber-500" />
+                        <KpiCard title="Faturamento Recompras" value={fmtMoney(data.kpis.revRep)} subtext="Receita de LTV" icon={RefreshCw} colorClass="border-emerald-500" />
+                        <KpiCard title="Lojistas Únicos" value={data.kpis.uniqueRetailers} subtext="Total de Lojistas" icon={Users} colorClass="border-indigo-500" />
+                        
+                        <KpiCard title="Volume Global (Pares)" value={data.kpis.pairs1st + data.kpis.pairsRep} subtext="Total Geral" icon={Layers} colorClass="border-slate-500" />
+                        <KpiCard title="Volume 1ª Compra" value={data.kpis.pairs1st} subtext="Pares Vendidos" icon={Layers} colorClass="border-amber-500" />
+                        <KpiCard title="Volume Recompras" value={data.kpis.pairsRep} subtext="Pares Vendidos" icon={Layers} colorClass="border-emerald-500" />
+                        <KpiCard title="ROI Marketing" value={`${data.kpis.roi.toFixed(2)}x`} subtext="Retorno sobre Ads" icon={Activity} colorClass="border-blue-500" />
+                        <KpiCard title="Investimento (Ads)" value={fmtMoney(data.kpis.adCost)} subtext="Custo de tráfego" icon={DollarSign} colorClass="border-slate-500" />
                     </div>
-                    <SectionHeader title="Financeiro" icon={BarChart3} color="bg-amber-500" isOpen={sections.financial} onToggle={() => toggle('financial')} />
+
+                    <SectionHeader title="Faturamento & Performance" icon={BarChart3} color="bg-purple-500" isOpen={sections.financial} onToggle={() => toggle('financial')} />
                     {sections.financial && (
-                        <div className="space-y-6">
-                            <ChartContainer title="Receita Mês a Mês"><ChartComponent type="bar" data={cRev} labelType="money" /></ChartContainer>
-                            <ChartContainer title="Retorno vs Investimento"><ChartComponent type="bar" data={cRevVsAds} labelType="money" /></ChartContainer>
-                            <ChartContainer title="ROI por Mês"><ChartComponent type="bar" data={cRoi} labelType="roi" /></ChartContainer>
-                            <ChartContainer title="Ticket Médio por Mês"><ChartComponent type="bar" data={cTicketM} labelType="money" /></ChartContainer>
-                            <ChartContainer title="Receita por Dia da Semana"><ChartComponent type="bar" data={cWeekRev} labelType="money" /></ChartContainer>
+                        <div className="space-y-4">
+                            <ChartContainer title="Faturamentos Mensais" subtitle="Comparativo Total, 1ª Compra e Recompras"><ChartComponent type="bar" data={cRevMGrouped} labelType="money" /></ChartContainer>
+                            
+                            <ChartContainer title="Ticket Médio Mensal"><ChartComponent type="bar" data={cTicketMGrouped} labelType="money" /></ChartContainer>
+
+                            <ChartContainer title="Volume de Pares Vendidos (Mensal)"><ChartComponent type="bar" data={cPairsMGrouped} /></ChartContainer>
                         </div>
                     )}
-                    <SectionHeader title="Geográfico" icon={Globe} color="bg-blue-500" isOpen={sections.geo} onToggle={() => toggle('geo')} />
+
+                    <SectionHeader title="Geográfico & Regional" icon={Globe} color="bg-blue-500" isOpen={sections.geo} onToggle={() => toggle('geo')} />
                     {sections.geo && (
-                        <div className="space-y-6">
-                            <ChartContainer title="Receita por Estado"><ChartComponent type="bar" data={cGeoRev} options={{ indexAxis: 'y', scales: { x: { display: false }, y: { display: true, grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 12, weight: 'bold' } } } } }} height={400} labelType="money" /></ChartContainer>
-                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Receita por Região"><ChartComponent type="doughnut" data={cReg} labelType="money" /></ChartContainer></div></div>
-                            <ChartContainer title="Pedidos por Estado"><ChartComponent type="bar" data={cGeoCount} /></ChartContainer>
-                            <ChartContainer title="Ticket Médio por Estado"><ChartComponent type="bar" data={cGeoTicket} labelType="money" /></ChartContainer>
+                        <div className="space-y-8">
+                            <ChartContainer title="Receita por Estado (Comparativo)" height={600}><ChartComponent type="bar" data={cStateRevGrouped} labelType="money" height={500} /></ChartContainer>
+                            <ChartContainer title="Volume de Pedidos por Estado" height={600}><ChartComponent type="bar" data={cStateOrderGrouped} height={500} /></ChartContainer>
+                            <ChartContainer title="Ticket Médio por Estado" height={600}><ChartComponent type="bar" data={cStateTicketGrouped} labelType="money" height={500} /></ChartContainer>
+                            
+                            <ChartContainer title="Faturamento por Região (Comparativo)"><ChartComponent type="bar" data={cRegGrouped} labelType="money" /></ChartContainer>
                         </div>
                     )}
-                    <SectionHeader title="Operacional" icon={Layers} color="bg-emerald-500" isOpen={sections.ops} onToggle={() => toggle('ops')} />
+
+                    <SectionHeader title="Operacional & LTV" icon={Layers} color="bg-emerald-500" isOpen={sections.ops} onToggle={() => toggle('ops')} />
                     {sections.ops && (
-                        <div className="space-y-6">
-                            <ChartContainer title="Novos Lojistas por Mês"><ChartComponent type="bar" data={cNew} /></ChartContainer>
-                            <ChartContainer title="Pares Vendidos por Mês"><ChartComponent type="bar" data={cPairs} /></ChartContainer>
-                            <div className="flex justify-center mb-6"><div className="w-full max-w-md"><ChartContainer title="Distribuição de Pares por Pedido"><ChartComponent type="pie" data={cBuckets} /></ChartContainer></div></div>
-                            <ChartContainer title="Pedidos por Dia da Semana"><ChartComponent type="bar" data={cWeekCount} /></ChartContainer>
-                            <ChartContainer title="Pedidos por Dia do Mês"><ChartComponent type="bar" data={cMonthDay} /></ChartContainer>
+                        <div className="space-y-8">
+                            <ChartContainer title="Lojistas Mensais (Comparativo)" subtitle="Total Ativos vs Novos vs Recompras"><ChartComponent type="bar" data={cLojMGrouped} /></ChartContainer>
+                            
+                            <ChartContainer title="Top 5 Clientes (LTV / Recompras)" subtitle="Maiores faturamentos em recompra"><ChartComponent type="bar" data={cTopClients} options={{ indexAxis: 'y' }} labelType="money" /></ChartContainer>
+                            
+                            <ChartContainer title="Pedidos por Dia da Semana"><ChartComponent type="bar" data={cWeek} /></ChartContainer>
+                            <ChartContainer title="Pedidos por Dia do Mês"><ChartComponent type="bar" data={cDayMonth} /></ChartContainer>
                         </div>
                     )}
+                </div>
+            );
+        };
+
+        const LeadEfficiencyChart = ({ sales, leads }) => {
+            const efficiencyData = useMemo(() => {
+                const stateLeads = {};
+                const stateSales = {};
+                
+                leads.forEach(l => {
+                    const st = normalizeUF(l.state);
+                    if (st) stateLeads[st] = (stateLeads[st] || 0) + 1;
+                });
+                
+                sales.forEach(s => {
+                    const st = normalizeUF(s.state);
+                    if (st) stateSales[st] = (stateSales[st] || 0) + 1;
+                });
+                
+                const states = Array.from(new Set([...Object.keys(stateLeads), ...Object.keys(stateSales)]))
+                    .map(st => {
+                        const l = stateLeads[st] || 0;
+                        const s = stateSales[st] || 0;
+                        const eff = l > 0 ? (s / l) * 100 : 0;
+                        return { st, leads: l, sales: s, efficiency: eff };
+                    })
+                    .sort((a,b) => b.efficiency - a.efficiency)
+                    .filter(x => x.leads > 0);
+                
+                return states;
+            }, [sales, leads]);
+
+            const chartData = {
+                labels: efficiencyData.map(d => d.st),
+                datasets: [
+                    { label: 'Eficiência (%)', data: efficiencyData.map(d => d.efficiency.toFixed(1)), type: 'line', borderColor: '#f59e0b', backgroundColor: '#f59e0b', borderWidth: 3, pointRadius: 4, yAxisID: 'y1', order: 1 },
+                    { label: 'Leads', data: efficiencyData.map(d => d.leads), type: 'bar', backgroundColor: '#334155', borderRadius: 4, yAxisID: 'y', order: 2 },
+                    { label: 'Vendas', data: efficiencyData.map(d => d.sales), type: 'bar', backgroundColor: '#10b981', borderRadius: 4, yAxisID: 'y', order: 3 }
+                ]
+            };
+
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { type: 'linear', display: true, position: 'left', grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, min: 0, max: 100, ticks: { callback: v => v + '%' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        color: '#cbd5e1',
+                        font: { size: 9, weight: 'bold' },
+                        formatter: (val, ctx) => ctx.datasetIndex === 0 ? val + '%' : val
+                    }
+                }
+            };
+
+            return (
+                <ChartContainer title="Eficiência de Conversão por Estado">
+                    <ChartComponent type="bar" data={chartData} options={options} />
+                </ChartContainer>
+            );
+        };
+
+        const LTVView = ({ sales, repurchases, addRepurchase, updateRepurchase, deleteRepurchase }) => {
+            const [isRepModalOpen, setIsRepModalOpen] = useState(false);
+            const [editingRep, setEditingRep] = useState(null);
+            const [selectedClient, setSelectedClient] = useState(null);
+            const [repFormData, setRepFormData] = useState({ date: new Date().toISOString().split('T')[0], value: '', pairs: '', obs: '' });
+            const [sortConfig, setSortConfig] = useState({ key: 'ltvTotal', direction: 'desc' });
+            const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+            const [isRetentionOpen, setIsRetentionOpen] = useState(true);
+
+            const clientStats = useMemo(() => {
+                const stats = {};
+                sales.forEach(s => {
+                    const company = s.company;
+                    if (!stats[company]) {
+                        stats[company] = {
+                            company,
+                            firstDate: s.date,
+                            firstValue: s.value,
+                            firstPairs: s.pairs,
+                            state: s.state,
+                            city: s.city,
+                            repurchases: [],
+                            repTotal: 0,
+                            repCount: 0,
+                            repPairs: 0
+                        };
+                    } else {
+                        if (new Date(s.date) < new Date(stats[company].firstDate)) {
+                            stats[company].firstDate = s.date;
+                            stats[company].firstValue = s.value;
+                            stats[company].firstPairs = s.pairs;
+                        }
+                    }
+                });
+
+                repurchases.forEach(r => {
+                    if (stats[r.company]) {
+                        stats[r.company].repurchases.push(r);
+                        stats[r.company].repTotal += Number(r.value);
+                        stats[r.company].repCount += 1;
+                        stats[r.company].repPairs += Number(r.pairs);
+                    }
+                });
+
+                return Object.values(stats).map(c => ({
+                    ...c,
+                    ltvTotal: c.firstValue + c.repTotal,
+                    expansion: c.firstValue > 0 ? (c.repTotal / c.firstValue) * 100 : 0
+                }));
+            }, [sales, repurchases]);
+
+            const sortedClients = useMemo(() => {
+                let items = [...clientStats];
+                items.sort((a, b) => {
+                    let aVal = a[sortConfig.key];
+                    let bVal = b[sortConfig.key];
+                    if (sortConfig.key === 'firstDate') { aVal = new Date(aVal); bVal = new Date(bVal); }
+                    if (typeof aVal === 'string') { aVal = aVal.toLowerCase(); bVal = bVal.toLowerCase(); }
+                    if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                return items;
+            }, [clientStats, sortConfig]);
+
+            const globalMetrics = useMemo(() => {
+                const totalRep = repurchases.reduce((acc, r) => acc + Number(r.value), 0);
+                const totalBase = sales.reduce((acc, s) => acc + s.value, 0);
+                const expansion = totalBase > 0 ? (totalRep / totalBase) * 100 : 0;
+                let totalDays = 0;
+                let count = 0;
+                clientStats.forEach(c => {
+                    if (c.repurchases.length > 0) {
+                        c.repurchases.forEach(r => {
+                            const diff = (new Date(r.date) - new Date(c.firstDate)) / (1000 * 60 * 60 * 24);
+                            if (diff > 0) { totalDays += diff; count++; }
+                        });
+                    }
+                });
+                const avgCycle = count > 0 ? Math.round(totalDays / count) : 0;
+                return { totalRep, expansion, totalLtv: totalBase + totalRep, avgCycle };
+            }, [repurchases, sales, clientStats]);
+
+            const handleSort = (key) => {
+                let direction = 'asc';
+                if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+                setSortConfig({ key, direction });
+            };
+
+            const openRepModal = (client, rep = null) => {
+                setSelectedClient(client);
+                setEditingRep(rep);
+                setRepFormData(rep ? { ...rep } : { date: new Date().toISOString().split('T')[0], value: '', pairs: '', obs: '' });
+                setIsRepModalOpen(true);
+            };
+
+            const handleRepSubmit = async (e) => {
+                e.preventDefault();
+                const data = { ...repFormData, company: selectedClient.company, value: Number(repFormData.value), pairs: Number(repFormData.pairs) };
+                if (editingRep) await updateRepurchase({ ...data, id: editingRep.id });
+                else await addRepurchase(data);
+                setIsRepModalOpen(false);
+                setIsHistoryModalOpen(false);
+            };
+
+            const topClientsData = {
+                labels: [...clientStats].sort((a,b) => b.repTotal - a.repTotal).slice(0, 5).map(c => c.company),
+                datasets: [{ label: 'Recompras (R$)', data: [...clientStats].sort((a,b) => b.repTotal - a.repTotal).slice(0, 5).map(c => c.repTotal), backgroundColor: '#10b981', borderRadius: 4, indexAxis: 'y' }]
+            };
+
+            const monthlyEvolution = useMemo(() => {
+                const months = {};
+                repurchases.forEach(r => { const m = r.date.slice(0, 7); months[m] = (months[m] || 0) + Number(r.value); });
+                const sortedMonths = Object.keys(months).sort();
+                return {
+                    labels: sortedMonths.map(m => { const [y, mn] = m.split('-'); return `${fullMonthNames[parseInt(mn)-1].substring(0,3)}/${y.substring(2)}`; }),
+                    datasets: [{ label: 'Receita', data: sortedMonths.map(m => months[m]), backgroundColor: '#3b82f6', borderRadius: 4 }]
+                };
+            }, [repurchases]);
+
+            const topStatesData = useMemo(() => {
+                const states = {};
+                repurchases.forEach(r => {
+                    const sale = sales.find(s => s.company === r.company);
+                    const st = sale ? normalizeUF(sale.state) : null;
+                    if (st) states[st] = (states[st] || 0) + Number(r.value);
+                });
+                const sorted = Object.entries(states).sort((a,b) => b[1] - a[1]);
+                return { labels: sorted.map(s => s[0]), datasets: [{ label: 'Receita', data: sorted.map(s => s[1]), backgroundColor: '#f59e0b', borderRadius: 4 }] };
+            }, [repurchases, sales]);
+
+            const SortIcon = ({ column }) => sortConfig.key === column ? (sortConfig.direction === 'asc' ? <ChevronUp size={14} className="ml-1 inline" /> : <ChevronDown size={14} className="ml-1 inline" />) : null;
+
+            return (
+                <div className="animate-fadeIn">
+                    <div className="flex justify-between items-center mb-8">
+                        <h2 className="text-2xl font-bold text-white uppercase flex items-center gap-2"><RefreshCw className="text-emerald-500" /> Life Time Value (Recompras)</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <KpiCard title="Total em Recompras" value={fmtMoney(globalMetrics.totalRep)} subtext={`${repurchases.length} novos pedidos`} icon={DollarSign} colorClass="border-emerald-500" />
+                        <KpiCard title="Expansão de Faturamento" value={`+${globalMetrics.expansion.toFixed(1)}%`} subtext="Aumento na Receita Base" icon={TrendingUp} colorClass="border-amber-500" />
+                        <KpiCard title="Total Receita c/ LTV" value={fmtMoney(globalMetrics.totalLtv)} subtext="Primeiras Vendas + Recompras" icon={Target} colorClass="border-blue-500" />
+                        <KpiCard title="Ciclo Médio" value={`${globalMetrics.avgCycle} dias`} subtext="Diferença 1ª Compra até Recompra" icon={RefreshCw} colorClass="border-purple-500" />
+                    </div>
+                    <SectionHeader title="Gráficos de Retenção" icon={BarChart3} color="bg-emerald-500" isOpen={isRetentionOpen} onToggle={() => setIsRetentionOpen(!isRetentionOpen)} />
+                    {isRetentionOpen && (
+                        <div className="space-y-6 mb-8 mt-4 animate-fadeIn">
+                            <ChartContainer title="Top 5 Clientes (Recompras)"><ChartComponent type="bar" data={topClientsData} options={{ indexAxis: 'y' }} labelType="money" /></ChartContainer>
+                            <ChartContainer title="Evolução Mensal (Recompras)"><ChartComponent type="bar" data={monthlyEvolution} labelType="money" /></ChartContainer>
+                            <ChartContainer title="Top Estados (Recompras)"><ChartComponent type="bar" data={topStatesData} labelType="money" /></ChartContainer>
+                        </div>
+                    )}
+                    <div className="glass-panel rounded-lg overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left text-slate-400">
+                                <thead className="text-xs text-slate-200 uppercase bg-slate-800/50">
+                                    <tr>
+                                        <th className="px-6 py-4 sortable" onClick={() => handleSort('company')}>Cliente / Lojista <SortIcon column="company" /></th>
+                                        <th className="px-6 py-4 text-center sortable" onClick={() => handleSort('firstDate')}>Data 1ª Compra <SortIcon column="firstDate" /></th>
+                                        <th className="px-6 py-4 text-center sortable" onClick={() => handleSort('firstValue')}>Valor 1ª Compra <SortIcon column="firstValue" /></th>
+                                        <th className="px-6 py-4 text-center sortable" onClick={() => handleSort('repCount')}>Nº Recompras <SortIcon column="repCount" /></th>
+                                        <th className="px-6 py-4 text-center sortable" onClick={() => handleSort('repTotal')}>Valor Extra LTV <SortIcon column="repTotal" /></th>
+                                        <th className="px-6 py-4 text-right sortable" onClick={() => handleSort('ltvTotal')}>LTV Total (R$) <SortIcon column="ltvTotal" /></th>
+                                        <th className="px-6 py-4 text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-700/50">
+                                    {sortedClients.map((client) => (
+                                        <tr key={client.company} className="hover:bg-slate-800/30 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-white">{client.company}</div>
+                                                <div className="text-[10px] text-slate-500">{client.city} - {client.state}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center font-mono text-xs">{fmtDate(client.firstDate)}</td>
+                                            <td className="px-6 py-4 text-center"><div className="text-white">{fmtMoney(client.firstValue)}</div><div className="text-[10px] text-slate-500">{client.firstPairs} pares</div></td>
+                                            <td className="px-6 py-4 text-center"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${client.repCount > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-400'}`}>{client.repCount > 0 ? `${client.repCount} recompras` : '-'}</span></td>
+                                            <td className="px-6 py-4 text-center text-emerald-400 font-medium">{client.repTotal > 0 ? fmtMoney(client.repTotal) : '-'}</td>
+                                            <td className="px-6 py-4 text-right font-black text-white">{fmtMoney(client.ltvTotal)}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button onClick={() => openRepModal(client)} className="flex items-center gap-1 bg-emerald-600/10 text-emerald-400 hover:bg-emerald-600 hover:text-white px-2 py-1.5 rounded text-[10px] font-bold border border-emerald-500/20 transition-all"><Plus size={14} /> Nova Recompra</button>
+                                                    {client.repCount > 0 && ( <button onClick={() => { setSelectedClient(client); setIsHistoryModalOpen(true); }} className="p-2 hover:bg-slate-700 rounded text-blue-400" title="Ver Histórico"><Activity size={16} /></button> )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <Modal isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)} title={`Histórico de Recompras - ${selectedClient?.company}`}>
+                        <div className="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                            {selectedClient?.repurchases.sort((a,b) => new Date(a.date) - new Date(b.date)).map(rep => (
+                                <div key={rep.id} className="glass-panel p-4 rounded border border-slate-700 flex justify-between items-center group">
+                                    <div><div className="text-white font-bold flex items-center gap-2">{fmtDate(rep.date)} <span className="text-slate-500 text-[10px]">• {rep.pairs} pares</span></div>{rep.obs && <div className="text-slate-400 text-xs mt-1 italic">"{rep.obs}"</div>}</div>
+                                    <div className="flex items-center gap-3"><div className="text-emerald-400 font-bold">{fmtMoney(rep.value)}</div><div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => openRepModal(selectedClient, rep)} className="p-1.5 hover:bg-slate-700 rounded text-blue-400"><Edit2 size={14} /></button><button onClick={() => { if(confirm('Excluir recompra?')) deleteRepurchase(rep.id); setIsHistoryModalOpen(false); }} className="p-1.5 hover:bg-slate-700 rounded text-red-400"><Trash2 size={14} /></button></div></div>
+                                </div>
+                            ))}
+                        </div>
+                    </Modal>
+
+                    <Modal isOpen={isRepModalOpen} onClose={() => setIsRepModalOpen(false)} title={editingRep ? "Editar Recompra" : `Nova Recompra - ${selectedClient?.company}`}>
+                        <form onSubmit={handleRepSubmit} className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Data</label><input type="date" required className="input-dark" value={repFormData.date} onChange={e => setRepFormData({ ...repFormData, date: e.target.value })} /></div>
+                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Pares</label><input type="number" required className="input-dark" value={repFormData.pairs} onChange={e => setRepFormData({ ...repFormData, pairs: e.target.value })} /></div>
+                            </div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Valor da Venda (R$)</label><input type="number" step="0.01" required className="input-dark" value={repFormData.value} onChange={e => setRepFormData({ ...repFormData, value: e.target.value })} /></div>
+                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Observações</label><textarea className="input-dark h-20" value={repFormData.obs || ''} onChange={e => setRepFormData({ ...repFormData, obs: e.target.value })}></textarea></div>
+                            <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded mt-4">Salvar Recompra</button>
+                        </form>
+                    </Modal>
                 </div>
             );
         };
@@ -1915,6 +2387,7 @@
             const { data: sales, loading: loadingSales, addItem: addSale, updateItem: updateSale, deleteItem: deleteSale } = useFirebaseData('sales', [], firebaseUser);
             const { data: ads, loading: loadingAds, addItem: addAd, updateItem: updateAd, deleteItem: deleteAd } = useFirebaseData('ads', [], firebaseUser);
             const { data: leads, loading: loadingLeads, addItem: addLead, updateItem: updateLead } = useFirebaseData('leads', [], firebaseUser);
+            const { data: repurchases, loading: loadingRepurchases, addItem: addRepurchase, updateItem: updateRepurchase, deleteItem: deleteRepurchase } = useFirebaseData('repurchases', [], firebaseUser);
 
             // Sincronização automática de Leads com Lojistas (Vendas) e Migração
             useEffect(() => {
@@ -2216,11 +2689,12 @@
                             </div>
                         )}
 
-                        {view === 'analytics' && <AnalyticsView sales={sales} ads={ads} />}
+                        {view === 'analytics' && <AnalyticsView sales={sales} ads={ads} leads={leads} repurchases={repurchases} />}
                         {view === 'lead-analytics' && <LeadAnalyticsView sales={sales} leads={leads} ads={ads} />}
                         {view === 'leads' && <LeadsView leads={leads} sales={sales} deleteSale={deleteSale} addItem={addLead} updateItem={updateLead} onConvertToSale={handleConvertToSale} clearNotification={() => setNewLeadAlert(false)} onSync={syncFromApi} apiUrl={leadsApiUrl} profile={idealProfile} />}
                         {view === 'crm' && <CRMView leads={leads} sales={sales} updateItem={updateLead} onConvertToSale={handleConvertToSale} deleteSale={deleteSale} />}
                         {view === 'retailers' && <RetailersView sales={sales} addItem={addSale} updateItem={updateSale} deleteItem={deleteSale} prefillData={prefillData} setPrefillData={setPrefillData} updateLead={updateLead} leads={leads} />}
+                        {view === 'ltv' && <LTVView sales={sales} repurchases={repurchases} addRepurchase={addRepurchase} updateRepurchase={updateRepurchase} deleteRepurchase={deleteRepurchase} />}
                         {view === 'ads' && <AdsView ads={ads} addItem={addAd} updateItem={updateAd} deleteItem={deleteAd} />}
                         {view === 'settings' && <SettingsView credentials={credentials} onUpdateCredentials={handleUpdateCredentials} apiUrl={leadsApiUrl} onUpdateApiUrl={setLeadsApiUrl} importData={importInitialData} onCleanTags={() => {
                             if (!window.db || !leads.length) return;
