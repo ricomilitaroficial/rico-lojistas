@@ -331,8 +331,16 @@
         };
 
         // --- HELPERS ---
-        const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-        const fmtDate = (d) => new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+        const fmtMoney = (val) => {
+            if (val === undefined || val === null || isNaN(val)) return 'R$ 0,00';
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+        };
+        const fmtDate = (d) => {
+            if (!d) return '-';
+            const date = new Date(d);
+            if (isNaN(date.getTime())) return '-';
+            return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+        };
         const fullMonthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
         // --- SCORING ENGINE ---
@@ -614,17 +622,20 @@
                     </div>
 
                     <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
-                        {items.map(item => (
-                            <button
-                                key={item.id}
-                                onClick={() => setView(item.id)}
-                                title={isCollapsed ? item.label : ''}
-                                className={`nav-item w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-3 rounded-lg text-sm font-medium transition-all ${view === item.id ? 'active' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
-                            >
-                                <item.icon size={20} className="shrink-0" />
-                                {!isCollapsed && <span className="whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>}
-                            </button>
-                        ))}
+                        {items.map(item => {
+                            const Icon = item.icon;
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setView(item.id)}
+                                    title={isCollapsed ? item.label : ''}
+                                    className={`nav-item w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-4'} py-3 rounded-lg text-sm font-medium transition-all ${view === item.id ? 'active' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                >
+                                    <Icon size={20} className="shrink-0" />
+                                    {!isCollapsed && <span className="whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>}
+                                </button>
+                            );
+                        })}
                     </nav>
 
                     <div className="p-4 border-t border-slate-700 space-y-2">
@@ -641,16 +652,221 @@
             );
         };
 
-        const Modal = ({ isOpen, onClose, title, children }) => {
+        const Modal = ({ isOpen, onClose, title, children, maxWidth = "max-w-lg" }) => {
             if (!isOpen) return null;
             return (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-                    <div className="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-fadeIn h-5/6 overflow-y-auto custom-scrollbar">
+                    <div className={`bg-slate-900 border border-slate-700 w-full ${maxWidth} rounded-xl shadow-2xl overflow-hidden animate-fadeIn h-5/6 overflow-y-auto custom-scrollbar`}>
                         <div className="flex justify-between items-center p-4 border-b border-slate-700 bg-slate-800/50 sticky top-0 z-10 backdrop-blur-md">
                             <h3 className="text-lg font-bold text-white">{title}</h3>
                             <button onClick={onClose} className="text-slate-400 hover:text-white"><X size={20} /></button>
                         </div>
                         <div className="p-6">{children}</div>
+                    </div>
+                </div>
+            );
+        };
+
+        const CustomerCentralModal = ({ 
+            isOpen, 
+            onClose, 
+            client, 
+            initialTab = 'data',
+            sales,
+            repurchases,
+            onUpdateRetailer,
+            onAddRepurchase,
+            onUpdateRepurchase,
+            onDeleteRepurchase 
+        }) => {
+            const [activeTab, setActiveTab] = useState(initialTab);
+            const [formData, setFormData] = useState({});
+            const [repFormData, setRepFormData] = useState({ date: new Date().toISOString().split('T')[0], value: '', pairs: '', obs: '' });
+            const [editingRep, setEditingRep] = useState(null);
+
+            useEffect(() => {
+                if (client) {
+                    setFormData({ ...client });
+                    setActiveTab(initialTab);
+                    setRepFormData({ date: new Date().toISOString().split('T')[0], value: '', pairs: '', obs: '' });
+                    setEditingRep(null);
+                }
+            }, [client, isOpen, initialTab]);
+
+            // IMPORTANT: useMemo must be declared BEFORE any conditional return to follow React's Rules of Hooks
+            const clientHistory = useMemo(() => {
+                if (!client) return [];
+                const history = [];
+                // Venda Inicial (se houver no array sales)
+                const initialSale = sales.find(s => s.company === client.company);
+                if (initialSale) {
+                    history.push({ ...initialSale, type: 'Venda Inicial', isInitial: true });
+                }
+                // Recompras
+                const clientReps = repurchases.filter(r => r.company === client.company);
+                clientReps.forEach(r => history.push({ ...r, type: 'Recompra' }));
+                
+                return history.sort((a,b) => new Date(b.date) - new Date(a.date));
+            }, [client, sales, repurchases]);
+
+            // Conditional early return MUST come after all hooks
+            if (!isOpen || !client) return null;
+
+            const handleRetailerSubmit = async (e) => {
+                e.preventDefault();
+                await onUpdateRetailer({ ...formData, id: client.id });
+                onClose();
+            };
+
+            const handleRepSubmit = async (e) => {
+                e.preventDefault();
+                const data = { ...repFormData, company: client.company, value: Number(repFormData.value), pairs: Number(repFormData.pairs) };
+                if (editingRep) await onUpdateRepurchase({ ...data, id: editingRep.id });
+                else await onAddRepurchase(data);
+                
+                setRepFormData({ date: new Date().toISOString().split('T')[0], value: '', pairs: '', obs: '' });
+                setEditingRep(null);
+                setActiveTab('history');
+            };
+
+            const tabs = [
+                { id: 'data', label: 'Dados Gerais', icon: User },
+                { id: 'history', label: 'Histórico Completo', icon: Activity },
+                { id: 'repurchase', label: 'Nova Recompra', icon: RefreshCw },
+            ];
+
+            return (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+                    <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-fadeIn h-[90vh] flex flex-col">
+                        {/* Header */}
+                        <div className="p-6 border-b border-slate-700 bg-slate-800/30 flex justify-between items-start">
+                            <div>
+                                <h3 className="text-2xl font-black text-white tracking-tight">{client.company}</h3>
+                                <div className="flex items-center gap-3 mt-1 text-slate-400 text-sm">
+                                    <span className="flex items-center gap-1"><Globe size={14} /> {client.city} - {client.state}</span>
+                                    {client.cnpj && <span className="flex items-center gap-1 font-mono text-xs"><Shield size={14} /> {client.cnpj}</span>}
+                                </div>
+                            </div>
+                            <button onClick={onClose} className="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"><X size={24} /></button>
+                        </div>
+
+                        {/* Tabs Nav */}
+                        <div className="flex bg-slate-800/50 p-1 gap-1 border-b border-slate-700">
+                                    {tabs.map(tab => {
+                                        const Icon = tab.icon;
+                                        return (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => setActiveTab(tab.id)}
+                                                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-bold transition-all ${activeTab === tab.id ? 'bg-slate-700 text-amber-500 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}
+                                            >
+                                                <Icon size={18} /> {tab.label}
+                                            </button>
+                                        );
+                                    })}
+                        </div>
+
+                        {/* Content area */}
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+                            {activeTab === 'data' && (
+                                <form onSubmit={handleRetailerSubmit} className="space-y-6 animate-fadeIn">
+                                    <div className="space-y-4">
+                                        <h4 className="text-amber-500 text-[10px] font-black uppercase tracking-widest border-b border-slate-700/50 pb-2">Informações Cadastrais</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Data Lead</label><input type="date" required className="input-dark" value={formData.leadDate || ''} onChange={e => setFormData({ ...formData, leadDate: e.target.value })} /></div>
+                                            <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Data 1ª Venda</label><input type="date" required className="input-dark" value={formData.date || ''} onChange={e => setFormData({ ...formData, date: e.target.value })} /></div>
+                                        </div>
+                                        <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Razão Social</label><input type="text" required className="input-dark" value={formData.company || ''} onChange={e => setFormData({ ...formData, company: e.target.value })} /></div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">CNPJ</label><input type="text" className="input-dark" value={formData.cnpj || ''} onChange={e => setFormData({ ...formData, cnpj: e.target.value })} /></div>
+                                            <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Insc. Estadual</label><input type="text" className="input-dark" value={formData.ie || ''} onChange={e => setFormData({ ...formData, ie: e.target.value })} /></div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Responsável</label><input type="text" className="input-dark" value={formData.contact || ''} onChange={e => setFormData({ ...formData, contact: e.target.value })} /></div>
+                                            <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">E-mail</label><input type="email" className="input-dark" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} /></div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">WhatsApp</label><input type="text" className="input-dark" value={formData.phone || ''} onChange={e => setFormData({ ...formData, phone: e.target.value })} /></div>
+                                            <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Instagram</label><input type="text" className="input-dark" value={formData.instagram || ''} onChange={e => setFormData({ ...formData, instagram: e.target.value })} /></div>
+                                        </div>
+                                        
+                                        <h4 className="text-amber-500 text-[10px] font-black uppercase tracking-widest border-b border-slate-700/50 pb-2 mt-8">Localização</h4>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div className="col-span-2"><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Cidade</label><input type="text" required className="input-dark" value={formData.city || ''} onChange={e => setFormData({ ...formData, city: e.target.value })} /></div>
+                                            <div>
+                                                <label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">UF</label>
+                                                <select required className="input-dark" value={formData.state || ''} onChange={e => setFormData({ ...formData, state: e.target.value })}>
+                                                    <option value="" disabled>Selecione</option>
+                                                    {BRAZIL_STATES.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Endereço Completo</label><input type="text" className="input-dark" value={formData.address || ''} onChange={e => setFormData({ ...formData, address: e.target.value })} /></div>
+                                    </div>
+                                    <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 rounded-xl shadow-xl shadow-amber-900/20 transition-all active:scale-[0.98]">Salvar Alterações</button>
+                                </form>
+                            )}
+
+                            {activeTab === 'history' && (
+                                <div className="space-y-4 animate-fadeIn">
+                                    <h4 className="text-emerald-500 text-[10px] font-black uppercase tracking-widest border-b border-slate-700/50 pb-2">Linha do Tempo de Pedidos</h4>
+                                    <div className="space-y-3">
+                                        {clientHistory.map((item, idx) => (
+                                            <div key={idx} className={`glass-panel p-4 rounded-xl border ${item.isInitial ? 'border-amber-500/30 bg-amber-500/5' : 'border-slate-700 bg-slate-800/30'} flex justify-between items-center group transition-all hover:border-slate-500`}>
+                                                <div className="flex gap-4 items-center">
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${item.isInitial ? 'bg-amber-500/20 text-amber-500' : 'bg-emerald-500/20 text-emerald-500'}`}>
+                                                        {item.isInitial ? <Target size={18} /> : <RefreshCw size={18} />}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-white font-bold flex items-center gap-2">
+                                                            {fmtDate(item.date)}
+                                                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-black uppercase ${item.isInitial ? 'bg-amber-500 text-slate-900' : 'bg-emerald-500 text-slate-900'}`}>{item.type}</span>
+                                                        </div>
+                                                        <div className="text-slate-400 text-xs mt-1 font-medium">{item.pairs} pares • {fmtMoney(item.value)}</div>
+                                                        {item.obs && <div className="text-slate-500 text-[11px] mt-1 italic">"{item.obs}"</div>}
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    {!item.isInitial ? (
+                                                        <>
+                                                            <button onClick={() => { setEditingRep(item); setRepFormData({ ...item }); setActiveTab('repurchase'); }} className="p-2 hover:bg-slate-700 rounded-lg text-blue-400" title="Editar Recompra"><Edit2 size={16} /></button>
+                                                            <button onClick={() => { if(confirm('Excluir recompra?')) onDeleteRepurchase(item.id); }} className="p-2 hover:bg-slate-700 rounded-lg text-red-400" title="Excluir Recompra"><Trash2 size={16} /></button>
+                                                        </>
+                                                    ) : (
+                                                        <button onClick={() => setActiveTab('data')} className="p-2 hover:bg-slate-700 rounded-lg text-amber-500" title="Editar Dados Principais"><Edit2 size={16} /></button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'repurchase' && (
+                                <form onSubmit={handleRepSubmit} className="space-y-6 animate-fadeIn">
+                                    <div className="bg-emerald-500/5 border border-emerald-500/20 p-5 rounded-xl space-y-4">
+                                        <h4 className="text-emerald-500 text-[10px] font-black uppercase tracking-widest border-b border-emerald-500/20 pb-2 flex items-center gap-2">
+                                            <RefreshCw size={14} /> {editingRep ? 'Editando Recompra' : 'Nova Recompra'}
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Data da Recompra</label><input type="date" required className="input-dark" value={repFormData.date || ''} onChange={e => setRepFormData({ ...repFormData, date: e.target.value })} /></div>
+                                            <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Quantidade de Pares</label><input type="number" required className="input-dark" value={repFormData.pairs || ''} onChange={e => setRepFormData({ ...repFormData, pairs: e.target.value })} /></div>
+                                        </div>
+                                        <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Valor da Venda (R$)</label><input type="number" step="0.01" required className="input-dark" value={repFormData.value || ''} onChange={e => setRepFormData({ ...repFormData, value: e.target.value })} /></div>
+                                        <div><label className="block text-[10px] uppercase mb-1 text-slate-500 font-bold">Observações Internas</label><textarea className="input-dark h-24" placeholder="Algum detalhe específico desta recompra?" value={repFormData.obs || ''} onChange={e => setRepFormData({ ...repFormData, obs: e.target.value })}></textarea></div>
+                                        
+                                        <div className="flex gap-3 pt-2">
+                                            {editingRep && (
+                                                <button type="button" onClick={() => { setEditingRep(null); setRepFormData({ date: new Date().toISOString().split('T')[0], value: '', pairs: '', obs: '' }); }} className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl transition-all">Cancelar Edição</button>
+                                            )}
+                                            <button type="submit" className="flex-[2] bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-xl shadow-emerald-900/20 transition-all active:scale-[0.98]">
+                                                {editingRep ? 'Atualizar Recompra' : 'Confirmar Recompra'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
                     </div>
                 </div>
             );
@@ -998,18 +1214,18 @@
 
                     <div className="glass-panel rounded-lg overflow-hidden flex flex-col mb-6">
                         <div className="overflow-x-auto custom-scrollbar transition-all">
-                            <table className="w-full min-w-[1400px] table-fixed text-[13px] text-left text-slate-400">
+                            <table className="w-full text-[13px] text-left text-slate-400">
                                 <thead className="text-[11px] text-slate-200 uppercase bg-slate-800/95 sticky top-0 z-20 backdrop-blur-sm border-b border-slate-700 shadow-md">
                                     <tr>
-                                        <th className="px-3 py-3 sortable w-[80px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('date')}>Data <SortIcon column="date" /></th>
-                                        <th className="px-3 py-3 sortable w-[150px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact" /></th>
-                                        <th className="px-3 py-3 w-[110px] text-center sticky top-0 bg-slate-800">WhatsApp</th>
-                                        <th className="px-3 py-3 sortable w-[120px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('state')}>Local <SortIcon column="state" /></th>
-                                        <th className="px-3 py-3 w-[150px] text-center sticky top-0 bg-slate-800">Lojista/CNPJ</th>
-                                        <th className="px-3 py-3 w-[160px] text-center sticky top-0 bg-slate-800">E-mail</th>
-                                        <th className="px-3 py-3 w-[180px] text-center sticky top-0 bg-slate-800">Endereço/Instagram</th>
-                                        <th className="px-3 py-3 min-w-[200px] text-center sticky top-0 bg-slate-800">Observações</th>
-                                        <th className="px-3 py-3 text-center min-w-[120px] sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">Ação</th>
+                                        <th className="px-2 py-3 sortable w-[65px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('date')}>Data <SortIcon column="date" /></th>
+                                        <th className="px-2 py-3 sortable w-[110px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('contact')}>Nome <SortIcon column="contact" /></th>
+                                        <th className="px-2 py-3 w-[90px] text-center sticky top-0 bg-slate-800">WhatsApp</th>
+                                        <th className="px-2 py-3 sortable w-[85px] text-center sticky top-0 bg-slate-800" onClick={() => handleSort('state')}>Local <SortIcon column="state" /></th>
+                                        <th className="px-2 py-3 w-[120px] text-center sticky top-0 bg-slate-800">Lojista/CNPJ</th>
+                                        <th className="px-2 py-3 w-[130px] text-center sticky top-0 bg-slate-800">E-mail</th>
+                                        <th className="px-2 py-3 w-[150px] text-center sticky top-0 bg-slate-800">Endereço</th>
+                                        <th className="px-2 py-3 min-w-[120px] text-center sticky top-0 bg-slate-800">Obs</th>
+                                        <th className="px-2 py-3 text-center w-[75px] sticky right-0 top-0 bg-slate-800 z-30 shadow-[-5px_0_10px_rgba(0,0,0,0.2)]">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700/50">
@@ -1046,7 +1262,7 @@
                                                 {lead.phone ? (
                                                     <a
                                                         href={`https://wa.me/${String(lead.phone).replace(/\D/g, '')}`}
-                                                        target="_blank"
+                                                        target="wa_rico"
                                                         onClick={() => {
                                                             if (['new', 'read'].includes(lead.status) || lead.isNew) {
                                                                 updateItem({ ...lead, isNew: false, status: 'contacted' });
@@ -1177,8 +1393,10 @@
             );
         };
 
-        const RetailersView = ({ sales, addItem, updateItem, deleteItem, prefillData, setPrefillData, updateLead, leads }) => {
+        const RetailersView = ({ sales, addItem, updateItem, deleteItem, prefillData, setPrefillData, updateLead, leads, repurchases, addRepurchase, updateRepurchase, deleteRepurchase }) => {
             const [isModalOpen, setIsModalOpen] = useState(false);
+            const [isCentralModalOpen, setIsCentralModalOpen] = useState(false);
+            const [centralTab, setCentralTab] = useState('data');
             const [editingItem, setEditingItem] = useState(null);
             const [formData, setFormData] = useState({});
             const [deleteConfirmId, setDeleteConfirmId] = useState(null);
@@ -1207,11 +1425,18 @@
                 return sortableItems;
             }, [sales, sortConfig]);
 
-            const openModal = (item = null) => {
-                const normalizedState = item ? normalizeUF(item.state) : '';
-                setEditingItem(item);
-                setFormData(item ? { ...item, state: normalizedState || item.state } : { date: new Date().toISOString().split('T')[0], leadDate: '', company: '', city: '', state: '', pairs: '', value: '' });
-                setIsModalOpen(true);
+            const openModal = (item = null, tab = 'data') => {
+                if (item) {
+                    const normalizedState = normalizeUF(item.state);
+                    setEditingItem(item);
+                    setFormData({ ...item, state: normalizedState || item.state });
+                    setCentralTab(tab);
+                    setIsCentralModalOpen(true);
+                } else {
+                    setEditingItem(null);
+                    setFormData({ date: new Date().toISOString().split('T')[0], leadDate: '', company: '', city: '', state: '', pairs: '', value: '' });
+                    setIsModalOpen(true);
+                }
             };
 
             useEffect(() => {
@@ -1312,8 +1537,9 @@
                                             <td className="px-6 py-4 text-right font-bold text-emerald-400">{fmtMoney(sale.value)}</td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    <button onClick={() => openModal(sale)} className="p-2 hover:bg-slate-700 rounded text-blue-400"><Edit2 size={16} /></button>
-                                                    <button onClick={() => setDeleteConfirmId(sale.id)} className="p-2 hover:bg-slate-700 rounded text-red-400"><Trash2 size={16} /></button>
+                                                    <button onClick={() => openModal(sale, 'repurchase')} className="p-2 hover:bg-slate-700 rounded text-emerald-400" title="Nova Recompra"><RefreshCw size={16} /></button>
+                                                    <button onClick={() => openModal(sale, 'data')} className="p-2 hover:bg-slate-700 rounded text-blue-400" title="Ver Central do Cliente"><Edit2 size={16} /></button>
+                                                    <button onClick={() => setDeleteConfirmId(sale.id)} className="p-2 hover:bg-slate-700 rounded text-red-400" title="Excluir"><Trash2 size={16} /></button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -1322,9 +1548,21 @@
                             </table>
                         </div>
                     </div>
-                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? "Editar Lojista" : "Novo Lojista"}>
+                    <CustomerCentralModal
+                        isOpen={isCentralModalOpen}
+                        onClose={() => setIsCentralModalOpen(false)}
+                        client={editingItem}
+                        initialTab={centralTab}
+                        sales={sales}
+                        repurchases={repurchases}
+                        onUpdateRetailer={updateItem}
+                        onAddRepurchase={addRepurchase}
+                        onUpdateRepurchase={updateRepurchase}
+                        onDeleteRepurchase={deleteRepurchase}
+                    />
+                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Novo Lojista">
                         <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-1 custom-scrollbar">
-                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3">Dados da Venda</h4>
+                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3">Dados da Venda Inicial</h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Data Lead</label><input type="date" required className="input-dark" value={formData.leadDate} onChange={e => setFormData({ ...formData, leadDate: e.target.value })} /></div>
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Data Fechamento</label><input type="date" required className="input-dark" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} /></div>
@@ -1358,14 +1596,14 @@
                             </div>
                             <div><label className="block text-xs uppercase mb-1 text-slate-400">Endereço Completo</label><input type="text" className="input-dark" value={formData.address || ''} onChange={e => setFormData({ ...formData, address: e.target.value })} /></div>
 
-                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Pedido</h4>
+                            <h4 className="text-amber-500 text-xs font-bold uppercase border-b border-slate-700 pb-1 mb-3 mt-4">Pedido Inicial</h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Qtd Pares</label><input type="number" required className="input-dark" value={formData.pairs} onChange={e => setFormData({ ...formData, pairs: e.target.value })} /></div>
                                 <div><label className="block text-xs uppercase mb-1 text-slate-400">Valor Total (R$)</label><input type="number" step="0.01" required className="input-dark" value={formData.value} onChange={e => setFormData({ ...formData, value: e.target.value })} /></div>
                             </div>
                             <div><label className="block text-xs uppercase mb-1 text-slate-400">Observações</label><textarea className="input-dark h-20" value={formData.obs || ''} onChange={e => setFormData({ ...formData, obs: e.target.value })}></textarea></div>
 
-                            <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded mt-4">Salvar Dados</button>
+                            <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded mt-4 shadow-lg shadow-amber-900/20">Cadastrar Lojista</button>
                         </form>
                     </Modal>
                     <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Confirmar Exclusão"><div className="text-center"><p className="text-slate-300 mb-6">Tem certeza que deseja apagar este registro?</p><div className="flex justify-center gap-4"><button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</button><button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500">Excluir</button></div></div></Modal>
@@ -1702,7 +1940,7 @@
                                                 <div className="flex items-center justify-between gap-1 pt-2 border-t border-slate-700/50">
                                                     <a
                                                         href={`https://wa.me/${String(lead.phone).replace(/\D/g, '')}`}
-                                                        target="_blank"
+                                                        target="wa_rico"
                                                         onClick={(e) => e.stopPropagation()}
                                                         className="p-1.5 bg-emerald-600/20 text-emerald-500 hover:bg-emerald-600 hover:text-white rounded-md transition-all"
                                                     >
@@ -1902,8 +2140,12 @@
                     return total > 0 ? (s.rev1st + s.revRep) / total : 0;
                 }));
 
+                const ticketGlobal = totalOrders > 0 ? revTotal / totalOrders : 0;
+                const ticket1st = filteredSales.length > 0 ? rev1st / filteredSales.length : 0;
+                const ticketRep = filteredReps.length > 0 ? revRep / filteredReps.length : 0;
+
                 return { 
-                    kpis: { revTotal, rev1st, revRep, roi, pairs1st, pairsRep, ticket, netResult, adCost, uniqueRetailers, totalOrders }, 
+                    kpis: { revTotal, rev1st, revRep, roi, pairs1st, pairsRep, ticket1st, ticketRep, ticketGlobal, netResult, adCost, uniqueRetailers, totalOrders }, 
                     monthly: monthlyChartData, 
                     geo: { state: stateStats, region: regionStats },
                     time: { week: weekTrend, month: monthTrend, weekLabels: daysOfWeekShort },
@@ -2052,7 +2294,23 @@
                         <div className="space-y-4">
                             <ChartContainer title="Faturamentos Mensais" subtitle="Comparativo Total, 1ª Compra e Recompras"><ChartComponent type="bar" data={cRevMGrouped} labelType="money" /></ChartContainer>
                             
-                            <ChartContainer title="Ticket Médio Mensal"><ChartComponent type="bar" data={cTicketMGrouped} labelType="money" /></ChartContainer>
+                            <ChartContainer title="Ticket Médio Mensal">
+                                <ChartComponent type="bar" data={cTicketMGrouped} labelType="money" />
+                                <div className="grid grid-cols-3 gap-4 mt-6 p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                                    <div className="text-center group">
+                                        <div className="text-[10px] text-slate-500 uppercase font-black mb-1 group-hover:text-amber-500 transition-colors">Tkt Médio Global</div>
+                                        <div className="text-lg font-black text-white">{fmtMoney(data.kpis.ticketGlobal)}</div>
+                                    </div>
+                                    <div className="text-center border-x border-slate-700/50 group">
+                                        <div className="text-[10px] text-slate-500 uppercase font-black mb-1 group-hover:text-amber-500 transition-colors">Tkt Médio (1ª Compra)</div>
+                                        <div className="text-lg font-black text-amber-500">{fmtMoney(data.kpis.ticket1st)}</div>
+                                    </div>
+                                    <div className="text-center group">
+                                        <div className="text-[10px] text-slate-500 uppercase font-black mb-1 group-hover:text-emerald-500 transition-colors">Tkt Médio (Recompra)</div>
+                                        <div className="text-lg font-black text-emerald-500">{fmtMoney(data.kpis.ticketRep)}</div>
+                                    </div>
+                                </div>
+                            </ChartContainer>
 
                             <ChartContainer title="Volume de Pares Vendidos (Mensal)"><ChartComponent type="bar" data={cPairsMGrouped} /></ChartContainer>
                         </div>
@@ -2147,13 +2405,11 @@
             );
         };
 
-        const LTVView = ({ sales, repurchases, addRepurchase, updateRepurchase, deleteRepurchase }) => {
-            const [isRepModalOpen, setIsRepModalOpen] = useState(false);
-            const [editingRep, setEditingRep] = useState(null);
+        const LTVView = ({ sales, repurchases, addRepurchase, updateRepurchase, deleteRepurchase, updateRetailer }) => {
+            const [isCentralModalOpen, setIsCentralModalOpen] = useState(false);
+            const [centralTab, setCentralTab] = useState('repurchase');
             const [selectedClient, setSelectedClient] = useState(null);
-            const [repFormData, setRepFormData] = useState({ date: new Date().toISOString().split('T')[0], value: '', pairs: '', obs: '' });
             const [sortConfig, setSortConfig] = useState({ key: 'ltvTotal', direction: 'desc' });
-            const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
             const [isRetentionOpen, setIsRetentionOpen] = useState(true);
 
             const clientStats = useMemo(() => {
@@ -2236,21 +2492,18 @@
                 setSortConfig({ key, direction });
             };
 
-            const openRepModal = (client, rep = null) => {
-                setSelectedClient(client);
-                setEditingRep(rep);
-                setRepFormData(rep ? { ...rep } : { date: new Date().toISOString().split('T')[0], value: '', pairs: '', obs: '' });
-                setIsRepModalOpen(true);
+            const openCentralModal = (client, tab = 'repurchase') => {
+                // clientStats objects match the shape needed by CustomerCentralModal except they are enriched
+                // We need to find the original retailer data if possible, or use the enriched one
+                // Fortunately, clientStats has company, state, city etc.
+                // The Modal needs the original ID to update the retailer.
+                // We'll find the sale record to get the retailer info.
+                const sale = sales.find(s => s.company === client.company);
+                setSelectedClient(sale || client);
+                setCentralTab(tab);
+                setIsCentralModalOpen(true);
             };
 
-            const handleRepSubmit = async (e) => {
-                e.preventDefault();
-                const data = { ...repFormData, company: selectedClient.company, value: Number(repFormData.value), pairs: Number(repFormData.pairs) };
-                if (editingRep) await updateRepurchase({ ...data, id: editingRep.id });
-                else await addRepurchase(data);
-                setIsRepModalOpen(false);
-                setIsHistoryModalOpen(false);
-            };
 
             const topClientsData = {
                 labels: [...clientStats].sort((a,b) => b.repTotal - a.repTotal).slice(0, 5).map(c => c.company),
@@ -2327,8 +2580,8 @@
                                             <td className="px-6 py-4 text-right font-black text-white">{fmtMoney(client.ltvTotal)}</td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    <button onClick={() => openRepModal(client)} className="flex items-center gap-1 bg-emerald-600/10 text-emerald-400 hover:bg-emerald-600 hover:text-white px-2 py-1.5 rounded text-[10px] font-bold border border-emerald-500/20 transition-all"><Plus size={14} /> Nova Recompra</button>
-                                                    {client.repCount > 0 && ( <button onClick={() => { setSelectedClient(client); setIsHistoryModalOpen(true); }} className="p-2 hover:bg-slate-700 rounded text-blue-400" title="Ver Histórico"><Activity size={16} /></button> )}
+                                                    <button onClick={() => openCentralModal(client, 'repurchase')} className="flex items-center gap-1 bg-emerald-600/10 text-emerald-400 hover:bg-emerald-600 hover:text-white px-2 py-1.5 rounded text-[10px] font-bold border border-emerald-500/20 transition-all"><Plus size={14} /> Nova Recompra</button>
+                                                    <button onClick={() => openCentralModal(client, 'history')} className="p-2 hover:bg-slate-700 rounded text-blue-400" title="Ver Central do Cliente"><Activity size={16} /></button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -2337,28 +2590,18 @@
                             </table>
                         </div>
                     </div>
-                    <Modal isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)} title={`Histórico de Recompras - ${selectedClient?.company}`}>
-                        <div className="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                            {selectedClient?.repurchases.sort((a,b) => new Date(a.date) - new Date(b.date)).map(rep => (
-                                <div key={rep.id} className="glass-panel p-4 rounded border border-slate-700 flex justify-between items-center group">
-                                    <div><div className="text-white font-bold flex items-center gap-2">{fmtDate(rep.date)} <span className="text-slate-500 text-[10px]">• {rep.pairs} pares</span></div>{rep.obs && <div className="text-slate-400 text-xs mt-1 italic">"{rep.obs}"</div>}</div>
-                                    <div className="flex items-center gap-3"><div className="text-emerald-400 font-bold">{fmtMoney(rep.value)}</div><div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => openRepModal(selectedClient, rep)} className="p-1.5 hover:bg-slate-700 rounded text-blue-400"><Edit2 size={14} /></button><button onClick={() => { if(confirm('Excluir recompra?')) deleteRepurchase(rep.id); setIsHistoryModalOpen(false); }} className="p-1.5 hover:bg-slate-700 rounded text-red-400"><Trash2 size={14} /></button></div></div>
-                                </div>
-                            ))}
-                        </div>
-                    </Modal>
-
-                    <Modal isOpen={isRepModalOpen} onClose={() => setIsRepModalOpen(false)} title={editingRep ? "Editar Recompra" : `Nova Recompra - ${selectedClient?.company}`}>
-                        <form onSubmit={handleRepSubmit} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Data</label><input type="date" required className="input-dark" value={repFormData.date} onChange={e => setRepFormData({ ...repFormData, date: e.target.value })} /></div>
-                                <div><label className="block text-xs uppercase mb-1 text-slate-400">Pares</label><input type="number" required className="input-dark" value={repFormData.pairs} onChange={e => setRepFormData({ ...repFormData, pairs: e.target.value })} /></div>
-                            </div>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Valor da Venda (R$)</label><input type="number" step="0.01" required className="input-dark" value={repFormData.value} onChange={e => setRepFormData({ ...repFormData, value: e.target.value })} /></div>
-                            <div><label className="block text-xs uppercase mb-1 text-slate-400">Observações</label><textarea className="input-dark h-20" value={repFormData.obs || ''} onChange={e => setRepFormData({ ...repFormData, obs: e.target.value })}></textarea></div>
-                            <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded mt-4">Salvar Recompra</button>
-                        </form>
-                    </Modal>
+                    <CustomerCentralModal
+                        isOpen={isCentralModalOpen}
+                        onClose={() => setIsCentralModalOpen(false)}
+                        client={selectedClient}
+                        initialTab={centralTab}
+                        sales={sales}
+                        repurchases={repurchases}
+                        onUpdateRetailer={updateRetailer}
+                        onAddRepurchase={addRepurchase}
+                        onUpdateRepurchase={updateRepurchase}
+                        onDeleteRepurchase={deleteRepurchase}
+                    />
                 </div>
             );
         };
@@ -2693,8 +2936,28 @@
                         {view === 'lead-analytics' && <LeadAnalyticsView sales={sales} leads={leads} ads={ads} />}
                         {view === 'leads' && <LeadsView leads={leads} sales={sales} deleteSale={deleteSale} addItem={addLead} updateItem={updateLead} onConvertToSale={handleConvertToSale} clearNotification={() => setNewLeadAlert(false)} onSync={syncFromApi} apiUrl={leadsApiUrl} profile={idealProfile} />}
                         {view === 'crm' && <CRMView leads={leads} sales={sales} updateItem={updateLead} onConvertToSale={handleConvertToSale} deleteSale={deleteSale} />}
-                        {view === 'retailers' && <RetailersView sales={sales} addItem={addSale} updateItem={updateSale} deleteItem={deleteSale} prefillData={prefillData} setPrefillData={setPrefillData} updateLead={updateLead} leads={leads} />}
-                        {view === 'ltv' && <LTVView sales={sales} repurchases={repurchases} addRepurchase={addRepurchase} updateRepurchase={updateRepurchase} deleteRepurchase={deleteRepurchase} />}
+                        {view === 'retailers' && <RetailersView 
+                            sales={sales} 
+                            addItem={addSale} 
+                            updateItem={updateSale} 
+                            deleteItem={deleteSale} 
+                            prefillData={prefillData} 
+                            setPrefillData={setPrefillData} 
+                            updateLead={updateLead} 
+                            leads={leads}
+                            repurchases={repurchases}
+                            addRepurchase={addRepurchase}
+                            updateRepurchase={updateRepurchase}
+                            deleteRepurchase={deleteRepurchase}
+                        />}
+                        {view === 'ltv' && <LTVView 
+                            sales={sales} 
+                            repurchases={repurchases} 
+                            addRepurchase={addRepurchase} 
+                            updateRepurchase={updateRepurchase} 
+                            deleteRepurchase={deleteRepurchase} 
+                            updateRetailer={updateSale}
+                        />}
                         {view === 'ads' && <AdsView ads={ads} addItem={addAd} updateItem={updateAd} deleteItem={deleteAd} />}
                         {view === 'settings' && <SettingsView credentials={credentials} onUpdateCredentials={handleUpdateCredentials} apiUrl={leadsApiUrl} onUpdateApiUrl={setLeadsApiUrl} importData={importInitialData} onCleanTags={() => {
                             if (!window.db || !leads.length) return;
