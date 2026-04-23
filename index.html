@@ -228,6 +228,25 @@
             return null; // Se não for um estado conhecido, ignora
         };
 
+        const deduplicateLeads = (leads) => {
+            if (!leads || !Array.isArray(leads)) return [];
+            const getSignature = (l) => {
+                const cleanPhone = String(l.phone || '').replace(/\D/g, '');
+                const cleanCnpj = String(l.cnpj || '').replace(/\D/g, '');
+                const dateOnly = String(l.date || '').split('T')[0];
+                if (cleanCnpj.length === 14) return `CNPJ_${cleanCnpj}_${dateOnly}`;
+                if (cleanPhone.length >= 10) return `TEL_${cleanPhone}_${dateOnly}`;
+                return `NAME_${(l.contact || l.company || '').trim().toLowerCase()}_${dateOnly}`;
+            };
+            const seen = new Set();
+            return leads.filter(l => {
+                const sig = getSignature(l);
+                if (seen.has(sig)) return false;
+                seen.add(sig);
+                return true;
+            });
+        };
+
         const fetchCnpjData = async (cnpjStr) => {
             const cnpjNum = String(cnpjStr).replace(/\D/g, '');
             let err429 = false;
@@ -910,14 +929,16 @@
             }, [sales, ads, leads]);
 
             const data = useMemo(() => {
+                const uniqueLeads = deduplicateLeads(leads);
+
                 let filteredSales = sales;
                 let filteredAds = ads;
-                let filteredLeads = leads;
+                let filteredLeads = uniqueLeads;
 
                 if (filterDate !== 'all') {
                     filteredSales = sales.filter(s => s.date.startsWith(filterDate));
                     filteredAds = ads.filter(a => a.month === filterDate);
-                    filteredLeads = leads.filter(l => l.date.startsWith(filterDate));
+                    filteredLeads = uniqueLeads.filter(l => l.date.startsWith(filterDate));
                 }
 
                 const totalLeads = filteredLeads.length;
@@ -933,7 +954,7 @@
 
                 const monthsList = filterDate === 'all' ? availableMonths : [filterDate];
                 const monthlyData = monthsList.map(m => {
-                    const mLeads = leads.filter(l => l.date.startsWith(m)).length;
+                    const mLeads = uniqueLeads.filter(l => l.date.startsWith(m)).length;
                     const mSales = sales.filter(s => s.date.startsWith(m)).length;
                     const mAds = ads.find(a => a.month === m)?.value || 0;
                     const mCpl = mLeads > 0 ? mAds / mLeads : 0;
@@ -1708,7 +1729,7 @@
             );
         };
 
-        const SettingsView = ({ credentials, onUpdateCredentials, apiUrl, onUpdateApiUrl, importData, onCleanTags }) => {
+        const SettingsView = ({ credentials, onUpdateCredentials, apiUrl, onUpdateApiUrl, importData, onCleanTags, onCleanDuplicates }) => {
             const [username, setUsername] = useState(credentials.username);
             const [password, setPassword] = useState(credentials.password);
             const [url, setUrl] = useState(apiUrl);
@@ -1741,11 +1762,11 @@
                         <div className="mt-12 pt-8 border-t border-slate-700">
                             <h3 className="text-white font-bold mb-4 flex items-center gap-2"><DatabaseIcon size={18} className="text-slate-500" /> Manutenção de Dados</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <button onClick={handleClean} className="bg-amber-600/20 text-amber-500 border border-amber-500/30 hover:bg-amber-600 hover:text-white px-4 py-3 rounded text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-sm">
-                                    <Trash2 size={16} /> Limpar Etiquetas Antigas
+                                <button onClick={handleClean} className="bg-amber-600/20 text-amber-500 border border-amber-500/30 hover:bg-amber-600 hover:text-white px-4 py-3 rounded text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-sm w-full">
+                                    <Trash2 size={16} /> Marcar Todos como Lidos
                                 </button>
                             </div>
-                            <p className="text-slate-500 text-[10px] mt-4 text-center italic">Use "Limpar Etiquetas Antigas" para marcar todos os leads de hoje ou anteriores como já visualizados.</p>
+                            <p className="text-slate-500 text-[10px] mt-4 text-center italic">Isso removerá o selo "NOVO" de todos os cadastros históricos.</p>
                         </div>
                     </div>
                 </div>
@@ -1764,13 +1785,14 @@
             ];
 
             const crmLeads = useMemo(() => {
-                const activeLeads = leads.filter(l => ['contacted', 'negotiating', 'qualified'].includes(l.status));
+                const uniqueLeads = deduplicateLeads(leads);
+                const activeLeads = uniqueLeads.filter(l => ['contacted', 'negotiating', 'qualified'].includes(l.status));
                 const closedDeals = sales.map(s => {
                     const cleanNum = (str) => str ? String(str).replace(/\D/g, '') : '';
                     const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
 
                     // Busca o lead original priorizando o leadId salvo na venda
-                    const origLead = leads.find(l => 
+                    const origLead = uniqueLeads.find(l => 
                         (s.leadId && String(l.id) === String(s.leadId)) ||
                         (l.status === 'converted' && (
                             (l.cnpj && s.cnpj && cleanNum(l.cnpj) === cleanNum(s.cnpj)) ||
@@ -2030,6 +2052,7 @@
         };
 
         const AnalyticsView = ({ sales, ads, leads = [], repurchases = [] }) => {
+            const uniqueLeads = useMemo(() => deduplicateLeads(leads), [leads]);
             const [filterDate, setFilterDate] = useState('all');
             const [sections, setSections] = useState({ financial: true, geo: true, ops: true });
             const availableMonths = useMemo(() => { const months = new Set([...sales.map(s => s.date.slice(0, 7)), ...ads.map(a => a.month), ...repurchases.map(r => r.date.slice(0, 7))]); return Array.from(months).sort(); }, [sales, ads, repurchases]);
@@ -2629,73 +2652,8 @@
             // Hooks conectados ao Firebase (Substituem o useState local)
             const { data: sales, loading: loadingSales, addItem: addSale, updateItem: updateSale, deleteItem: deleteSale } = useFirebaseData('sales', [], firebaseUser);
             const { data: ads, loading: loadingAds, addItem: addAd, updateItem: updateAd, deleteItem: deleteAd } = useFirebaseData('ads', [], firebaseUser);
-            const { data: leads, loading: loadingLeads, addItem: addLead, updateItem: updateLead } = useFirebaseData('leads', [], firebaseUser);
+            const { data: leads, loading: loadingLeads, addItem: addLead, updateItem: updateLead, deleteItem: deleteLead } = useFirebaseData('leads', [], firebaseUser);
             const { data: repurchases, loading: loadingRepurchases, addItem: addRepurchase, updateItem: updateRepurchase, deleteItem: deleteRepurchase } = useFirebaseData('repurchases', [], firebaseUser);
-
-            // Sincronização automática de Leads com Lojistas (Vendas) e Migração
-            useEffect(() => {
-                if (loadingLeads || loadingSales || !leads.length || !window.db) return;
-
-                // MIGRATION_KEY garante que a limpeza pesada dos "contacted" bugados aconteça só UMA VEZ
-                const MIGRATION_KEY = 'crm_migration_v8';
-                const hasMigrated = localStorage.getItem(MIGRATION_KEY);
-
-                if (hasAutoSynced && hasMigrated) return;
-
-                const { writeBatch, doc } = window.firebaseStore;
-                const batch = writeBatch(window.db);
-                let count = 0;
-
-                const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
-                const cleanNum = (str) => str ? String(str).replace(/\D/g, '') : '';
-
-                leads.forEach(lead => {
-                    const hasSale = sales.some(s => {
-                        const matchCnpj = cleanNum(s.cnpj) && cleanNum(lead.cnpj) && cleanNum(s.cnpj) === cleanNum(lead.cnpj);
-                        const matchPhone = cleanNum(s.phone) && cleanNum(lead.phone) && cleanNum(s.phone) === cleanNum(lead.phone);
-
-                        const sComp = normalize(s.company);
-                        const lComp = normalize(lead.company);
-                        const lCont = normalize(lead.contact);
-
-                        const matchComp = sComp && lComp && sComp === lComp && sComp.length > 2;
-                        const matchCont = sComp && lCont && sComp === lCont && sComp.length > 2;
-
-                        return matchCnpj || matchPhone || matchComp || matchCont;
-                    });
-
-                    // 1. Forçar para VENDIDO se bateu com alguma venda na Lojistas
-                    if (hasSale && lead.status !== 'converted') {
-                        const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(lead.id));
-                        batch.update(docRef, { status: 'converted', isNew: false });
-                        count++;
-                    }
-                    // 2. MIGRAÇÃO: Limpar leads antigos "contacted" que estão inundando o quadro CRM
-                    else if (!hasMigrated && !hasSale && ['contacted', 'negotiating', 'qualified'].includes(lead.status)) {
-                        const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(lead.id));
-                        batch.update(docRef, { status: 'read', isNew: false });
-                        count++;
-                    }
-                });
-
-                if (count > 0) {
-                    console.log(`Migração Batch: resolvendo ${count} leads pendentes...`);
-                    batch.commit()
-                        .then(() => {
-                            localStorage.setItem(MIGRATION_KEY, 'true');
-                            setHasAutoSynced(true);
-                            if (!hasMigrated) window.location.reload();
-                        })
-                        .catch(err => {
-                            console.error("Erro na migração batch:", err);
-                            localStorage.setItem(MIGRATION_KEY, 'true');
-                            setHasAutoSynced(true);
-                        });
-                } else {
-                    localStorage.setItem(MIGRATION_KEY, 'true');
-                    setHasAutoSynced(true);
-                }
-            }, [sales, leads.length, hasAutoSynced, loadingLeads, loadingSales]);
 
             const [prefillData, setPrefillData] = useState(null);
             const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -2705,6 +2663,89 @@
             const [leadsApiUrl, setLeadsApiUrl] = useState('https://script.google.com/macros/s/AKfycbx-Vr1TbLdJoXM7Y1pusPzQau7eJFhfqVDsjhCEissJ3-JFJPJ1mSweoKrpiRMp0geznQ/exec');
             const [hasAutoSynced, setHasAutoSynced] = useState(false);
             const activeLookups = useRef(new Set());
+
+            // Sincronização automática de Leads com Lojistas (Vendas) e Migração Automática (v9)
+            useEffect(() => {
+                if (loadingLeads || loadingSales || !leads.length || !window.db) return;
+
+                const MIGRATION_KEY = 'crm_migration_v9';
+                const hasMigrated = localStorage.getItem(MIGRATION_KEY);
+
+                if (hasAutoSynced && hasMigrated) return;
+
+                const { writeBatch, doc, deleteDoc } = window.firebaseStore;
+                const batch = writeBatch(window.db);
+                let updateCount = 0;
+                let deleteCount = 0;
+
+                const normalize = (str) => str ? String(str).toLowerCase().trim() : '';
+                const cleanNum = (str) => str ? String(str).replace(/\D/g, '') : '';
+                const getSignature = (lead) => {
+                    const dateStr = lead.date ? new Date(lead.date).toISOString().split('T')[0] : '';
+                    return `${normalize(lead.name)}|${cleanNum(lead.phone)}|${cleanNum(lead.cnpj)}|${dateStr}`;
+                };
+
+                // Identifica duplicados
+                const seen = new Set();
+                const duplicates = [];
+                const uniqueLeads = [];
+
+                leads.forEach(lead => {
+                    const sig = getSignature(lead);
+                    if (seen.has(sig)) {
+                        duplicates.push(lead);
+                    } else {
+                        seen.add(sig);
+                        uniqueLeads.push(lead);
+                    }
+                });
+
+                // Processa sincronização e limpeza
+                uniqueLeads.forEach(lead => {
+                    const hasSale = sales.some(s => {
+                        return (lead.cnpj && s.cnpj && cleanNum(lead.cnpj) === cleanNum(s.cnpj)) ||
+                               (lead.phone && s.phone && cleanNum(lead.phone) === cleanNum(s.phone));
+                    });
+
+                    if (hasSale && lead.status !== 'converted') {
+                        const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(lead.id));
+                        batch.update(docRef, { status: 'converted', isNew: false });
+                        updateCount++;
+                    } else if (!hasMigrated && !hasSale && ['contacted', 'negotiating', 'qualified'].includes(lead.status)) {
+                        const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(lead.id));
+                        batch.update(docRef, { status: 'read', isNew: false });
+                        updateCount++;
+                    }
+                });
+
+                const runCleanup = async () => {
+                    if (duplicates.length > 0) {
+                        console.log(`[Manutenção] Removendo ${duplicates.length} leads duplicados...`);
+                        for (const d of duplicates) {
+                            try {
+                                const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'leads', String(d.id));
+                                await deleteDoc(docRef);
+                                deleteCount++;
+                            } catch (e) { console.error("Erro ao deletar duplicado:", e); }
+                        }
+                    }
+
+                    if (updateCount > 0) {
+                        console.log(`[Manutenção] Atualizando status de ${updateCount} leads...`);
+                        await batch.commit();
+                    }
+
+                    if (duplicates.length > 0 || updateCount > 0) {
+                        console.log("Manutenção concluída com sucesso.");
+                    }
+
+                    localStorage.setItem(MIGRATION_KEY, 'true');
+                    setHasAutoSynced(true);
+                };
+
+                runCleanup();
+            }, [sales, leads, hasAutoSynced, loadingLeads, loadingSales]);
+
 
             const idealProfile = useMemo(() => getIdealProfile(sales), [sales]);
 
@@ -2736,7 +2777,6 @@
 
             const syncFromApi = async () => {
                 if (!leadsApiUrl) {
-                    // Modo simulação se não houver URL
                     const incomingLead = { id: Date.now(), date: new Date().toISOString().split('T')[0], name: 'Novo Cliente Simulado', contact: 'Lead Demo', city: 'Belo Horizonte', state: 'MG', source: 'Simulação Demo', status: 'new', isNew: true };
                     await addLead(incomingLead);
                     setNewLeadAlert(true);
@@ -2757,7 +2797,6 @@
                         const today = new Date().toISOString().split('T')[0];
                         const leadDate = dateObj.toISOString().split('T')[0];
 
-                        // Considerar NOVO apenas se for de HOJE em diante
                         const isHistoricallyOld = leadDate < today;
 
                         return {
@@ -2779,16 +2818,26 @@
                         };
                     });
 
-                    // Verifica duplicatas simples pelo nome+data antes de adicionar
-                    // (Em produção idealmente verificaria ID no banco, mas aqui simplificamos para o demo)
+                    // Melhora a verificação de duplicatas (incluindo o que está sendo adicionado no momento)
                     let count = 0;
-                    const existingSignatures = new Set(leads.map(l => (l.contact || l.name) + l.date));
+                    const getSignature = (l) => {
+                        const cleanPhone = String(l.phone || '').replace(/\D/g, '');
+                        const cleanCnpj = String(l.cnpj || '').replace(/\D/g, '');
+                        // Se tiver CNPJ, usa CNPJ+Data. Se não, tenta Telefone+Data. Se não, Nome+Data.
+                        if (cleanCnpj.length === 14) return `CNPJ_${cleanCnpj}_${l.date}`;
+                        if (cleanPhone.length >= 10) return `TEL_${cleanPhone}_${l.date}`;
+                        return `NAME_${(l.contact || l.company || '').trim().toLowerCase()}_${l.date}`;
+                    };
+
+                    const existingSignatures = new Set(leads.map(getSignature));
+                    const currentBatchSignatures = new Set();
 
                     const leadsToAdd = [];
                     for (const l of newLeads) {
-                        const sig = (l.contact || l.name) + l.date;
-                        if (!existingSignatures.has(sig)) {
+                        const sig = getSignature(l);
+                        if (!existingSignatures.has(sig) && !currentBatchSignatures.has(sig)) {
                             leadsToAdd.push(addLead(l));
+                            currentBatchSignatures.add(sig);
                             count++;
                         }
                     }
@@ -2796,11 +2845,11 @@
                     if (leadsToAdd.length > 0) {
                         await Promise.all(leadsToAdd);
                         setNewLeadAlert(true);
+                        console.log(`Sincronização concluída: ${count} novos leads adicionados.`);
                     }
 
                 } catch (error) {
                     console.error("Erro ao buscar leads:", error);
-                    // Não alertar erro silenciosamente no auto-sync
                 }
             };
 
@@ -2820,7 +2869,63 @@
                 if (stuckOrErrored.length > 0) {
                     stuckOrErrored.forEach(l => updateLead({ ...l, isConsulting: false, cnpjConsulted: false, cnpjError: false }));
                 }
-            }, [firebaseUser, loadingLeads]); // Roda apenas uma vez ao carregar
+            }, [firebaseUser, loadingLeads]);
+
+            const cleanDuplicateLeads = async () => {
+                alert('Iniciando verificação de leads duplicados...');
+                console.log('Botão Limpar Duplicados clicado');
+                
+                if (!confirm('Deseja realmente remover os leads duplicados do banco de dados? Isso não pode ser desfeito.')) return;
+                
+                try {
+                    console.log('Iniciando análise de', leads.length, 'leads');
+                    
+                    const getSignature = (l) => {
+                        const cleanPhone = String(l.phone || '').replace(/\D/g, '');
+                        const cleanCnpj = String(l.cnpj || '').replace(/\D/g, '');
+                        const dateOnly = String(l.date || '').split('T')[0]; // Pega apenas a data, ignora hora
+                        
+                        if (cleanCnpj.length === 14) return `CNPJ_${cleanCnpj}_${dateOnly}`;
+                        if (cleanPhone.length >= 10) return `TEL_${cleanPhone}_${dateOnly}`;
+                        return `NAME_${(l.contact || l.company || '').trim().toLowerCase()}_${dateOnly}`;
+                    };
+
+                    const seen = new Set();
+                    const duplicates = [];
+                    
+                    leads.forEach(l => {
+                        const sig = getSignature(l);
+                        if (seen.has(sig)) {
+                            duplicates.push(l);
+                        } else {
+                            seen.add(sig);
+                        }
+                    });
+
+                    console.log('Duplicados encontrados:', duplicates.length);
+
+                    if (duplicates.length === 0) {
+                        alert('Nenhum lead duplicado encontrado (usando critérios de CNPJ/Telefone + Data)!');
+                        return;
+                    }
+
+                    if (confirm(`Encontrados ${duplicates.length} leads duplicados. Prosseguir com a remoção definitiva?`)) {
+                        let successCount = 0;
+                        for (const d of duplicates) {
+                            try {
+                                await deleteLead(d.id);
+                                successCount++;
+                            } catch (e) {
+                                console.error(`Erro ao deletar lead ${d.id}:`, e);
+                            }
+                        }
+                        alert(`${successCount} leads duplicados removidos com sucesso!`);
+                    }
+                } catch (error) {
+                    console.error('Erro crítico em cleanDuplicateLeads:', error);
+                    alert('Erro ao processar limpeza: ' + error.message);
+                }
+            };
 
             // BACKGROUND WORKER: Consulta Automática de CNPJ (publica.cnpj.ws - suporta CORS)
 
@@ -2959,7 +3064,14 @@
                             updateRetailer={updateSale}
                         />}
                         {view === 'ads' && <AdsView ads={ads} addItem={addAd} updateItem={updateAd} deleteItem={deleteAd} />}
-                        {view === 'settings' && <SettingsView credentials={credentials} onUpdateCredentials={handleUpdateCredentials} apiUrl={leadsApiUrl} onUpdateApiUrl={setLeadsApiUrl} importData={importInitialData} onCleanTags={() => {
+                         {view === 'settings' && <SettingsView 
+                            credentials={credentials} 
+                            onUpdateCredentials={handleUpdateCredentials} 
+                            apiUrl={leadsApiUrl} 
+                            onUpdateApiUrl={setLeadsApiUrl} 
+                            importData={importInitialData} 
+                            onCleanDuplicates={cleanDuplicateLeads}
+                            onCleanTags={() => {
                             if (!window.db || !leads.length) return;
                             const { writeBatch, doc } = window.firebaseStore;
                             const batch = writeBatch(window.db);
