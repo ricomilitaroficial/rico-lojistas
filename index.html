@@ -1729,7 +1729,7 @@
             );
         };
 
-        const SettingsView = ({ credentials, onUpdateCredentials, apiUrl, onUpdateApiUrl, importData, onCleanTags, onCleanDuplicates }) => {
+        const SettingsView = ({ credentials, onUpdateCredentials, apiUrl, onUpdateApiUrl, importData, onCleanTags }) => {
             const [username, setUsername] = useState(credentials.username);
             const [password, setPassword] = useState(credentials.password);
             const [url, setUrl] = useState(apiUrl);
@@ -2775,11 +2775,19 @@
                 }
             }, [firebaseUser, loadingSales, loadingAds, sales.length, ads.length]);
 
+            // Refs para evitar concorrência e duplicatas em execuções rápidas/paralelas
+            const isSyncingRef = useRef(false);
+            const syncedSignaturesRef = useRef(new Set());
+
             const syncFromApi = async () => {
+                if (isSyncingRef.current) return;
+                isSyncingRef.current = true;
+                
                 if (!leadsApiUrl) {
                     const incomingLead = { id: Date.now(), date: new Date().toISOString().split('T')[0], name: 'Novo Cliente Simulado', contact: 'Lead Demo', city: 'Belo Horizonte', state: 'MG', source: 'Simulação Demo', status: 'new', isNew: true };
                     await addLead(incomingLead);
                     setNewLeadAlert(true);
+                    isSyncingRef.current = false;
                     return;
                 }
                 try {
@@ -2830,14 +2838,13 @@
                     };
 
                     const existingSignatures = new Set(leads.map(getSignature));
-                    const currentBatchSignatures = new Set();
 
                     const leadsToAdd = [];
                     for (const l of newLeads) {
                         const sig = getSignature(l);
-                        if (!existingSignatures.has(sig) && !currentBatchSignatures.has(sig)) {
+                        if (!existingSignatures.has(sig) && !syncedSignaturesRef.current.has(sig)) {
                             leadsToAdd.push(addLead(l));
-                            currentBatchSignatures.add(sig);
+                            syncedSignaturesRef.current.add(sig);
                             count++;
                         }
                     }
@@ -2850,6 +2857,8 @@
 
                 } catch (error) {
                     console.error("Erro ao buscar leads:", error);
+                } finally {
+                    isSyncingRef.current = false;
                 }
             };
 
@@ -2871,61 +2880,41 @@
                 }
             }, [firebaseUser, loadingLeads]);
 
-            const cleanDuplicateLeads = async () => {
-                alert('Iniciando verificação de leads duplicados...');
-                console.log('Botão Limpar Duplicados clicado');
+            // Limpeza Automática de Duplicatas (Roda apenas 1x ao carregar os leads)
+            const hasCleanedDuplicates = useRef(false);
+            useEffect(() => {
+                if (!firebaseUser || loadingLeads || !leads.length || hasCleanedDuplicates.current) return;
                 
-                if (!confirm('Deseja realmente remover os leads duplicados do banco de dados? Isso não pode ser desfeito.')) return;
-                
-                try {
-                    console.log('Iniciando análise de', leads.length, 'leads');
-                    
-                    const getSignature = (l) => {
-                        const cleanPhone = String(l.phone || '').replace(/\D/g, '');
-                        const cleanCnpj = String(l.cnpj || '').replace(/\D/g, '');
-                        const dateOnly = String(l.date || '').split('T')[0]; // Pega apenas a data, ignora hora
-                        
-                        if (cleanCnpj.length === 14) return `CNPJ_${cleanCnpj}_${dateOnly}`;
-                        if (cleanPhone.length >= 10) return `TEL_${cleanPhone}_${dateOnly}`;
-                        return `NAME_${(l.contact || l.company || '').trim().toLowerCase()}_${dateOnly}`;
-                    };
+                const getSignature = (l) => {
+                    const cleanPhone = String(l.phone || '').replace(/\D/g, '');
+                    const cleanCnpj = String(l.cnpj || '').replace(/\D/g, '');
+                    const dateOnly = String(l.date || '').split('T')[0];
+                    if (cleanCnpj.length === 14) return `CNPJ_${cleanCnpj}_${dateOnly}`;
+                    if (cleanPhone.length >= 10) return `TEL_${cleanPhone}_${dateOnly}`;
+                    return `NAME_${(l.contact || l.company || '').trim().toLowerCase()}_${dateOnly}`;
+                };
 
-                    const seen = new Set();
-                    const duplicates = [];
-                    
-                    leads.forEach(l => {
-                        const sig = getSignature(l);
-                        if (seen.has(sig)) {
-                            duplicates.push(l);
-                        } else {
-                            seen.add(sig);
-                        }
+                const seen = new Set();
+                const duplicates = [];
+                
+                leads.forEach(l => {
+                    const sig = getSignature(l);
+                    if (seen.has(sig)) {
+                        duplicates.push(l);
+                    } else {
+                        seen.add(sig);
+                    }
+                });
+
+                if (duplicates.length > 0) {
+                    console.log(`[Auto-Cleanup] Removendo silenciosamente ${duplicates.length} leads duplicados do banco...`);
+                    duplicates.forEach(d => {
+                        deleteLead(d.id).catch(e => console.error("Erro ao limpar duplicado:", e));
                     });
-
-                    console.log('Duplicados encontrados:', duplicates.length);
-
-                    if (duplicates.length === 0) {
-                        alert('Nenhum lead duplicado encontrado (usando critérios de CNPJ/Telefone + Data)!');
-                        return;
-                    }
-
-                    if (confirm(`Encontrados ${duplicates.length} leads duplicados. Prosseguir com a remoção definitiva?`)) {
-                        let successCount = 0;
-                        for (const d of duplicates) {
-                            try {
-                                await deleteLead(d.id);
-                                successCount++;
-                            } catch (e) {
-                                console.error(`Erro ao deletar lead ${d.id}:`, e);
-                            }
-                        }
-                        alert(`${successCount} leads duplicados removidos com sucesso!`);
-                    }
-                } catch (error) {
-                    console.error('Erro crítico em cleanDuplicateLeads:', error);
-                    alert('Erro ao processar limpeza: ' + error.message);
                 }
-            };
+                
+                hasCleanedDuplicates.current = true;
+            }, [firebaseUser, loadingLeads, leads]);
 
             // BACKGROUND WORKER: Consulta Automática de CNPJ (publica.cnpj.ws - suporta CORS)
 
@@ -3070,7 +3059,6 @@
                             apiUrl={leadsApiUrl} 
                             onUpdateApiUrl={setLeadsApiUrl} 
                             importData={importInitialData} 
-                            onCleanDuplicates={cleanDuplicateLeads}
                             onCleanTags={() => {
                             if (!window.db || !leads.length) return;
                             const { writeBatch, doc } = window.firebaseStore;
